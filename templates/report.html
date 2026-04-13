@@ -1,0 +1,1453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   LAWMENS — Pre-Demolition Audit PDF
+   Landscape A4 (297mm × 210mm) — WeasyPrint 60
+═══════════════════════════════════════════════════════════════ */
+
+@page { size: 297mm 210mm; margin: 0; }
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: 'Calibri', 'Arial', 'Helvetica Neue', Helvetica, sans-serif;
+  font-size: 9pt;
+  color: #333333;
+  background: white;
+}
+
+/* ── PAGE SHELL ─────────────────────────────────────────────── */
+.page {
+  width: 297mm;
+  height: 210mm;
+  position: relative;
+  page-break-after: always;
+  overflow: hidden;
+  background: white;
+}
+.page:last-child { page-break-after: avoid; }
+
+/* ── THREE-COLOUR FOOTER STRIPE ─────────────────────────────── */
+.pg-stripe {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 7mm;
+  display: flex;
+}
+.s1 { width: 34%; background: #0a3d52; }
+.s2 { width: 33%; background: #7dc242; }
+.s3 { width: 33%; background: #4ab9c7; }
+
+/* ── LAWMENS LOGO (bottom-right, above stripe) ──────────────── */
+.pg-logo {
+  position: absolute;
+  bottom: 9mm;
+  right: 8mm;
+}
+
+/* ── TOP-RIGHT: REPORT REF + GHOST PAGE NUMBER ──────────────── */
+.pg-ref {
+  position: absolute;
+  top: 5mm;
+  right: 8mm;
+  text-align: right;
+  font-size: 6.5pt;
+  color: #bbbbbb;
+  line-height: 1.3;
+  z-index: 10;
+}
+.pg-ghost {
+  position: absolute;
+  top: 2mm;
+  right: 5mm;
+  font-size: 72pt;
+  font-weight: 900;
+  color: rgba(13,79,108,0.10);
+  line-height: 1;
+  letter-spacing: -3pt;
+  z-index: 1;
+}
+
+/* ── INTERIOR CONTENT AREA ──────────────────────────────────── */
+.pg-body {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 7mm;
+  padding: 10mm 14mm 18mm 12mm;
+  overflow: hidden;
+}
+
+/* ── HEADINGS ───────────────────────────────────────────────── */
+.pg-title {
+  font-size: 22pt;
+  font-weight: 700;
+  color: #0d4f6c;
+  line-height: 1.15;
+  margin-bottom: 5mm;
+}
+.pg-title-sm {
+  font-size: 16pt;
+  font-weight: 700;
+  color: #0d4f6c;
+  line-height: 1.15;
+  margin-bottom: 4mm;
+}
+.sec-head {
+  font-size: 9pt;
+  font-weight: 700;
+  color: #888888;
+  margin: 3mm 0 1mm;
+}
+.sub-head {
+  font-size: 9.5pt;
+  font-weight: 700;
+  color: #0d4f6c;
+  margin: 3mm 0 1.5mm;
+}
+.body-text {
+  font-size: 8.5pt;
+  line-height: 1.55;
+  color: #333333;
+  text-align: justify;
+  margin-bottom: 2.5mm;
+}
+
+/* ── TWO-COLUMN WITH VERTICAL DIVIDER ───────────────────────── */
+.split-wrap {
+  display: flex;
+  height: 100%;
+}
+.split-left {
+  flex: 1 1 50%;
+  padding-right: 6mm;
+  border-right: 0.5pt solid #cccccc;
+  overflow: hidden;
+}
+.split-right {
+  flex: 1 1 50%;
+  padding-left: 6mm;
+  overflow: hidden;
+}
+
+/* Standard two-col no divider */
+.two-col { display: flex; }
+.two-col .c { flex: 1; }
+.two-col .c + .c { margin-left: 7mm; }
+.col-40 { flex: 0 0 40%; }
+.col-60 { flex: 0 0 58%; }
+
+/* ── LISTS ──────────────────────────────────────────────────── */
+ul.blist { list-style: disc; padding-left: 4.5mm; margin: 1.5mm 0 2.5mm; }
+ul.blist li { font-size: 8.5pt; color: #333; line-height: 1.5; margin-bottom: 1mm; text-align: left; }
+ol.nlist { padding-left: 4.5mm; margin: 1.5mm 0 2.5mm; }
+ol.nlist li { font-size: 8.5pt; color: #333; line-height: 1.5; margin-bottom: 1mm; }
+
+/* Arrow list (Introduction right column) */
+.arrow-item {
+  display: flex;
+  margin-bottom: 5mm;
+  font-size: 8.5pt;
+  color: #333;
+  line-height: 1.5;
+}
+.arrow-sym {
+  color: #cccccc;
+  font-size: 16pt;
+  font-weight: bold;
+  flex-shrink: 0;
+  min-width: 7mm;
+  margin-top: -1.5mm;
+}
+
+/* ── TABLES ─────────────────────────────────────────────────── */
+.std-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 2.5mm 0; }
+.std-table th { background: #0d4f6c; color: white; padding: 2mm 2.5mm; text-align: left; font-size: 7.5pt; font-weight: 700; }
+.std-table td { padding: 2mm 2.5mm; border-bottom: 0.5pt solid #dddddd; vertical-align: top; font-size: 8pt; }
+.std-table tr:nth-child(even) td { background: #f6f9fc; }
+
+.kwp-table { width: 100%; border-collapse: collapse; font-size: 7pt; margin: 2.5mm 0; }
+.kwp-table th { background: #0d4f6c; color: white; padding: 2mm 2mm; text-align: left; font-size: 6.5pt; font-weight: 700; }
+.kwp-table td { padding: 1.5mm 2mm; border-bottom: 0.5pt solid #e0e8ec; vertical-align: middle; }
+.kwp-table tr:nth-child(even) td { background: #f5f9fc; }
+.kwp-table .n { text-align: right; }
+
+.reuse-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 2.5mm 0; }
+.reuse-table th { background: #7dc242; color: white; padding: 2mm 2.5mm; font-size: 7.5pt; font-weight: 700; text-align: left; }
+.reuse-table td { padding: 1.5mm 2.5mm; border-bottom: 0.5pt solid #e0e8ec; vertical-align: middle; }
+.reuse-table tr:nth-child(even) td { background: #f8fcf4; }
+.reuse-table .n { text-align: right; }
+
+/* ── INFO / HIGHLIGHT BOXES ─────────────────────────────────── */
+.info-box {
+  background: #f0f7fc;
+  border-left: 3pt solid #0d4f6c;
+  padding: 2.5mm 3.5mm;
+  margin: 2.5mm 0;
+  font-size: 8pt;
+  line-height: 1.5;
+  color: #333;
+}
+.green-box {
+  background: #f2faea;
+  border-left: 3pt solid #7dc242;
+  padding: 2.5mm 3.5mm;
+  margin: 2.5mm 0;
+  font-size: 8pt;
+  line-height: 1.5;
+}
+
+/* ── RIBA STAGE ROWS ─────────────────────────────────────────── */
+.riba-row { display: flex; margin-bottom: 2mm; }
+.riba-lbl {
+  background: #7dc242;
+  color: white;
+  font-weight: 700;
+  font-size: 7.5pt;
+  padding: 2mm 3.5mm;
+  min-width: 20mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  flex-shrink: 0;
+}
+.riba-txt {
+  background: #f5f5f5;
+  flex: 1;
+  padding: 2mm 4mm;
+  font-size: 7.5pt;
+  color: #333;
+  line-height: 1.4;
+}
+
+/* ── WASTE HIERARCHY ─────────────────────────────────────────── */
+.hier-row { display: flex; align-items: center; padding: 2mm 4mm; font-size: 8pt; font-weight: 700; color: white; border-bottom: 0.3pt solid rgba(255,255,255,0.2); }
+.hier-rank { font-size: 13pt; font-weight: 900; min-width: 7mm; }
+
+/* ── CHECKLIST ──────────────────────────────────────────────── */
+.cl-item { display: flex; align-items: flex-start; padding: 1mm 0; border-bottom: 0.3pt solid #eeeeee; font-size: 8pt; color: #333; }
+.cl-tick { min-width: 4mm; width: 4mm; height: 4mm; border: 0.8pt solid #0d4f6c; border-radius: 1.5pt; display: flex; align-items: center; justify-content: center; color: #7dc242; font-size: 7.5pt; font-weight: 700; margin-top: 0.5mm; flex-shrink: 0; margin-right: 2mm; }
+
+/* ── BADGES ─────────────────────────────────────────────────── */
+.badge-h { background:#6eb840; color:white; border-radius:10pt; padding:1pt 4pt; font-size:7pt; font-weight:700; }
+.badge-m { background:#e8a838; color:white; border-radius:10pt; padding:1pt 4pt; font-size:7pt; font-weight:700; }
+.badge-l { background:#cc3333; color:white; border-radius:10pt; padding:1pt 4pt; font-size:7pt; font-weight:700; }
+
+/* ── STAT BOX ───────────────────────────────────────────────── */
+.stat-box { flex: 1; text-align: center; padding: 3.5mm 2mm; border: 0.5pt solid #e0e0e0; border-radius: 3pt; }
+.stat-num { font-size: 20pt; font-weight: 900; color: #0d4f6c; }
+.stat-lbl { font-size: 6.5pt; color: #888888; margin-top: 0.5mm; font-weight: 600; }
+
+/* ── CHART ──────────────────────────────────────────────────── */
+.chart-wrap { display: flex; justify-content: center; margin: 1.5mm 0; }
+.chart-img { max-width: 100%; height: auto; }
+.fp-img { max-width: 100%; max-height: 148mm; display: block; margin: 0 auto; border: 0.3pt solid #dddddd; }
+
+/* ─────────────────────────────────────────────────────────────
+   COVER PAGE
+───────────────────────────────────────────────────────────── */
+.cover-page {
+  width: 297mm;
+  height: 210mm;
+  background: #0d4f6c;
+  position: relative;
+  page-break-after: always;
+  overflow: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   PREPARED-BY PAGE (split teal / white)
+───────────────────────────────────────────────────────────── */
+.prepby-teal {
+  position: absolute;
+  top: 0; left: 0; bottom: 7mm;
+  width: 49%;
+  background: #0d4f6c;
+  padding: 10mm 10mm 10mm 12mm;
+  overflow: hidden;
+}
+.prepby-white {
+  position: absolute;
+  top: 0; right: 0; bottom: 7mm;
+  width: 51%;
+  background: white;
+  padding: 10mm 10mm 14mm 10mm;
+  overflow: hidden;
+}
+.staff-card {
+  background: #f0f0f0;
+  border-radius: 3pt;
+  padding: 4mm;
+  display: flex;
+  margin-bottom: 4mm;
+}
+.staff-photo {
+  width: 28mm;
+  height: 28mm;
+  object-fit: cover;
+  border-radius: 3pt;
+  flex-shrink: 0;
+  margin-right: 4mm;
+}
+.staff-photo-ph {
+  width: 28mm;
+  height: 28mm;
+  background: #cccccc;
+  border-radius: 3pt;
+  flex-shrink: 0;
+  margin-right: 4mm;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #888;
+  font-size: 18pt;
+}
+.staff-role { font-size: 9pt; font-weight: 700; color: #333; margin-bottom: 2.5mm; }
+.staff-row { display: flex; margin-bottom: 1mm; font-size: 8.5pt; }
+.staff-lbl { color: #888; min-width: 22mm; }
+.staff-val { color: #333; font-weight: 600; }
+
+/* ─────────────────────────────────────────────────────────────
+   CONTENTS PAGE (grey left panel)
+───────────────────────────────────────────────────────────── */
+.contents-left {
+  position: absolute;
+  top: 0; left: 0; bottom: 7mm;
+  width: 26%;
+  background: #efefef;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.contents-word {
+  font-size: 26pt;
+  font-weight: 700;
+  color: #888888;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  letter-spacing: 2pt;
+}
+.contents-right {
+  position: absolute;
+  top: 0; left: 26%; right: 0; bottom: 7mm;
+  padding: 10mm 10mm 15mm 12mm;
+  overflow: hidden;
+}
+.ct-entry { display: flex; align-items: baseline; padding: 3mm 0; border-bottom: 0.3pt solid #eeeeee; }
+.ct-num { font-size: 26pt; font-weight: 900; color: #0d4f6c; min-width: 28mm; line-height: 1; }
+.ct-name { font-size: 10pt; color: #333333; padding-top: 3mm; }
+
+</style>
+</head>
+<body>
+
+{# ═══════════════════════════════════════════════════════════════
+   REUSABLE SNIPPET: LAWMENS LOGO SVG
+   Use as: {{ logo_white() }} for white version, {{ logo_colour() }} for colour
+═══════════════════════════════════════════════════════════════ #}
+
+{% macro logo_colour() %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 68" width="120" height="38">
+  <ellipse cx="22" cy="24" rx="13" ry="19" fill="#2563a8" transform="rotate(-20 22 24)"/>
+  <ellipse cx="30" cy="46" rx="12" ry="16" fill="#6eb840" transform="rotate(18 30 46)"/>
+  <ellipse cx="46" cy="22" rx="13" ry="18" fill="#3db8cc" transform="rotate(8 46 22)"/>
+  <text x="67" y="38" font-family="Arial Black, Arial, sans-serif" font-size="21" font-weight="900" fill="#0d4f6c">Lawmens.</text>
+  <text x="67" y="52" font-family="Arial, sans-serif" font-size="7" fill="#999999">part of the Lawmans UK Ltd group</text>
+</svg>
+{% endmacro %}
+
+{% macro logo_white() %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 68" width="120" height="38">
+  <ellipse cx="22" cy="24" rx="13" ry="19" fill="#5ba3c9" transform="rotate(-20 22 24)"/>
+  <ellipse cx="30" cy="46" rx="12" ry="16" fill="#7dc242" transform="rotate(18 30 46)"/>
+  <ellipse cx="46" cy="22" rx="13" ry="18" fill="#a0d8e0" transform="rotate(8 46 22)"/>
+  <text x="67" y="38" font-family="Arial Black, Arial, sans-serif" font-size="21" font-weight="900" fill="#ffffff">Lawmens.</text>
+  <text x="67" y="52" font-family="Arial, sans-serif" font-size="7" fill="rgba(255,255,255,0.65)">part of the Lawmans UK Ltd group</text>
+</svg>
+{% endmacro %}
+
+{% macro logo_cover() %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 210 68" width="140" height="44">
+  <ellipse cx="22" cy="24" rx="13" ry="19" fill="#5ba3c9" transform="rotate(-20 22 24)"/>
+  <ellipse cx="30" cy="46" rx="12" ry="16" fill="#7dc242" transform="rotate(18 30 46)"/>
+  <ellipse cx="46" cy="22" rx="13" ry="18" fill="#a0d8e0" transform="rotate(8 46 22)"/>
+  <text x="67" y="38" font-family="Arial Black, Arial, sans-serif" font-size="21" font-weight="900" fill="#ffffff">Lawmens.</text>
+  <text x="67" y="52" font-family="Arial, sans-serif" font-size="7" fill="rgba(255,255,255,0.65)">part of the Lawmans UK Ltd group</text>
+</svg>
+{% endmacro %}
+
+{% macro stripe() %}
+<div class="pg-stripe"><div class="s1"></div><div class="s2"></div><div class="s3"></div></div>
+{% endmacro %}
+
+{% macro page_ref(num) %}
+<div class="pg-ref">{{ data.report_title or 'Pre-Demolition Audit' }}: {{ data.job_address }}</div>
+<div class="pg-ghost">{{ '%02d'|format(num) }}</div>
+{% endmacro %}
+
+{% macro page_logo() %}
+<div class="pg-logo">{{ logo_colour() }}</div>
+{% endmacro %}
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 1 — COVER
+═══════════════════════════════════════════════════════════════ #}
+<div class="cover-page">
+
+  {# Lawmens logo — top right #}
+  <div style="position:absolute;top:8mm;right:10mm;">{{ logo_cover() }}</div>
+
+  {# Large report title — centre #}
+  <div style="position:absolute;top:38mm;left:0;right:0;text-align:center;padding:0 20mm;">
+    <div style="font-size:58pt;font-weight:700;color:white;line-height:1.1;font-family:'Calibri','Arial',sans-serif;">
+      {{ data.report_title or 'Pre-Demolition<br>Audit' }}
+    </div>
+  </div>
+
+  {# Address with horizontal rules #}
+  <div style="position:absolute;top:135mm;left:0;right:0;padding:0 15mm;">
+    <div style="border-top:0.8pt solid rgba(255,255,255,0.45);border-bottom:0.8pt solid rgba(255,255,255,0.45);padding:3mm 5mm;text-align:center;">
+      <span style="font-size:14pt;color:white;font-weight:600;">{{ data.job_address }}</span>
+    </div>
+  </div>
+
+  {# Meta bottom-right #}
+  <div style="position:absolute;bottom:18mm;right:12mm;text-align:right;">
+    <div style="color:white;font-size:10pt;line-height:1.9;">
+      <div>Prepared For:&#8202;{{ data.client_name }}</div>
+      <div>Date: {{ data.report_date }}</div>
+      <div>Report Number: {{ data.report_number }}</div>
+    </div>
+  </div>
+
+  {# Two thin bottom lines #}
+  <div style="position:absolute;bottom:10mm;left:0;right:0;height:0.5pt;background:rgba(255,255,255,0.35);"></div>
+  <div style="position:absolute;bottom:7mm;left:0;right:0;height:0.5pt;background:rgba(255,255,255,0.35);"></div>
+
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 2 — REPORT PREPARED BY
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+
+  {{ page_ref(2) }}
+
+  {# Left teal panel #}
+  <div class="prepby-teal">
+    <div style="font-size:19pt;font-weight:700;color:white;line-height:1.2;margin-bottom:5mm;">
+      Report Prepared by Lawmens: Expertise and Terms of Distribution
+    </div>
+    <div style="border-top:0.8pt solid rgba(255,255,255,0.35);margin-bottom:5mm;"></div>
+    <p style="font-size:8pt;color:rgba(255,255,255,0.80);line-height:1.6;margin-bottom:3.5mm;text-align:justify;">
+      Both parties who prepared the report work for the Lawmans Group of companies, and have appropriate knowledge of buildings, waste and options for reuse and recycling of different waste streams.
+    </p>
+    <p style="font-size:8pt;color:rgba(255,255,255,0.80);line-height:1.6;text-align:justify;">
+      This report is made on behalf of Lawmens and may only be distributed in its entirety, without amendment. Lawmens' liability in respect of this report and reliance thereupon shall be as per the terms and conditions of contract with the client and Lawmens shall have no liability to third parties to the extent permitted in law.
+    </p>
+  </div>
+
+  {# Right white panel #}
+  <div class="prepby-white">
+    {# Prepared by card #}
+    <div class="staff-card">
+      {% if data.prepared_by_photo %}
+        <img src="{{ data.prepared_by_photo }}" class="staff-photo" alt="Prepared by">
+      {% else %}
+        <div class="staff-photo-ph">&#128100;</div>
+      {% endif %}
+      <div style="flex:1;">
+        <div class="staff-role">Prepared by</div>
+        <div class="staff-row"><span class="staff-lbl">Name</span><span class="staff-val">{{ data.prepared_by_name or '—' }}</span></div>
+        <div class="staff-row"><span class="staff-lbl">Position</span><span class="staff-val">{{ data.prepared_by_position or '—' }}</span></div>
+        <div class="staff-row"><span class="staff-lbl">Date</span><span class="staff-val">{{ data.prepared_by_date or '—' }}</span></div>
+      </div>
+    </div>
+    {# Authorised by card #}
+    <div class="staff-card">
+      {% if data.authorised_by_photo %}
+        <img src="{{ data.authorised_by_photo }}" class="staff-photo" alt="Authorised by">
+      {% else %}
+        <div class="staff-photo-ph">&#128100;</div>
+      {% endif %}
+      <div style="flex:1;">
+        <div class="staff-role">Authorised by</div>
+        <div class="staff-row"><span class="staff-lbl">Name</span><span class="staff-val">{{ data.authorised_by_name or '—' }}</span></div>
+        <div class="staff-row"><span class="staff-lbl">Position</span><span class="staff-val">{{ data.authorised_by_position or '—' }}</span></div>
+        <div class="staff-row"><span class="staff-lbl">Date</span><span class="staff-val">{{ data.authorised_by_date or '—' }}</span></div>
+      </div>
+    </div>
+    {# Logo bottom-right of white panel #}
+    <div style="position:absolute;bottom:9mm;right:10mm;">{{ logo_colour() }}</div>
+  </div>
+
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 3 — EXECUTIVE SUMMARY
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(3) }}
+  <div class="pg-body">
+    <div class="pg-title">Executive Summary</div>
+    <div class="two-col">
+      <div class="col-40">
+        {% if data.building_photo %}
+          <img src="{{ data.building_photo }}" style="width:100%;border-radius:8pt;" alt="Building">
+        {% else %}
+          <div style="width:100%;height:55mm;background:#d6eaf8;border-radius:8pt;display:flex;align-items:center;justify-content:center;color:#0d4f6c;font-size:10pt;font-weight:600;">Building Photo</div>
+        {% endif %}
+      </div>
+      <div class="c" style="margin-left:7mm;">
+        {% if data.executive_summary %}
+          {% for para in data.executive_summary.split('\n\n') %}
+            <p class="body-text">{{ para }}</p>
+          {% endfor %}
+        {% else %}
+          <p class="body-text">A pre-{{ 'demolition' if 'demolition' in (data.report_title or '').lower() else 'refurbishment' }} audit was carried-out at {{ data.job_address }}.</p>
+          <p class="body-text">The audit consisted in reviewing the items within the building that could be salvaged, reused or recycled.</p>
+          <p class="body-text">The audit was performed as part of the circular economy approach to the project.</p>
+          <p class="body-text">The building circularity for the proposed scheme follows the following principles and approach:</p>
+          <ul class="blist">
+            <li>Conserve resources, increase efficiency and source sustainably</li>
+            <li>Minimise the quantity of the material used such that the whole life carbon does not exceed benchmarks.</li>
+            <li>Maximise the reuse of existing structure on site.</li>
+            <li>Promote the use of recycled content.</li>
+            <li>All timber or timber-based products will be FSC or PEFC certified.</li>
+          </ul>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 4 — MINIMISING WASTE DIVERSION
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(4) }}
+  <div class="pg-body">
+    <div class="pg-title">Minimising Waste Diversion</div>
+    <div class="two-col">
+      <div class="c">
+        <p style="font-size:8.5pt;font-weight:700;color:#333;margin-bottom:3mm;">The Key Waste Products by % of total weight (tonnes) are as follows:</p>
+        {% if data.waste_diversion_chart %}
+          <div class="chart-wrap">
+            <img src="{{ data.waste_diversion_chart }}" class="chart-img" style="max-height:125mm;" alt="Waste diversion chart">
+          </div>
+        {% endif %}
+      </div>
+      <div class="c" style="margin-left:7mm;">
+        <p class="body-text">It is recommended that a target of 95% diversion of waste from landfill should be set.</p>
+        <div class="sec-head" style="margin-top:4mm;">Design to eliminate waste</div>
+        <ul class="blist">
+          <li>The building layers with longer life expectancy will be designed for longevity, flexibility and adaptability and layers with shorter life expectancy for ease of maintenance, recoverability and replacement.</li>
+        </ul>
+        <div class="sec-head" style="margin-top:3mm;">Manage waste sustainably</div>
+        <ul class="blist">
+          <li>At least {{ data.diversion_target or '95' }}% of the waste can be diverted from going into landfill.</li>
+          <li>A site waste management plan will be implemented on site to minimise waste generation and then manage waste responsibly.</li>
+          <li>An operational waste strategy will be implemented to ensure municipal waste is managed sustainably.</li>
+        </ul>
+        {% if data.kwp_materials %}
+        <div style="margin-top:4mm;">
+          {% for m in data.kwp_materials %}
+          <div style="padding:1.5mm 0;border-bottom:0.3pt solid #eeeeee;">
+            <span style="font-size:8pt;font-weight:700;color:#0d4f6c;">{{ m.name }}</span>
+            <span style="font-size:7.5pt;color:#888;margin-left:3mm;">{{ '%.1f'|format(m.pct_weight) }}%</span>
+          </div>
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 5 — CONTENTS
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(5) }}
+
+  <div class="contents-left">
+    <div class="contents-word">Contents</div>
+  </div>
+
+  <div class="contents-right">
+    {% set base_pages = [
+      ('06', 'Introduction'),
+      ('07', 'Circular Economy Principles'),
+      ('08', 'Implementing Circular Economy'),
+      ('09', 'RIBA Stages'),
+      ('10', 'Design Principles'),
+      ('11', 'Waste Hierarchy'),
+      ('12', 'Early Investigations'),
+      ('13', 'Pathways for Reuse'),
+      ('14', 'Pathways for Recycling'),
+      ('15', 'Pre-Demolition Audit Checklist'),
+      ('16', 'Strategic Approach'),
+      ('17', 'Circular Economy Commitments'),
+      ('18', 'Implementation Strategy'),
+      ('19', 'Methodology'),
+    ] %}
+    {% for num, name in base_pages %}
+    <div class="ct-entry">
+      <div class="ct-num">{{ num }}</div>
+      <div class="ct-name">{{ name }}</div>
+    </div>
+    {% endfor %}
+    {% set fp_start = 20 %}
+    {% for fp in data.floor_plans %}
+    <div class="ct-entry">
+      <div class="ct-num">{{ '%02d'|format(fp_start + loop.index0) }}</div>
+      <div class="ct-name">{{ fp.name }}</div>
+    </div>
+    {% endfor %}
+    {% set findings = 20 + (data.floor_plans|length) %}
+    <div class="ct-entry"><div class="ct-num">{{ '%02d'|format(findings) }}</div><div class="ct-name">Pre-demolition Audit Findings</div></div>
+    <div class="ct-entry"><div class="ct-num">{{ '%02d'|format(findings+1) }}</div><div class="ct-name">Conclusion and Recommendations</div></div>
+    {% if data.reuse_items %}
+    <div class="ct-entry"><div class="ct-num">{{ '%02d'|format(findings+2) }}</div><div class="ct-name">Material Reuse</div></div>
+    {% endif %}
+  </div>
+
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 6 — INTRODUCTION
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(6) }}
+  <div class="pg-body">
+    <div class="pg-title">Introduction</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        {% if data.introduction_text %}
+          {% for para in data.introduction_text.split('\n\n') %}
+            <p class="body-text">{{ para }}</p>
+          {% endfor %}
+        {% else %}
+          <p class="body-text">Lawmens has conducted a pre-demolition waste audit of {{ data.job_address }}.</p>
+          <p class="body-text">This report provides information on the site to be assessed, the likely types and amounts of materials arising from the refurbishment and recommendations for the management of these materials.</p>
+          <p class="body-text">Details of local reuse and recycling organisations have been provided. The products, services, companies and websites listed are for informational purposes only and constitute neither an endorsement nor a recommendation. We recommend that you check if a waste management facility or a company transporting your waste has the appropriate permit in place. This can be done via the Environment Agency website.</p>
+          <p class="body-text">This Pre-demolition audit was completed by a competent person with extensive sustainability knowledge and authorised by a competent person within the waste and demolition industry.</p>
+          <p class="body-text">We can confirm both persons have extensive knowledge of the value and condition of the materials within the project, and how they should be repaired, reused or recycled dependent on the condition of the items. Both persons have appropriate knowledge of buildings, waste and options for the materials being removed from site, allowing them to analyse and create the appropriate waste streams where necessary.</p>
+        {% endif %}
+      </div>
+      <div class="split-right">
+        <p class="body-text">This project addresses the potential for reusing and recycling components and materials from the building and aims to:</p>
+        <div style="margin-top:4mm;">
+          <div class="arrow-item"><div class="arrow-sym">&#8594;</div><div>Provide an understanding of the waste materials likely to arise from the refurbishment of the building in order to help with the development of a waste management plan</div></div>
+          <div class="arrow-item"><div class="arrow-sym">&#8594;</div><div>Maximise the management of material removed from the building in line with the waste hierarchy i.e. maximise reuse and recycling and minimise waste to landfill</div></div>
+          <div class="arrow-item"><div class="arrow-sym">&#8594;</div><div>Provide evidence for environmental assessments such as BREEAM</div></div>
+          <div class="arrow-item"><div class="arrow-sym">&#8594;</div><div>Look at ways of promoting circular economy principles, including unique ways to re-purpose, re-condition and recycle materials.</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 7 — CIRCULAR ECONOMY PRINCIPLES
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(7) }}
+  <div class="pg-body">
+    <div class="pg-title">Circular Economy Principles</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <p class="body-text">Current and future trends point toward the need for a fundamental shift in the way resources are consumed. A shift to a circular economy will provide considerable economic opportunities as a result.</p>
+        <p class="body-text">In contrast to a linear economy (take, make, dispose), a circular economy keeps products and materials circulating through the system at their highest value for as long as possible, through re-use, recycling, refurbishment and remanufacturing. As 60% of total UK waste is generated from construction, demolition and excavation (Defra and Government Statistical Service, 2019) this transition from linear to circular is essential.</p>
+        <p class="body-text">The successful implementation of circular economy principles will help to reduce the volume of waste that London produces and has to manage.</p>
+      </div>
+      <div class="split-right">
+        <p class="body-text">A key way of achieving this will be through incorporating circular economy principles into the design of developments, these principals are as follows:</p>
+        <div class="sec-head">Building in layers</div>
+        <p class="body-text">Ensuring that different parts of the building are accessible and can be maintained and replaced where necessary.</p>
+        <div class="sec-head">Designing out waste</div>
+        <p class="body-text">Ensuring that waste reduction is planned in from project inception to completion, including consideration of standardised components, modular build and re-use of secondary products and materials.</p>
+        <div class="sec-head">Designing for longevity</div>
+        <p class="body-text">Creating a built asset with well-defined long-term needs, while being durable, resilient or able to cope with societal and environmental change.</p>
+        <div class="sec-head">Designing for adaptability or flexibility</div>
+        <p class="body-text">To meet the needs of the present but with consideration of how those needs might change in the future.</p>
+        <div class="sec-head">Selecting materials</div>
+        <p class="body-text">Any new material specified in the development should aim to be low impact materials with little or no adverse effect on either the environment or on human health throughout its lifecycle.</p>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 8 — IMPLEMENTING CIRCULAR ECONOMY
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(8) }}
+  <div class="pg-body">
+    <div class="pg-title">Implementing Circular Economy</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <p class="body-text">Building circularity into projects is complex. There are many different approaches a project can identify and adopt solutions, with input from all design team members, including project managers and cost consultants.</p>
+        <p class="body-text">A noted previously, the Mayor's updated London Plan will require all new referable developments to submit a Circular Economy Statement. This policy focuses on waste reduction, increases in material re-use and recycling and aim to be net zero-waste.</p>
+        <p class="body-text">For circular principles to be successful, it requires a whole building approach.</p>
+        <div class="sub-head" style="margin-top:4mm;">Design Stage</div>
+        <ul class="blist">
+          <li>Specify materials that can be disassembled and reused at end of life</li>
+          <li>Avoid composite or laminated materials where alternatives exist</li>
+          <li>Create material passports for all materials</li>
+          <li>Design for adaptability and flexibility of use</li>
+        </ul>
+        <div class="sub-head">Construction Stage</div>
+        <ul class="blist">
+          <li>Implement a robust Site Waste Management Plan</li>
+          <li>Segregate waste streams for maximum diversion from landfill</li>
+          <li>Monitor and report waste performance against KPIs</li>
+        </ul>
+      </div>
+      <div class="split-right">
+        <div class="sub-head">End of Life</div>
+        <ul class="blist">
+          <li>Carry out a Pre-Demolition Audit to identify reuse opportunities</li>
+          <li>Engage specialist contractors for careful deconstruction</li>
+          <li>Identify local reuse markets and social enterprises</li>
+          <li>Record and track all material flows</li>
+          <li>Report on diversion rates achieved</li>
+        </ul>
+        <div class="info-box" style="margin-top:5mm;">
+          <p><b>BREEAM Connection:</b> This Pre-Demolition Audit directly supports achievement of BREEAM Waste credits (Wst 01) by quantifying waste arisings and demonstrating a commitment to diverting materials from landfill.</p>
+        </div>
+        <div class="green-box" style="margin-top:3mm;">
+          <p><b>Circular Economy Statement:</b> The findings of this audit should be used to prepare a Circular Economy Statement for submission with any planning application. This report demonstrates commitment to circular economy principles at the pre-demolition stage.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 9 — RIBA STAGES
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(9) }}
+  <div class="pg-body">
+    <div class="pg-title">RIBA Stages</div>
+    <p class="body-text" style="margin-bottom:4mm;">These principles need to be proactively considered throughout specification, design, procurement, construction and operation. This includes collaborating with supply chains to explore and develop solutions which implement these principles and realise the benefits.</p>
+    <div class="riba-row"><div class="riba-lbl">RIBA 0/1</div><div class="riba-txt"><ul class="blist" style="margin:0;"><li>Set broad objective for Circular Economy aspirations</li><li>Assess current site — undertake pre-demolition / pre-refurbishment audit (demolition contract)</li></ul></div></div>
+    <div class="riba-row"><div class="riba-lbl">RIBA 1</div><div class="riba-txt"><ul class="blist" style="margin:0;"><li>Develop objectives with specific metrics (design team and facility management)</li><li>Identify further information required (e.g. carbon / cost consultant, case studies)</li></ul></div></div>
+    <div class="riba-row"><div class="riba-lbl">RIBA 2/3</div><div class="riba-txt"><ul class="blist" style="margin:0;"><li>Hold workshop to investigate CE alternative approach (contractor, suppliers, design team, facility managers)</li><li>Agree opportunities, commitments and metrics / targets (contractor, design team)</li></ul></div></div>
+    <div class="riba-row"><div class="riba-lbl">RIBA 4</div><div class="riba-txt"><ul class="blist" style="margin:0;"><li>Include metrics as clauses within procurement packages</li><li>Monitor design against metrics, continue to engage with suppliers</li></ul></div></div>
+    <div class="riba-row"><div class="riba-lbl">RIBA 5</div><div class="riba-txt"><ul class="blist" style="margin:0;"><li>Monitor metrics as clauses within procurement packages</li><li>Monitor design against metrics, continue to engage with suppliers</li></ul></div></div>
+    <div class="riba-row"><div class="riba-lbl">RIBA 6/7</div><div class="riba-txt"><ul class="blist" style="margin:0;"><li>Monitor metrics with contractor (and supply chain)</li><li>Continue to investigate alternative materials / products</li></ul></div></div>
+    <p style="font-size:7pt;color:#888;margin-top:3mm;">Figure: Methods to incorporate circular economy principles into a development process using the RIBA stages (Source: UKGBC)</p>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 10 — DESIGN PRINCIPLES
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(10) }}
+  <div class="pg-body">
+    <div class="pg-title">Design Principles</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <p class="body-text">This section will review circular economy design principles and detail measures the proposed development could implement throughout the design, construction and operational phases in addition to those company objectives that are already in place.</p>
+        <div class="sub-head">Designing Out Waste</div>
+        <div class="sec-head">Minimised Material Use</div>
+        <p class="body-text">Adopting a design approach that focuses on material resource efficiency so that less material is used in the design (i.e. lean design), and / or less waste is produced in the construction process, without compromising the design concept. For waste reduction, minimisation of excavation, simplification and standardisation of materials and components of choice, and dimensional coordination have been considered.</p>
+        <p class="body-text">The development will aim to 'design out' waste through the consideration of material specification, such as maximising use of existing materials, and construction techniques in order to prevent and minimise waste generation.</p>
+        <p class="body-text">When selecting and designing components the following will be applied where feasible:</p>
+      </div>
+      <div class="split-right">
+        <ul class="blist" style="margin-bottom:4mm;">
+          <li>Design out the need for the component or material.</li>
+          <li>Use reclaimed material over new and remanufactured components over new, where possible.</li>
+          <li>Use products with labels such as Cradle to Cradle (C2C) and Natureplus.</li>
+          <li>Select products that can be remanufactured or reused at end of first life.</li>
+          <li>Use materials with recycled content.</li>
+          <li>Select products that are designed for disassembly.</li>
+          <li>Select materials that can be recycled or composted at end of life.</li>
+          <li>Consider leasing short lived components.</li>
+        </ul>
+        <p class="body-text">When applying the above, complete transparency and visibility throughout the supply chain will be encouraged. Early engagement with the contractor and partnering within the supply chain will be required.</p>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 11 — WASTE HIERARCHY
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(11) }}
+  <div class="pg-body">
+    <div class="pg-title">The Waste Hierarchy</div>
+    <p class="body-text" style="margin-bottom:4mm;">The waste hierarchy sets out the preferred order of waste management options, from the most environmentally favourable (prevention) to the least (disposal). The Lawmens approach to pre-demolition auditing is structured around this hierarchy.</p>
+    <div style="margin:0 0 4mm;">
+      <div class="hier-row" style="background:#0d4f6c;"><span class="hier-rank">1</span><div><b>PREVENTION</b> — Reduce the amount of waste generated. Retain and reuse the building in its existing form where possible.</div></div>
+      <div class="hier-row" style="background:#1a6080;"><span class="hier-rank">2</span><div><b>PREPARING FOR REUSE</b> — Check, clean or repair products so they can be reused. Identify markets for salvaged materials.</div></div>
+      <div class="hier-row" style="background:#2e8b6e;"><span class="hier-rank">3</span><div><b>RECYCLING</b> — Turn waste into new materials. Engage specialist recycling contractors for each material stream.</div></div>
+      <div class="hier-row" style="background:#5ba3c9;"><span class="hier-rank">4</span><div><b>RECOVERY</b> — Includes composting, anaerobic digestion and energy from waste. Preferred to disposal.</div></div>
+      <div class="hier-row" style="background:#95a5a6;border-bottom:none;"><span class="hier-rank">5</span><div><b>DISPOSAL</b> — Landfill. The least preferred option. To be minimised as far as practicable.</div></div>
+    </div>
+    <div class="two-col">
+      <div class="c">
+        <div class="green-box">
+          <p><b>Lawmens Approach:</b> For each material stream identified in this audit, we have assessed the highest achievable level of the waste hierarchy and provided specific recommendations to support the project team in achieving this outcome.</p>
+        </div>
+      </div>
+      <div class="c" style="margin-left:7mm;">
+        <div class="info-box">
+          <p><b>Legislative Context:</b> The Waste Framework Directive (2008/98/EC), as transposed into UK law via the Waste (England and Wales) Regulations 2011, places a legal duty on waste producers to apply the waste hierarchy. This audit supports compliance with these obligations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 12 — EARLY INVESTIGATIONS
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(12) }}
+  <div class="pg-body">
+    <div class="pg-title">Early Investigations</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <p class="body-text">Early engagement with the waste management process is critical to maximising material diversion opportunities. A number of preliminary investigations should be undertaken as soon as the decision to demolish or significantly refurbish a building has been made.</p>
+        <div class="sub-head">Desk-Based Investigations</div>
+        <ul class="blist">
+          <li>Review of original construction drawings and specifications</li>
+          <li>Review of any existing building surveys (asbestos, condition, etc.)</li>
+          <li>Research into the building's construction history and any known alterations</li>
+          <li>Identification of potential hazardous materials (asbestos, lead paint, PCBs)</li>
+          <li>Review of planning conditions and local authority waste management requirements</li>
+          <li>Research into local reuse markets and social enterprises</li>
+        </ul>
+        <div class="sub-head">Site Investigations</div>
+        <ul class="blist">
+          <li>Visual inspection of the building fabric, structure and services</li>
+          <li>Identification and quantification of key material streams</li>
+          <li>Assessment of material condition and suitability for reuse</li>
+          <li>Photography of all significant material streams</li>
+        </ul>
+      </div>
+      <div class="split-right">
+        <div class="sub-head">Stakeholder Engagement</div>
+        <ul class="blist">
+          <li>Interviews with building manager and facilities management team</li>
+          <li>Engagement with demolition contractors to understand sequencing</li>
+          <li>Consultation with local reuse organisations and salvage dealers</li>
+          <li>Engagement with the design team regarding new build specification</li>
+        </ul>
+        <div class="info-box" style="margin-top:5mm;">
+          <p><b>Hazardous Materials:</b> The presence of asbestos or other hazardous materials can significantly affect the viability of material reuse. All identified hazardous materials have been noted within this report and should be appropriately managed prior to any demolition or stripping works.</p>
+        </div>
+        <div class="green-box" style="margin-top:3mm;">
+          <p><b>Key Finding:</b> Early investigations for this project at {{ data.job_address }} identified {{ data.kwp_materials|length }} key material streams with significant reuse and recycling potential, representing a total estimated mass of {{ '%.1f'|format(data.total_weight) }} tonnes.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 13 — PATHWAYS FOR REUSE
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(13) }}
+  <div class="pg-body">
+    <div class="pg-title">Pathways for Material Reuse</div>
+    <p class="body-text" style="margin-bottom:3mm;">Material reuse — the direct use of salvaged components in new applications without significant reprocessing — is the preferred disposal route for most material streams. The following pathways have been identified for materials encountered in pre-demolition audits.</p>
+    <table class="std-table">
+      <thead>
+        <tr>
+          <th style="width:25%;">Material</th>
+          <th style="width:35%;">Primary Reuse Pathway</th>
+          <th>Potential Markets / Organisations</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in [
+          ('Structural steelwork', 'Direct reuse in new construction after inspection', 'BCSA members; specialist steel reuse companies; WRAP Exchange'),
+          ('Timber joists / beams', 'Reuse in new construction; furniture manufacture', 'Salvo; wood reuse networks; social enterprises'),
+          ('Floor tiles / coverings', 'Direct reuse in refurbishment projects', 'Architectural salvage dealers; reuse networks'),
+          ('Brickwork (whole bricks)', 'Reuse in new brickwork after cleaning', 'Reclaimed brick merchants; local contractors'),
+          ('Raised access floor tiles', 'Direct reuse in office fit-outs', 'Specialist dealers; fit-out contractors'),
+          ('Suspended ceiling tiles', 'Reuse in fit-out projects', 'Ceiling tile exchange schemes; waste brokers'),
+          ('Mechanical &amp; electrical', 'Reuse by specialist contractors', 'MEP reuse specialists; community reuse orgs'),
+          ('Furniture &amp; fittings', 'Reuse by charitable organisations', 'FRC Group; In Kind Direct; community enterprises'),
+        ] %}
+        <tr>
+          <td style="font-weight:600;color:#0d4f6c;">{{ item[0] }}</td>
+          <td>{{ item[1] }}</td>
+          <td style="color:#2e8b6e;">{{ item[2] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 14 — PATHWAYS FOR RECYCLING
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(14) }}
+  <div class="pg-body">
+    <div class="pg-title">Pathways for Recycling</div>
+    <p class="body-text" style="margin-bottom:3mm;">Where material reuse is not feasible, recycling offers the next preferred route. The UK has well-established recycling infrastructure for the majority of construction and demolition waste streams.</p>
+    <table class="std-table">
+      <thead>
+        <tr>
+          <th style="width:20%;">Material</th>
+          <th style="width:28%;">Recycling Route</th>
+          <th style="width:28%;">Output Material</th>
+          <th style="text-align:right;width:24%;">Typical Diversion Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in [
+          ('Concrete', 'Crushing and screening', 'Recycled Aggregate (RA)', '95–99%'),
+          ('Brickwork / Masonry', 'Crushing and screening', 'Recycled Aggregate / Sand', '90–95%'),
+          ('Structural Steel', 'Scrap metal recycling', 'Secondary steel', '96–99%'),
+          ('Copper / Non-ferrous', 'Scrap metal recycling', 'Secondary metals', '98–100%'),
+          ('Timber', 'Chipping and processing', 'Wood chip / biomass / panel board', '85–95%'),
+          ('Plasterboard', 'Specialist recycling', 'Recycled gypsum / new board', '85–95%'),
+          ('Glass', 'Crushing and processing', 'Recycled glass cullet', '85–95%'),
+          ('Plastics', 'Sorting and reprocessing', 'Secondary plastic materials', '60–80%'),
+          ('Insulation (non-hazardous)', 'Specialist processing', 'Recycled insulation / fill', '70–85%'),
+        ] %}
+        <tr>
+          <td style="font-weight:600;color:#0d4f6c;">{{ item[0] }}</td>
+          <td>{{ item[1] }}</td>
+          <td style="color:#2e8b6e;">{{ item[2] }}</td>
+          <td style="text-align:right;font-weight:700;">{{ item[3] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="green-box">
+      <p>The UK construction and demolition sector achieved a recycling rate of approximately 92% in recent years. The focus of this audit is on identifying higher-value reuse and recycling opportunities that retain more of the embodied energy and value of the original materials.</p>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 15 — PDA CHECKLIST
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(15) }}
+  <div class="pg-body">
+    <div class="pg-title">Pre-Demolition Audit Checklist</div>
+    <p class="body-text" style="margin-bottom:3mm;">The following checklist summarises the items assessed as part of this Pre-Demolition Audit. All items marked ✓ have been assessed and are addressed within the report findings.</p>
+    <div class="split-wrap">
+      <div class="split-left">
+        <div class="sub-head">Structure &amp; Fabric</div>
+        {% for item in ['Concrete frame / foundations', 'Structural steelwork', 'Masonry / brickwork', 'Timber structure', 'Roofing materials', 'External cladding / curtain walling', 'Windows &amp; glazing', 'Internal walls / partitions'] %}
+        <div class="cl-item"><div class="cl-tick">&#10003;</div><span>{{ item }}</span></div>
+        {% endfor %}
+        <div class="sub-head" style="margin-top:3mm;">Services &amp; Fit-Out</div>
+        {% for item in ['Raised access flooring', 'Suspended ceilings', 'Mechanical plant &amp; pipework', 'Electrical systems &amp; cabling', 'Plumbing &amp; drainage', 'Lifts &amp; escalators', 'Furniture &amp; fixtures'] %}
+        <div class="cl-item"><div class="cl-tick">&#10003;</div><span>{{ item }}</span></div>
+        {% endfor %}
+      </div>
+      <div class="split-right">
+        <div class="sub-head">Hazardous Materials</div>
+        {% for item in ['Asbestos (ACM survey)', 'Lead-based paint', 'Polychlorinated biphenyls (PCBs)', 'Refrigerants (CFCs/HCFCs)', 'Mercury-containing equipment', 'Contaminated soils'] %}
+        <div class="cl-item"><div class="cl-tick">&#10003;</div><span>{{ item }}</span></div>
+        {% endfor %}
+        <div class="sub-head" style="margin-top:3mm;">Documentation Review</div>
+        {% for item in ['Original construction drawings', 'As-built specifications', 'Previous survey reports', 'Asbestos management plan', 'Planning conditions', 'Historic planning records'] %}
+        <div class="cl-item"><div class="cl-tick">&#10003;</div><span>{{ item }}</span></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 16 — STRATEGIC APPROACH
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(16) }}
+  <div class="pg-body">
+    <div class="pg-title">Strategic Approach to Waste Management</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <p class="body-text">The strategic approach to waste management for this project is built around three core principles: maximising material diversion from landfill, minimising embodied carbon impacts, and contributing to local circular economy goals.</p>
+        <div class="sub-head">Priority Material Streams</div>
+        <p class="body-text">Based on the findings of this audit, the following material streams have been identified as priorities due to their volume, weight, embodied carbon value, or reuse potential:</p>
+        {% if data.kwp_materials %}
+        <ol class="nlist">
+          {% for m in data.kwp_materials[:5] %}
+          <li><b>{{ m.name }}</b> — {{ '%.1f'|format(m.weight_tonnes) }} tonnes ({{ '%.1f'|format(m.pct_weight) }}%). Recommended: {% if m.reuse_pct|float > 0 %}Reuse ({{ m.reuse_pct }}%){% endif %}{% if m.recycling_pct|float > 0 %} / Recycling ({{ m.recycling_pct }}%){% endif %}.</li>
+          {% endfor %}
+        </ol>
+        {% endif %}
+      </div>
+      <div class="split-right">
+        <div class="sub-head">Supply Chain Engagement</div>
+        <p class="body-text">Early engagement with the demolition contractor and waste management supply chain is essential to realising the diversion targets identified in this report. We recommend that the project team:</p>
+        <ul class="blist">
+          <li>Include waste diversion targets as a key criterion in demolition contractor selection</li>
+          <li>Require monthly waste reporting from the demolition contractor against agreed KPIs</li>
+          <li>Engage specialist salvage contractors for high-value material streams (steel, timber, M&amp;E)</li>
+          <li>Explore opportunities with local social enterprises and community reuse organisations</li>
+        </ul>
+        <div class="info-box" style="margin-top:4mm;">
+          <p><b>Target:</b> A minimum of {{ data.diversion_target or '95' }}% diversion of all demolition waste from landfill by weight is recommended for this project, consistent with industry best practice and BREEAM requirements.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 17 — CE COMMITMENTS
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(17) }}
+  <div class="pg-body">
+    <div class="pg-title">Circular Economy Commitments</div>
+    <p class="body-text" style="margin-bottom:4mm;">The following Circular Economy Commitments have been identified for this project and should be embedded within the project's Site Waste Management Plan and monitored throughout the demolition and construction phases.</p>
+    {% set commitments = [
+      ('CE Commitment 1', 'Complete a Pre-Demolition Audit and issue findings to the project team prior to demolition', 'Complete'),
+      ('CE Commitment 2', 'Achieve a minimum 95% diversion of demolition waste from landfill by weight', 'Target'),
+      ('CE Commitment 3', 'Identify and pursue reuse opportunities for all high-value material streams', 'In Progress'),
+      ('CE Commitment 4', 'Appoint a dedicated waste management contractor with demonstrable CE experience', 'To Action'),
+      ('CE Commitment 5', 'Implement a Site Waste Management Plan and report monthly against KPIs', 'To Action'),
+      ('CE Commitment 6', 'Develop a Material Passport for the new development', 'To Action'),
+      ('CE Commitment 7', 'Specify a minimum of 25% recycled content in all new structural materials', 'To Action'),
+      ('CE Commitment 8', 'Engage with local social enterprises and community reuse organisations', 'To Action'),
+      ('CE Commitment 9', 'Report on waste diversion rates achieved at project completion', 'To Action'),
+    ] %}
+    {% for title, text, status in commitments %}
+    <div class="cl-item" style="padding:1.5mm 0;">
+      <div class="cl-tick" style="border-color:{% if status == 'Complete' %}#6eb840{% elif status == 'In Progress' %}#e8a838{% else %}#0d4f6c{% endif %};color:{% if status == 'Complete' %}#6eb840{% elif status == 'In Progress' %}#e8a838{% else %}#cccccc{% endif %};">
+        {% if status == 'Complete' %}&#10003;{% elif status == 'In Progress' %}&#8594;{% else %}&#9675;{% endif %}
+      </div>
+      <div>
+        <span style="font-weight:700;color:#0d4f6c;">{{ title }}: </span>{{ text }}
+        <span style="font-size:7pt;font-weight:700;color:{% if status == 'Complete' %}#6eb840{% elif status == 'In Progress' %}#e8a838{% else %}#aaaaaa{% endif %};margin-left:2mm;">[{{ status }}]</span>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 18 — IMPLEMENTATION STRATEGY
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(18) }}
+  <div class="pg-body">
+    <div class="pg-title">Implementation Strategy</div>
+    <p class="body-text" style="margin-bottom:3mm;">The following implementation strategy sets out the recommended sequence of actions for managing waste arising from the demolition or refurbishment of the building.</p>
+    <table class="std-table">
+      <thead>
+        <tr>
+          <th style="width:18%;">Phase</th>
+          <th style="width:28%;">Action</th>
+          <th>Description</th>
+          <th style="width:18%;">Responsible</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for row in [
+          ('Pre-Demolition', 'Appoint specialists', 'Appoint specialist salvage contractors for high-value streams (steel, timber, M&E). Engage reuse organisations.', 'Client / PM'),
+          ('Pre-Demolition', 'Soft strip programme', 'Prepare a detailed soft strip programme identifying the sequence and method for removing salvageable materials.', 'Demo Contractor'),
+          ('Pre-Demolition', 'Hazardous materials', 'Ensure all ACMs and hazardous materials are removed by licensed contractors prior to main works.', 'Asbestos Contractor'),
+          ('Demolition', 'Soft strip works', 'Remove all salvageable and recyclable materials carefully. Segregate on site into identified waste streams.', 'Demo Contractor'),
+          ('Demolition', 'Structural demolition', 'Demolish structure using careful deconstruction methods to maximise recovery of materials.', 'Demo Contractor'),
+          ('Demolition', 'Waste monitoring', 'Record all waste arisings by material type and weight. Issue monthly reports to the project team.', 'Waste Manager'),
+          ('Post-Demolition', 'Diversion reporting', 'Compile final waste management report recording total arisings and diversion rates achieved against targets.', 'Waste Manager / Lawmens'),
+        ] %}
+        <tr>
+          <td style="font-weight:700;color:#7dc242;font-size:7.5pt;">{{ row[0] }}</td>
+          <td style="font-weight:600;">{{ row[1] }}</td>
+          <td>{{ row[2] }}</td>
+          <td style="color:#0d4f6c;font-size:7.5pt;">{{ row[3] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   PAGE 19 — METHODOLOGY
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(19) }}
+  <div class="pg-body">
+    <div class="pg-title">Methodology</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <p class="body-text">This Pre-Demolition Audit has been prepared by Lawmens using a combination of desk-based research, site investigation, and stakeholder consultation. The methodology has been developed in accordance with BS 5502, WRAP's guidance on pre-demolition auditing, and BREEAM UK assessment requirements.</p>
+        <div class="sub-head">Data Collection</div>
+        <p class="body-text">Material quantities have been estimated from a combination of available drawings, specifications, and visual assessment during site visits. Where quantities could not be determined from drawings, standard conversion factors from the RICS and BRE Digest have been applied. All estimates should be treated as indicative.</p>
+        <div class="sub-head">Carbon Factors</div>
+        <p class="body-text">Embodied carbon factors used in this report are taken from the Inventory of Carbon and Energy (ICE) database (University of Bath) and the WRAP embodied carbon database. Figures represent Scope A1–A3 embodied carbon (cradle to gate).</p>
+      </div>
+      <div class="split-right">
+        <div class="sub-head">Limitations</div>
+        <div class="info-box">
+          <p>This audit is based on visual inspection and available information at the time of survey. Concealed materials have been estimated based on drawings and general building type. The presence of asbestos or other hazardous materials may affect the viability of material reuse — a full asbestos survey should be completed prior to any deconstruction works. All quantities are indicative and may vary from actual arisings.</p>
+        </div>
+        <div class="sub-head" style="margin-top:3mm;">Assumptions</div>
+        <ul class="blist">
+          <li>Weights have been calculated using standard bulk density figures from CIRIA and WRAP.</li>
+          <li>Volume estimates are based on dimension take-offs from available drawings.</li>
+          <li>Diversion rates are indicative targets based on current market conditions.</li>
+          <li>Carbon factors represent industry averages and actual factors may vary depending on material specification and origin.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   FLOOR PLANS (dynamic)
+═══════════════════════════════════════════════════════════════ #}
+{% for fp in data.floor_plans %}
+<div class="page">
+  {{ page_ref(20 + loop.index0) }}
+  <div class="pg-body">
+    <div class="pg-title" style="font-size:18pt;">Floor Plan — {{ fp.name }}</div>
+    {% if fp.image %}
+      <img src="{{ fp.image }}" class="fp-img" alt="{{ fp.name }}">
+    {% else %}
+      <div style="width:100%;height:145mm;background:#f5f5f5;border:0.5pt solid #dddddd;display:flex;align-items:center;justify-content:center;color:#888;font-size:11pt;">No image uploaded</div>
+    {% endif %}
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+{% endfor %}
+
+
+{# ═══════════════════════════════════════════════════════════════
+   KWP FINDINGS TABLE
+═══════════════════════════════════════════════════════════════ #}
+{% set fp_offset = data.floor_plans|length %}
+<div class="page">
+  {{ page_ref(20 + fp_offset) }}
+  <div class="pg-body">
+    <div class="pg-title">Pre-demolition Audit Findings</div>
+    <p class="body-text" style="margin-bottom:3mm;">The table below presents all key waste products identified within the building, together with estimated volumes, weights, embodied carbon data, and recommended diversion routes.</p>
+    <table class="kwp-table">
+      <thead>
+        <tr>
+          <th>Material</th>
+          <th>EWC Code</th>
+          <th class="n">Vol (m³)</th>
+          <th class="n">Weight (t)</th>
+          <th class="n">% Wt</th>
+          <th class="n">CF (kgCO₂/kg)</th>
+          <th>Source</th>
+          <th class="n">A1–A3 (tCO₂e)</th>
+          <th class="n">Re-Use %</th>
+          <th class="n">Recycle %</th>
+          <th class="n">Landfill %</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in data.kwp_materials %}
+        <tr>
+          <td style="font-weight:600;">{{ m.name }}</td>
+          <td>{{ m.ewc_code }}</td>
+          <td class="n">{{ '%.1f'|format(m.volume_m3) }}</td>
+          <td class="n">{{ '%.1f'|format(m.weight_tonnes) }}</td>
+          <td class="n">{{ '%.1f'|format(m.pct_weight) }}%</td>
+          <td class="n">{{ m.carbon_factor }}</td>
+          <td>{{ m.source }}</td>
+          <td class="n">{{ '%.1f'|format(m.embodied_carbon|float) if m.embodied_carbon else '—' }}</td>
+          <td class="n" style="color:#27ae60;font-weight:700;">{{ m.reuse_pct }}%</td>
+          <td class="n" style="color:#0d4f6c;font-weight:700;">{{ m.recycling_pct }}%</td>
+          <td class="n" style="color:#cc3333;font-weight:700;">{{ m.landfill_pct }}%</td>
+        </tr>
+        {% endfor %}
+        <tr style="background:#d6eaf8;font-weight:700;">
+          <td>TOTAL</td>
+          <td></td>
+          <td class="n">{{ '%.1f'|format(data.total_volume) }}</td>
+          <td class="n">{{ '%.1f'|format(data.total_weight) }}</td>
+          <td class="n">100%</td>
+          <td></td>
+          <td></td>
+          <td class="n">{{ '%.1f'|format(data.total_carbon) }}</td>
+          <td></td><td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+
+    {# KWP Charts inline on same page #}
+    {% if data.kwp_chart_volume or data.kwp_chart_weight %}
+    <div class="two-col" style="margin-top:3mm;">
+      {% if data.kwp_chart_volume %}
+      <div class="c">
+        <div style="font-size:8pt;font-weight:700;color:#0d4f6c;margin-bottom:1mm;text-align:center;">By Volume (m³)</div>
+        <div class="chart-wrap"><img src="{{ data.kwp_chart_volume }}" class="chart-img" style="max-height:50mm;" alt="Volume chart"></div>
+      </div>
+      {% endif %}
+      {% if data.kwp_chart_weight %}
+      <div class="c" style="margin-left:7mm;">
+        <div style="font-size:8pt;font-weight:700;color:#0d4f6c;margin-bottom:1mm;text-align:center;">By Weight (tonnes)</div>
+        <div class="chart-wrap"><img src="{{ data.kwp_chart_weight }}" class="chart-img" style="max-height:50mm;" alt="Weight chart"></div>
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   CONCLUSION & RECOMMENDATIONS
+═══════════════════════════════════════════════════════════════ #}
+<div class="page">
+  {{ page_ref(21 + fp_offset) }}
+  <div class="pg-body">
+    <div class="pg-title">Conclusion and Recommendations</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        {% if data.conclusion_text %}
+          {% for para in data.conclusion_text.split('\n\n') %}
+            <p class="body-text">{{ para }}</p>
+          {% endfor %}
+        {% else %}
+          <p class="body-text">This Pre-Demolition Audit has identified and characterised {{ data.kwp_materials|length }} key material streams within the building at {{ data.job_address }}, representing a total estimated mass of {{ '%.1f'|format(data.total_weight) }} tonnes.</p>
+          <p class="body-text">The audit demonstrates that with appropriate planning and contractor engagement, a significant proportion of these materials can be diverted from landfill through reuse and recycling.</p>
+          <p class="body-text">The priority material streams identified in this audit should be the focus of early engagement with the demolition contractor and waste management supply chain.</p>
+          <p class="body-text">Lawmens is available to provide ongoing support to the project team through the demolition phase, including waste management contractor procurement advice, monitoring of waste performance against KPIs, and preparation of the final waste management report at project completion.</p>
+        {% endif %}
+
+        <div class="sub-head" style="margin-top:3mm;">Key Recommendations</div>
+        <ol class="nlist">
+          <li>Commission a full asbestos re-inspection survey prior to any deconstruction works commencing.</li>
+          <li>Appoint a specialist soft strip contractor with demonstrable experience of material salvage and reuse.</li>
+          <li>Engage with reuse markets and social enterprises at least 8 weeks before demolition begins.</li>
+          <li>Include waste diversion targets (minimum 95% by weight) as a mandatory KPI in demolition contracts.</li>
+          <li>Implement a Site Waste Management Plan and report monthly against agreed KPIs.</li>
+        </ol>
+      </div>
+      <div class="split-right">
+        {# Stat boxes #}
+        <div style="display:flex;margin-bottom:5mm;">
+          <div class="stat-box" style="background:#f0f7fc;border-color:#5ba3c9;">
+            <div class="stat-num">{{ '%.0f'|format(data.total_weight) }}t</div>
+            <div class="stat-lbl">Total Waste Identified</div>
+          </div>
+          <div class="stat-box" style="margin-left:4mm;background:#f2faea;border-color:#7dc242;">
+            <div class="stat-num" style="color:#7dc242;">{{ data.kwp_materials|length }}</div>
+            <div class="stat-lbl">Key Waste Products</div>
+          </div>
+          {% set total_div = namespace(v=0) %}
+          {% for m in data.kwp_materials %}{% set total_div.v = total_div.v + m.weight_tonnes * (m.reuse_pct|float + m.recycling_pct|float) / 100 %}{% endfor %}
+          <div class="stat-box" style="margin-left:4mm;background:#fff9f0;border-color:#e8a838;">
+            <div class="stat-num" style="color:#e8a838;">{% if data.total_weight > 0 %}{{ '%.0f'|format(total_div.v / data.total_weight * 100) }}%{% else %}—{% endif %}</div>
+            <div class="stat-lbl">Estimated Diversion</div>
+          </div>
+        </div>
+
+        {# Items for Reuse table #}
+        <div style="font-size:9pt;font-weight:700;color:#0d4f6c;margin-bottom:2mm;">Items for Re-Use &amp; Recycling</div>
+        <table class="reuse-table">
+          <thead>
+            <tr>
+              <th>Material</th>
+              <th class="n">Weight (t)</th>
+              <th class="n">Re-Use %</th>
+              <th class="n">Recycle %</th>
+              <th class="n">Landfill %</th>
+              <th class="n">Diverted (t)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for m in data.kwp_materials %}
+            {% set diverted = m.weight_tonnes * (m.reuse_pct|float + m.recycling_pct|float) / 100 %}
+            <tr>
+              <td style="font-weight:600;">{{ m.name }}</td>
+              <td class="n">{{ '%.1f'|format(m.weight_tonnes) }}</td>
+              <td class="n" style="color:#27ae60;font-weight:700;">{{ m.reuse_pct }}%</td>
+              <td class="n" style="color:#0d4f6c;font-weight:700;">{{ m.recycling_pct }}%</td>
+              <td class="n" style="color:#cc3333;font-weight:700;">{{ m.landfill_pct }}%</td>
+              <td class="n" style="font-weight:700;">{{ '%.1f'|format(diverted) }}</td>
+            </tr>
+            {% endfor %}
+            {% set total_diverted = namespace(v=0) %}
+            {% for m in data.kwp_materials %}{% set total_diverted.v = total_diverted.v + m.weight_tonnes * (m.reuse_pct|float + m.recycling_pct|float) / 100 %}{% endfor %}
+            <tr style="background:#d6eaf8;font-weight:700;">
+              <td>TOTAL</td>
+              <td class="n">{{ '%.1f'|format(data.total_weight) }}</td>
+              <td colspan="3"></td>
+              <td class="n">{{ '%.1f'|format(total_diverted.v) }}</td>
+            </tr>
+          </tbody>
+        </table>
+
+        {% if data.carbon_bar_chart %}
+        <div style="font-size:8pt;font-weight:700;color:#0d4f6c;margin:3mm 0 1mm;">A1–A3 Embodied Carbon by Material (tCO₂e)</div>
+        <div class="chart-wrap"><img src="{{ data.carbon_bar_chart }}" class="chart-img" style="max-height:35mm;" alt="Carbon chart"></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+
+{# ═══════════════════════════════════════════════════════════════
+   MATERIAL REUSE SECTION
+═══════════════════════════════════════════════════════════════ #}
+{% if data.reuse_items %}
+
+{# Reuse intro page #}
+<div class="page">
+  {{ page_ref(22 + fp_offset) }}
+  <div class="pg-body">
+    <div class="pg-title">Material Reuse</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <p class="body-text">This section of the report provides a detailed assessment of each material identified as having reuse potential. For each material, we have assessed the reuse potential, provided a description of the material's condition and quantity, and identified the key risk factors that may affect its viability for reuse.</p>
+        <p class="body-text">The assessments contained within this section should be used by the project team and demolition contractor to prioritise their efforts during the soft strip programme, focusing resources on materials with the highest reuse potential and the most established market routes.</p>
+        <div class="sub-head">Reuse Potential Rating Scale</div>
+        <table class="std-table">
+          <tr><td style="width:18%;"><span class="badge-h">HIGH</span></td><td>Material is in good condition and there is an established market for reuse. Salvage is recommended as a priority action.</td></tr>
+          <tr><td><span class="badge-m">MEDIUM</span></td><td>Some reuse potential exists but may require pre-treatment, cleaning or a more targeted approach to market identification.</td></tr>
+          <tr><td><span class="badge-l">LOW</span></td><td>Limited reuse potential due to condition, contamination, or lack of established market routes. Recycling is the preferred alternative.</td></tr>
+        </table>
+      </div>
+      <div class="split-right">
+        <div class="sub-head">Materials Identified for Reuse</div>
+        {% for item in data.reuse_items %}
+        <div style="padding:2mm 0;border-bottom:0.3pt solid #eeeeee;display:flex;align-items:center;">
+          <span style="font-size:8.5pt;font-weight:700;color:#0d4f6c;flex:1;">{{ item.name }}</span>
+          <span>
+            {% if item.reuse_potential|lower == 'high' %}<span class="badge-h">HIGH</span>
+            {% elif item.reuse_potential|lower == 'medium' %}<span class="badge-m">MEDIUM</span>
+            {% else %}<span class="badge-l">LOW</span>{% endif %}
+          </span>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+
+{# Individual reuse item pages #}
+{% for item in data.reuse_items %}
+<div class="page">
+  {{ page_ref(23 + fp_offset + loop.index0) }}
+  <div class="pg-body">
+    <div class="pg-title" style="font-size:18pt;margin-bottom:3mm;">{{ item.name }}</div>
+    <div class="split-wrap">
+      <div class="split-left">
+        <div style="margin-bottom:3mm;">
+          {% if item.reuse_potential|lower == 'high' %}<span class="badge-h">HIGH REUSE POTENTIAL</span>
+          {% elif item.reuse_potential|lower == 'medium' %}<span class="badge-m">MEDIUM REUSE POTENTIAL</span>
+          {% else %}<span class="badge-l">LOW REUSE POTENTIAL</span>{% endif %}
+        </div>
+        {% if item.description %}
+          <p class="body-text">{{ item.description }}</p>
+        {% endif %}
+        <table class="std-table" style="margin-top:3mm;">
+          <tr><td style="background:#f5f5f5;font-weight:600;width:35%;font-size:7.5pt;">Quantity</td><td style="font-size:7.5pt;">{{ item.quantity or '—' }}</td></tr>
+          <tr><td style="background:#f5f5f5;font-weight:600;font-size:7.5pt;">Condition</td><td style="font-size:7.5pt;">{{ item.condition or '—' }}</td></tr>
+          <tr><td style="background:#f5f5f5;font-weight:600;font-size:7.5pt;">Location</td><td style="font-size:7.5pt;">{{ item.location or '—' }}</td></tr>
+          <tr><td style="background:#f5f5f5;font-weight:600;font-size:7.5pt;">EWC Code</td><td style="font-size:7.5pt;">{{ item.ewc_code or '—' }}</td></tr>
+        </table>
+        {% if item.recommendation %}
+        <div class="green-box" style="margin-top:3mm;">
+          <p><b>Recommendation:</b> {{ item.recommendation }}</p>
+        </div>
+        {% endif %}
+      </div>
+      <div class="split-right">
+        {% if item.photos %}
+        <div style="display:flex;flex-wrap:wrap;">
+          {% for photo in item.photos %}
+          <img src="{{ photo }}" style="width:48%;margin:1%;border-radius:3pt;object-fit:cover;height:40mm;" alt="Photo">
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if item.risk_notes %}
+        <div class="info-box" style="margin-top:3mm;">
+          <p><b>Risk &amp; Considerations:</b> {{ item.risk_notes }}</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  {{ page_logo() }}
+  {{ stripe() }}
+</div>
+{% endfor %}
+
+{% endif %}{# end reuse_items #}
+
+</body>
+</html>
