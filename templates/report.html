@@ -77,6 +77,8 @@ body {
   top: 0; left: 0; right: 0; bottom: 7mm;
   padding: 10mm 14mm 18mm 12mm;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
 /* ── HEADINGS ───────────────────────────────────────────────── */
@@ -86,6 +88,7 @@ body {
   color: #0d4f6c;
   line-height: 1.15;
   margin-bottom: 5mm;
+  flex: 0 0 auto;
 }
 .pg-title-sm {
   font-size: 16pt;
@@ -117,23 +120,24 @@ body {
 /* ── TWO-COLUMN WITH VERTICAL DIVIDER ───────────────────────── */
 .split-wrap {
   display: flex;
-  height: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 .split-left {
   flex: 1 1 50%;
   padding-right: 6mm;
   border-right: 0.5pt solid #cccccc;
-  overflow: hidden;
+  min-width: 0;
 }
 .split-right {
   flex: 1 1 50%;
   padding-left: 6mm;
-  overflow: hidden;
+  min-width: 0;
 }
 
 /* Standard two-col no divider */
 .two-col { display: flex; }
-.two-col .c { flex: 1; }
+.two-col .c { flex: 1; min-width: 0; }
 .two-col .c + .c { margin-left: 7mm; }
 .col-40 { flex: 0 0 40%; }
 .col-60 { flex: 0 0 58%; }
