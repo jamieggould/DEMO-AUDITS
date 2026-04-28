@@ -1,14 +1,11 @@
 # FULL FINAL VERSION (CLEAN + READY)
 import os
 import io
-import json
-import time
 import base64
 import traceback
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, redirect, session, send_file
+from flask import Flask, render_template, request, jsonify, send_file
 from dotenv import load_dotenv
-import requests
 from pptx import Presentation
 from pptx.util import Inches
 
