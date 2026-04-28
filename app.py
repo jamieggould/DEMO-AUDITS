@@ -1,5 +1,4 @@
 # FULL FINAL VERSION (CLEAN + READY)
-
 import os
 import io
 import json
@@ -7,9 +6,11 @@ import time
 import base64
 import traceback
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, redirect, session
+from flask import Flask, render_template, request, jsonify, redirect, session, send_file
 from dotenv import load_dotenv
 import requests
+from pptx import Presentation
+from pptx.util import Inches
 
 load_dotenv()
 
@@ -17,12 +18,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get("SECRET_KEY", "lawmens-audit-2024")
 
 OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY")
-
-CANVA_API_BASE = "https://api.canva.com/rest/v1"
-CANVA_CLIENT_ID = os.environ.get("CANVA_CLIENT_ID")
-CANVA_CLIENT_SECRET = os.environ.get("CANVA_CLIENT_SECRET")
-CANVA_REDIRECT_URI = os.environ.get("CANVA_REDIRECT_URI")
-CANVA_TEMPLATE_ID = os.environ.get("CANVA_BRAND_TEMPLATE_ID")
+PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills.pptx")
 
 # -----------------------------
 # BASIC ROUTES
@@ -43,12 +39,10 @@ def health():
 def openai_generate(prompt):
     from openai import OpenAI
     client = OpenAI(api_key=OPENAI_API_KEY)
-
     response = client.responses.create(
         model="gpt-4o-mini",
         input=prompt
     )
-
     return response.output_text.strip()
 
 @app.route("/generate-ai-text", methods=["POST"])
@@ -70,38 +64,112 @@ def generate_ai_text():
     return jsonify({"text": text})
 
 # -----------------------------
-# CANVA AUTH
+# PPTX TEMPLATE FILLING
 # -----------------------------
 
-@app.route("/canva/connect")
-def canva_connect():
-    params = {
-        "client_id": CANVA_CLIENT_ID,
-        "redirect_uri": CANVA_REDIRECT_URI,
-        "response_type": "code",
-        "scope": "asset:write design:content:write design:content:read brandtemplate:content:read",
-    }
-    return redirect(f"https://www.canva.com/api/oauth/authorize?{requests.compat.urlencode(params)}")
+def _replace_in_paragraph(para, replacements):
+    """
+    Merges all runs in a paragraph into a single string, replaces placeholders,
+    then puts the result back into the first run and clears the rest.
+    This handles the common case where PPTX splits placeholder text across multiple runs.
+    """
+    if not para.runs:
+        return
+    full_text = ''.join(run.text for run in para.runs)
+    new_text = full_text
+    for key, value in replacements.items():
+        new_text = new_text.replace(f'{{{{{key}}}}}', str(value) if value is not None else '')
+    if new_text != full_text:
+        para.runs[0].text = new_text
+        for run in para.runs[1:]:
+            run.text = ''
 
-@app.route("/canva/callback")
-def canva_callback():
-    code = request.args.get("code")
+def _replace_in_text_frame(tf, replacements):
+    for para in tf.paragraphs:
+        _replace_in_paragraph(para, replacements)
 
-    res = requests.post(f"{CANVA_API_BASE}/oauth/token", json={
-        "grant_type": "authorization_code",
-        "code": code,
-        "client_id": CANVA_CLIENT_ID,
-        "client_secret": CANVA_CLIENT_SECRET,
-        "redirect_uri": CANVA_REDIRECT_URI,
-    })
+def _replace_in_shape(shape, replacements):
+    if shape.has_text_frame:
+        _replace_in_text_frame(shape.text_frame, replacements)
+    # Handle tables
+    if shape.has_table:
+        for row in shape.table.rows:
+            for cell in row.cells:
+                _replace_in_text_frame(cell.text_frame, replacements)
+    # Handle grouped shapes
+    if shape.shape_type == 6:  # MSO_SHAPE_TYPE.GROUP
+        for s in shape.shapes:
+            _replace_in_shape(s, replacements)
 
-    data = res.json()
-    session["canva_token"] = data.get("access_token")
+def fill_pptx_template(replacements):
+    """Load the PPTX template, replace all placeholders, return BytesIO."""
+    prs = Presentation(PPTX_TEMPLATE_PATH)
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            _replace_in_shape(shape, replacements)
+    output = io.BytesIO()
+    prs.save(output)
+    output.seek(0)
+    return output
 
-    return redirect("/")
+def build_replacements(data, report):
+    """Build the full placeholder -> value dict from form data and AI-generated text."""
 
-def get_canva_token():
-    return session.get("canva_token")
+    def g(key, default=''):
+        return _first(data, key, default)
+
+    r = {}
+
+    # ----- Core report fields -----
+    r['PROJECT_ADDRESS']               = report.get('job_address', g('job_address'))
+    r['CLIENT_NAME']                   = report.get('client_name', g('client_name'))
+    r['DATE_OF_REPORT']                = g('date_of_report', datetime.now().strftime('%d %B %Y'))
+    r['REPORT_NUMBER']                 = g('report_number')
+    r['PROJECT_WEIGHT']                = g('project_weight')
+    r['KEY_WASTE_PRODUCTS']            = g('key_waste_products')
+    r['INFORMATION_PROVIDED']          = g('information_provided')
+    r['CIRCULAR_ECONOMY_COMMITMENTS']  = g('circular_economy_commitments')
+
+    # ----- Prepared / Authorised by -----
+    r['PREPARED_BY']        = g('prepared_by')
+    r['PREPARED_BY_ROLE']   = g('prepared_by_role')
+    r['PREPARED_DATE']      = g('prepared_date')
+    r['AUTHORISED_BY']      = g('authorised_by')
+    r['AUTHORISED_BY_ROLE'] = g('authorised_by_role')
+    r['AUTHORISED_DATE']    = g('authorised_date')
+
+    # ----- AI-generated text -----
+    r['EXECUTIVE_SUMMARY'] = report.get('executive_summary', g('executive_summary'))
+
+    # ----- Materials 1-20 -----
+    # Each material has: name, EWC code, description, potential, risks,
+    # weight, weight%, volume, reuse%, carbon, embodied carbon factor
+    for i in range(1, 21):
+        n = str(i)
+        r[f'MATERIAL_{n}']             = g(f'material_{n}')
+        r[f'MATERIAL_{n}_DESCRIPTION'] = g(f'material_{n}_description')
+        r[f'MATERIAL_{n}_POTENTIAL']   = g(f'material_{n}_potential')
+        r[f'MATERIAL_{n}_RISKS']       = g(f'material_{n}_risks')
+        r[f'MATERIAL_{n}_']            = g(f'material_{n}_ewc')   # trailing underscore variant
+        r[f'MATERIAL_EWC_{n}']         = g(f'material_{n}_ewc')   # EWC 1-10 naming
+        r[f'MATERIAL_{n}_EWC']         = g(f'material_{n}_ewc')   # EWC 11-20 naming
+        r[f'MAT_{n}_WEIGH']            = g(f'mat_{n}_weigh')
+        r[f'MAT_{n}_WEIGHP']           = g(f'mat_{n}_weighp')
+        r[f'MAT_{n}_VOL']              = g(f'mat_{n}_vol')
+        r[f'MAT_{n}_REUSE']            = g(f'mat_{n}_reuse')
+        r[f'MAT_{n}_EWC']              = g(f'mat_{n}_ewc')
+        r[f'MAT_{n}_CARB']             = g(f'mat_{n}_carb')
+        r[f'MAT_{n}_ECF']              = g(f'mat_{n}_ecf')
+
+    # ----- Edge-case placeholders found in this specific template -----
+    # {{MATERIAL 10}} has a space instead of underscore
+    r['MATERIAL 10'] = g('material_10')
+    # {{MATERIAL_10_}} trailing underscore (EWC variant for material 10)
+    r['MATERIAL_10_'] = g('material_10_ewc')
+    # {{{MATERIAL_2_POTENTIAL} triple brace typo in template — handled by replacing the inner text
+    r['MATERIAL_2_POTENTIAL'] = g('material_2_potential')
+
+    return r
 
 # -----------------------------
 # MAIN REPORT GENERATION
@@ -109,85 +177,34 @@ def get_canva_token():
 
 @app.route("/generate-canva-report", methods=["POST"])
 def generate_canva_report():
-
-    token = get_canva_token()
-    if not token:
-        return jsonify({"error": "Connect Canva first"}), 401
-
     data = request.form.to_dict(flat=False)
     files = request.files
-
     report = _process_form_data(data, files)
 
     # Generate AI text automatically
     report["executive_summary"] = openai_generate(
-        f"Executive summary for demolition audit at {report['job_address']}"
+        f"Write a professional executive summary for a pre-refurbishment/demolition audit "
+        f"at {report['job_address']} for client {report['client_name']}."
     )
 
-    report["conclusion_text"] = openai_generate(
-        f"Conclusion for demolition audit with materials {report['kwp_materials']}"
+    # Build all placeholder replacements
+    replacements = build_replacements(data, report)
+
+    # Fill the PPTX template
+    try:
+        output = fill_pptx_template(replacements)
+    except Exception as e:
+        traceback.print_exc()
+        return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
+
+    # Return the filled PPTX as a downloadable file
+    filename = f"Audit_{report['job_address'].replace(' ', '_')[:40]}.pptx"
+    return send_file(
+        output,
+        mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+        as_attachment=True,
+        download_name=filename
     )
-
-    # Upload images to Canva
-    def upload_image(data_url):
-        if not data_url:
-            return ""
-
-        header, b64 = data_url.split(",", 1)
-        binary = base64.b64decode(b64)
-
-        res = requests.post(
-            f"{CANVA_API_BASE}/assets",
-            headers={"Authorization": f"Bearer {token}"},
-            files={"file": ("image.png", binary)}
-        )
-        return res.json().get("asset", {}).get("id")
-
-    report["building_photo_asset"] = upload_image(report.get("building_photo"))
-    report["chart_asset"] = upload_image(report.get("waste_diversion_chart"))
-
-    # Build Canva payload
-    payload = {
-        "PROJECT_ADDRESS": {"type": "text", "text": report["job_address"]},
-        "CLIENT_NAME": {"type": "text", "text": report["client_name"]},
-        "EXECUTIVE_SUMMARY": {"type": "text", "text": report["executive_summary"]},
-        "CONCLUSION_TEXT": {"type": "text", "text": report["conclusion_text"]},
-        "BUILDING_PHOTO": {"type": "image", "asset_id": report["building_photo_asset"]},
-        "WASTE_DIVERSION_CHART": {"type": "image", "asset_id": report["chart_asset"]},
-    }
-
-    # Create Canva design
-    res = requests.post(
-        f"{CANVA_API_BASE}/autofills",
-        headers={
-            "Authorization": f"Bearer {token}",
-            "Content-Type": "application/json"
-        },
-        json={
-            "brand_template_id": CANVA_TEMPLATE_ID,
-            "data": payload
-        }
-    )
-
-    job = res.json()
-    job_id = job["job"]["id"]
-
-    # Wait for completion
-    for _ in range(30):
-        time.sleep(2)
-        check = requests.get(
-            f"{CANVA_API_BASE}/autofills/{job_id}",
-            headers={"Authorization": f"Bearer {token}"}
-        ).json()
-
-        if check["job"]["status"] == "success":
-            design_id = check["design"]["id"]
-            break
-
-    return jsonify({
-        "success": True,
-        "design_id": design_id
-    })
 
 # -----------------------------
 # FORM PROCESSING (UNCHANGED)
@@ -205,11 +222,11 @@ def _encode_upload(file_storage):
 
 def _process_form_data(data, files):
     return {
-        "job_address": _first(data, "job_address"),
-        "client_name": _first(data, "client_name"),
-        "building_photo": _encode_upload(files.get("building_photo")),
+        "job_address":         _first(data, "job_address"),
+        "client_name":         _first(data, "client_name"),
+        "building_photo":      _encode_upload(files.get("building_photo")),
         "waste_diversion_chart": "",
-        "kwp_materials": data.get("material_name", [])
+        "kwp_materials":       data.get("material_name", [])
     }
 
 # -----------------------------
