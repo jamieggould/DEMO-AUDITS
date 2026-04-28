@@ -34,13 +34,20 @@ def health():
 # -----------------------------
 
 def openai_generate(prompt):
-    from openai import OpenAI
-    client = OpenAI(api_key=OPENAI_API_KEY)
-    response = client.responses.create(
-        model="gpt-4o-mini",
-        input=prompt
-    )
-    return response.output_text.strip()
+    """Generate text via OpenAI. Returns empty string if API key missing or call fails."""
+    if not OPENAI_API_KEY:
+        return ""
+    try:
+        from openai import OpenAI
+        client = OpenAI(api_key=OPENAI_API_KEY)
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
+        return response.choices[0].message.content.strip()
+    except Exception as e:
+        traceback.print_exc()
+        return ""
 
 @app.route("/generate-ai-text", methods=["POST"])
 def generate_ai_text():
@@ -49,15 +56,17 @@ def generate_ai_text():
     report = data.get("report_data", {})
 
     if section == "executive_summary":
-        prompt = f"Write an executive summary for a demolition audit at {report.get('job_address')}."
+        prompt = f"Write a professional executive summary for a pre-refurbishment/demolition audit at {report.get('job_address')} for client {report.get('client_name', '')}."
     elif section == "conclusion":
-        prompt = f"Write a conclusion for demolition audit with materials: {report.get('kwp_materials')}"
+        prompt = f"Write a conclusion and recommendations for a demolition audit. Materials identified: {report.get('kwp_materials')}."
     elif section == "introduction":
-        prompt = f"Write an introduction for a demolition audit at {report.get('job_address')}."
+        prompt = f"Write an introduction for a pre-refurbishment/demolition audit at {report.get('job_address')}."
     else:
         return jsonify({"error": "Unknown section"}), 400
 
     text = openai_generate(prompt)
+    if not text:
+        return jsonify({"error": "AI generation failed. Check OPENAI_API_KEY is set in your environment variables."}), 500
     return jsonify({"text": text})
 
 # -----------------------------
@@ -178,11 +187,15 @@ def generate_canva_report():
     files = request.files
     report = _process_form_data(data, files)
 
-    # Generate AI text automatically
-    report["executive_summary"] = openai_generate(
-        f"Write a professional executive summary for a pre-refurbishment/demolition audit "
-        f"at {report['job_address']} for client {report['client_name']}."
-    )
+    # Use manually entered executive summary if provided, otherwise try AI
+    manual_summary = _first(data, "executive_summary")
+    if manual_summary:
+        report["executive_summary"] = manual_summary
+    else:
+        report["executive_summary"] = openai_generate(
+            f"Write a professional executive summary for a pre-refurbishment/demolition audit "
+            f"at {report['job_address']} for client {report['client_name']}."
+        )
 
     # Build all placeholder replacements
     replacements = build_replacements(data, report)
@@ -190,6 +203,8 @@ def generate_canva_report():
     # Fill the PPTX template
     try:
         output = fill_pptx_template(replacements)
+    except FileNotFoundError:
+        return jsonify({"error": f"Template file '{PPTX_TEMPLATE_PATH}' not found on server. Make sure Savills.pptx is committed to your repo."}), 500
     except Exception as e:
         traceback.print_exc()
         return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
