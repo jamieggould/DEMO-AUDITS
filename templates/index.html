@@ -4,223 +4,823 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pre-Demolition Audit Generator — Lawmens</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --teal: #0d4f6c;
-    --teal-light: #1a6a8a;
-    --green: #2e8b6e;
-    --blue-mid: #5ba3c9;
-    --blue-light: #d6eaf8;
-    --amber: #e8a838;
-    --bg: #f0f4f7;
-    --card: #ffffff;
-    --border: #ccd8e0;
-    --text: #1a2a35;
-    --muted: #6b8096;
-    --danger: #c0392b;
-    --success: #27ae60;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+/* ─────────────────────────────────────────────
+   TOKENS
+───────────────────────────────────────────── */
+:root {
+  --navy:       #0b1f35;
+  --navy-2:     #112843;
+  --navy-3:     #1a3a5c;
+  --accent:     #00c37c;
+  --accent-dim: #00a568;
+  --accent-glow:rgba(0,195,124,0.18);
+  --sky:        #0ea5e9;
+  --amber:      #f59e0b;
+  --danger:     #ef4444;
+  --bg:         #f0f4f8;
+  --surface:    #ffffff;
+  --surface-2:  #f8fafc;
+  --border:     #e2e8f0;
+  --border-2:   #cbd5e1;
+  --text:       #0f1e2e;
+  --text-2:     #334155;
+  --muted:      #64748b;
+  --muted-2:    #94a3b8;
+  --radius:     14px;
+  --radius-sm:  8px;
+  --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow:     0 4px 16px rgba(11,31,53,.08), 0 1px 4px rgba(11,31,53,.04);
+  --shadow-lg:  0 12px 40px rgba(11,31,53,.12), 0 4px 12px rgba(11,31,53,.06);
+  --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
+}
 
-  /* ── Header ────────────────────────────────────────────── */
-  .app-header {
-    background: var(--teal); padding: 0 32px; height: 60px;
-    display: flex; align-items: center; justify-content: space-between;
-    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-  }
-  .app-header h1 { color: white; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; }
-  .header-badge { background: var(--amber); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+/* ─────────────────────────────────────────────
+   RESET
+───────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  font-size: 14px;
+  line-height: 1.5;
+}
 
-  /* ── Step bar ──────────────────────────────────────────── */
-  .step-bar { background: var(--teal-light); padding: 12px 32px; display: flex; gap: 4px; overflow-x: auto; }
-  .step-pill {
-    flex: 1; min-width: 70px; background: rgba(255,255,255,0.15); border-radius: 20px;
-    padding: 6px 10px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.6);
-    cursor: pointer; transition: all 0.2s; white-space: nowrap; border: 1px solid transparent;
-  }
-  .step-pill.active { background: white; color: var(--teal); font-weight: 700; border-color: var(--teal); }
-  .step-pill.done { background: var(--green); color: white; font-weight: 600; }
+/* ─────────────────────────────────────────────
+   HEADER
+───────────────────────────────────────────── */
+.app-header {
+  background: var(--navy);
+  height: 64px;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 200;
+  box-shadow: 0 1px 0 rgba(255,255,255,.06), 0 4px 24px rgba(0,0,0,.3);
+}
+.app-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--sky));
+}
+.header-left { display: flex; align-items: center; gap: 14px; }
+.header-logo {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg, var(--accent), var(--sky));
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.app-header h1 {
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.2px;
+}
+.app-header h1 span { color: var(--muted-2); font-weight: 400; }
+.header-badge {
+  background: rgba(0,195,124,.15);
+  color: var(--accent);
+  font-size: 10px;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(0,195,124,.3);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
 
-  /* ── Layout ────────────────────────────────────────────── */
-  .main-wrap { max-width: 960px; margin: 32px auto; padding: 0 20px 80px; }
-  .step-panel { display: none; }
-  .step-panel.active { display: block; }
-  .panel-card { background: var(--card); border-radius: 12px; box-shadow: 0 2px 12px rgba(13,79,108,0.10); overflow: hidden; margin-bottom: 24px; }
-  .panel-head { background: linear-gradient(135deg, var(--teal), var(--teal-light)); padding: 20px 28px; }
-  .panel-head h2 { color: white; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
-  .panel-head p { color: rgba(255,255,255,0.75); font-size: 13px; }
-  .panel-body { padding: 28px; }
+/* ─────────────────────────────────────────────
+   STEP PROGRESS BAR
+───────────────────────────────────────────── */
+.step-bar {
+  background: var(--navy-2);
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  border-bottom: 1px solid rgba(255,255,255,.06);
+  scrollbar-width: none;
+}
+.step-bar::-webkit-scrollbar { display: none; }
+.step-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 14px;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--muted);
+  cursor: pointer;
+  white-space: nowrap;
+  position: relative;
+  transition: color var(--transition);
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  letter-spacing: 0.1px;
+}
+.step-pill .sp-num {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,.08);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+.step-pill:hover { color: #fff; }
+.step-pill.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+  font-weight: 600;
+}
+.step-pill.active .sp-num {
+  background: var(--accent);
+  color: var(--navy);
+}
+.step-pill.done { color: rgba(255,255,255,.5); }
+.step-pill.done .sp-num {
+  background: rgba(0,195,124,.25);
+  color: var(--accent);
+}
+.step-pill.done .sp-num::after { content: '✓'; }
+.step-pill.done .sp-label { display: none; }
 
-  /* ── Form elements ─────────────────────────────────────── */
-  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-  .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .form-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-  .form-grid.full { grid-template-columns: 1fr; }
-  .span-2 { grid-column: span 2; }
-  .span-3 { grid-column: span 3; }
-  .span-4 { grid-column: span 4; }
-  .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label { font-size: 12px; font-weight: 600; color: var(--teal); text-transform: uppercase; letter-spacing: 0.4px; }
-  .form-group input, .form-group select, .form-group textarea {
-    border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px;
-    font-size: 14px; font-family: inherit; color: var(--text); background: #fafcfe;
-    transition: border-color 0.2s, box-shadow 0.2s;
-  }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
-    outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,79,108,0.10); background: white;
-  }
-  .form-group textarea { resize: vertical; min-height: 90px; }
+/* ─────────────────────────────────────────────
+   LAYOUT
+───────────────────────────────────────────── */
+.main-wrap {
+  max-width: 980px;
+  margin: 36px auto;
+  padding: 0 24px 100px;
+}
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: fadeUp .28s ease both; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
 
-  /* ── Upload zones ──────────────────────────────────────── */
-  .upload-zone {
-    border: 2px dashed var(--border); border-radius: 10px; padding: 20px;
-    text-align: center; cursor: pointer; transition: all 0.2s; background: #fafcfe; position: relative;
-  }
-  .upload-zone:hover { border-color: var(--teal); background: var(--blue-light); }
-  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
-  .upload-zone .uz-icon { font-size: 28px; margin-bottom: 6px; }
-  .upload-zone .uz-label { font-size: 13px; color: var(--muted); }
-  .upload-zone .uz-hint { font-size: 11px; color: var(--blue-mid); margin-top: 4px; }
-  .upload-zone.has-file { border-color: var(--green); background: #f0fff6; }
-  .preview-thumb { max-width: 120px; max-height: 80px; border-radius: 6px; margin-top: 8px; object-fit: cover; border: 2px solid var(--green); }
+/* ─────────────────────────────────────────────
+   CARDS
+───────────────────────────────────────────── */
+.panel-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+.panel-head {
+  padding: 24px 32px 22px;
+  background: var(--navy);
+  position: relative;
+  overflow: hidden;
+}
+.panel-head::before {
+  content: '';
+  position: absolute;
+  top: -40px; right: -40px;
+  width: 180px; height: 180px;
+  background: radial-gradient(circle, rgba(0,195,124,.12) 0%, transparent 70%);
+  pointer-events: none;
+}
+.panel-head::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent) 0%, var(--sky) 60%, transparent 100%);
+  opacity: 0.4;
+}
+.panel-head h2 {
+  color: #fff;
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.4px;
+  margin-bottom: 4px;
+}
+.panel-head p { color: rgba(255,255,255,.5); font-size: 13px; font-weight: 400; }
+.panel-head .ph-step {
+  position: absolute;
+  top: 20px; right: 28px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent);
+  background: var(--accent-glow);
+  padding: 4px 10px;
+  border-radius: 20px;
+  border: 1px solid rgba(0,195,124,.25);
+  letter-spacing: 0.4px;
+}
+.panel-body { padding: 28px 32px; }
 
-  /* ── Staff cards ────────────────────────────────────────── */
-  .staff-card { background: var(--blue-light); border-radius: 10px; padding: 20px; border: 1px solid var(--border); }
-  .staff-card h3 { color: var(--teal); font-size: 14px; font-weight: 700; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.4px; }
+/* ─────────────────────────────────────────────
+   FORM ELEMENTS
+───────────────────────────────────────────── */
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
+.form-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+.form-grid.full   { grid-template-columns: 1fr; }
+.span-2 { grid-column: span 2; }
+.span-3 { grid-column: span 3; }
+.span-4 { grid-column: span 4; }
 
-  /* ── Spec photo grid ───────────────────────────────────── */
-  .spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
-  .spec-card { background: #fafcfe; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px; }
-  .spec-card label { font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; display: block; margin-bottom: 8px; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-group label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+}
+.form-group input,
+.form-group select,
+.form-group textarea {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 13px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--surface-2);
+  transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
+  outline: none;
+  font-weight: 400;
+  -webkit-appearance: none;
+}
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-glow);
+  background: #fff;
+}
+.form-group input::placeholder,
+.form-group textarea::placeholder { color: var(--muted-2); }
+.form-group textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
+.form-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+  cursor: pointer;
+}
 
-  /* ── Calculator table ──────────────────────────────────── */
-  .calc-section { margin-bottom: 24px; }
-  .calc-section-title {
-    background: var(--teal); color: white; padding: 10px 16px; border-radius: 8px 8px 0 0;
-    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
-    display: flex; justify-content: space-between; align-items: center;
-  }
-  .calc-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; }
-  .calc-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 500px; }
-  .calc-table th { background: #e8f4fb; color: var(--teal); padding: 8px 8px; text-align: left; font-size: 11px; font-weight: 700; border-bottom: 1px solid var(--border); }
-  .calc-table td { padding: 5px 4px; border-bottom: 1px solid #eef2f5; }
-  .calc-table tr:last-child td { border-bottom: none; }
-  .calc-table td:first-child { padding-left: 12px; color: var(--text); font-size: 12px; white-space: nowrap; }
-  .calc-table input[type="number"] {
-    border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px;
-    font-size: 12px; width: 80px; background: #fafcfe; text-align: right;
-  }
-  .calc-table input[type="number"]:focus { outline: none; border-color: var(--teal); background: white; }
-  .calc-table .unit { color: var(--muted); font-size: 11px; padding-left: 4px; }
-  .calc-totals { background: #e8f4fb; border-top: 2px solid var(--teal); }
-  .calc-totals td { font-weight: 700; color: var(--teal); padding: 8px 8px; }
+/* ─────────────────────────────────────────────
+   SECTION DIVIDER
+───────────────────────────────────────────── */
+.section-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 26px 0 18px;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+.section-divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
 
-  /* ── KWP materials table ────────────────────────────────── */
-  .material-table-wrap { overflow-x: auto; }
-  .material-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 920px; }
-  .material-table th { background: var(--teal); color: white; padding: 10px 8px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; }
-  .material-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
-  .material-table input, .material-table select { border: 1px solid var(--border); border-radius: 5px; padding: 5px 7px; font-size: 12px; width: 100%; background: #fafcfe; }
-  .material-table input:focus, .material-table select:focus { outline: none; border-color: var(--teal); background: white; }
-  .btn-delete-row { background: none; border: none; color: var(--danger); font-size: 18px; cursor: pointer; padding: 4px; }
-  .btn-add-row { margin-top: 12px; background: var(--teal); color: white; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
-  .btn-add-row:hover { background: var(--teal-light); }
+/* ─────────────────────────────────────────────
+   UPLOAD ZONES
+───────────────────────────────────────────── */
+.upload-zone {
+  border: 1.5px dashed var(--border-2);
+  border-radius: var(--radius-sm);
+  padding: 22px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all var(--transition);
+  background: var(--surface-2);
+  position: relative;
+}
+.upload-zone:hover {
+  border-color: var(--accent);
+  background: rgba(0,195,124,.04);
+}
+.upload-zone input[type="file"] {
+  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+}
+.upload-zone .uz-icon {
+  font-size: 26px;
+  margin-bottom: 7px;
+  display: block;
+  filter: grayscale(0.3);
+}
+.upload-zone .uz-label {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--text-2);
+  display: block;
+  margin-bottom: 3px;
+}
+.upload-zone .uz-hint {
+  font-size: 11px;
+  color: var(--muted-2);
+}
+.upload-zone.has-file {
+  border-color: var(--accent);
+  background: rgba(0,195,124,.05);
+  border-style: solid;
+}
+.upload-zone.has-file .uz-label { color: var(--accent); }
+.preview-thumb {
+  max-width: 110px;
+  max-height: 72px;
+  border-radius: 6px;
+  margin-top: 10px;
+  object-fit: cover;
+  border: 2px solid var(--accent);
+  box-shadow: 0 2px 8px rgba(0,195,124,.2);
+}
 
-  /* ── Reuse items ────────────────────────────────────────── */
-  .reuse-item { border: 1.5px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; background: #fafcfe; }
-  .reuse-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
-  .reuse-item-number { background: var(--teal); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+/* ─────────────────────────────────────────────
+   STAFF CARDS
+───────────────────────────────────────────── */
+.staff-card {
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  padding: 22px;
+  border: 1.5px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+.staff-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0;
+  width: 3px; height: 100%;
+  background: linear-gradient(180deg, var(--accent), var(--sky));
+  border-radius: 3px 0 0 3px;
+}
+.staff-card h3 {
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
 
-  /* ── Buttons ────────────────────────────────────────────── */
-  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
-  .btn-primary { background: var(--teal); color: white; }
-  .btn-primary:hover { background: var(--teal-light); }
-  .btn-secondary { background: white; color: var(--teal); border: 2px solid var(--teal); }
-  .btn-secondary:hover { background: var(--blue-light); }
-  .btn-success { background: var(--green); color: white; }
-  .btn-success:hover { background: #237a5f; }
-  .step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+/* ─────────────────────────────────────────────
+   SPEC PHOTO GRID
+───────────────────────────────────────────── */
+.spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
+.spec-card {
+  background: var(--surface-2);
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  transition: border-color var(--transition);
+}
+.spec-card:hover { border-color: var(--border-2); }
+.spec-card label {
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  display: block;
+  margin-bottom: 8px;
+}
 
-  /* ── Section divider ────────────────────────────────────── */
-  .section-divider { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 22px 0 14px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+/* ─────────────────────────────────────────────
+   IMPORT BANNER
+───────────────────────────────────────────── */
+.import-banner {
+  background: linear-gradient(135deg, var(--navy), var(--navy-3));
+  border-radius: var(--radius-sm);
+  padding: 18px 22px;
+  margin-bottom: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid rgba(255,255,255,.08);
+  position: relative;
+  overflow: hidden;
+}
+.import-banner::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, var(--accent), transparent);
+  opacity: 0.5;
+}
+.import-banner .ib-text strong {
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  display: block;
+  margin-bottom: 3px;
+  letter-spacing: -0.2px;
+}
+.import-banner .ib-text span { color: rgba(255,255,255,.5); font-size: 12.5px; }
+.btn-import {
+  background: var(--accent);
+  color: var(--navy);
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 10px 20px;
+  font-size: 12.5px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  letter-spacing: 0.1px;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.btn-import:hover { background: var(--accent-dim); transform: translateY(-1px); }
 
-  /* ── AI textarea ────────────────────────────────────────── */
-  .ai-text-wrap { position: relative; }
-  .ai-text-wrap textarea { padding-right: 110px; }
-  .ai-btn-inline { position: absolute; top: 8px; right: 8px; background: linear-gradient(135deg, #6c3d91, #a044cc); color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
-  .ai-btn-inline:disabled { opacity: 0.5; cursor: default; }
+/* ─────────────────────────────────────────────
+   CALCULATOR TABLE
+───────────────────────────────────────────── */
+.calc-section { margin-bottom: 20px; }
+.calc-section-title {
+  background: var(--navy);
+  color: #fff;
+  padding: 11px 18px;
+  border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  letter-spacing: 0.2px;
+}
+.calc-section-title .cst-hint { font-size: 11px; color: var(--muted-2); font-weight: 400; }
+.calc-table-wrap {
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
+  overflow: hidden;
+}
+.calc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 480px; }
+.calc-table th {
+  background: var(--surface-2);
+  color: var(--muted);
+  padding: 9px 10px;
+  text-align: left;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+}
+.calc-table td { padding: 6px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+.calc-table tr:last-child td { border-bottom: none; }
+.calc-table td:first-child { padding-left: 14px; color: var(--text-2); font-size: 12px; white-space: nowrap; }
+.calc-table .unit { color: var(--muted-2); font-size: 11px; }
+.calc-table input[type="number"] {
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 5px 8px;
+  font-size: 12.5px;
+  font-family: inherit;
+  width: 82px;
+  background: var(--surface-2);
+  text-align: right;
+  transition: border-color var(--transition), box-shadow var(--transition);
+  outline: none;
+}
+.calc-table input[type="number"]:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-glow);
+  background: #fff;
+}
+.calc-totals { background: #f8fafc; border-top: 1.5px solid var(--border); }
+.calc-totals td { font-weight: 600; color: var(--text-2); padding: 8px 10px; font-size: 12px; }
 
-  /* ── Toast ──────────────────────────────────────────────── */
-  #toast { position: fixed; bottom: 28px; right: 28px; background: #222; color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(10px); transition: all 0.3s; z-index: 9999; max-width: 340px; pointer-events: none; }
-  #toast.show { opacity: 1; transform: translateY(0); }
-  #toast.success { background: var(--green); }
-  #toast.error { background: var(--danger); }
+/* ─────────────────────────────────────────────
+   TOTALS BAR
+───────────────────────────────────────────── */
+.totals-bar {
+  background: linear-gradient(135deg, var(--navy), var(--navy-3));
+  border-radius: var(--radius-sm);
+  padding: 16px 22px;
+  margin-top: 20px;
+  display: flex;
+  gap: 36px;
+  flex-wrap: wrap;
+  border: 1px solid rgba(255,255,255,.07);
+  align-items: center;
+}
+.totals-bar .tb-item { display: flex; flex-direction: column; gap: 2px; }
+.totals-bar .tb-label { font-size: 10px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
+.totals-bar .tb-value { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
 
-  /* ── Generate button ────────────────────────────────────── */
-  .generate-section { text-align: center; padding: 36px 28px; }
-  .generate-section h3 { font-size: 22px; color: var(--teal); margin-bottom: 8px; }
-  .generate-section p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
-  .btn-generate { background: linear-gradient(135deg, var(--teal), var(--green)); color: white; border: none; border-radius: 12px; padding: 16px 48px; font-size: 17px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 18px rgba(13,79,108,0.30); transition: all 0.2s; display: inline-flex; align-items: center; gap: 10px; }
-  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(13,79,108,0.38); }
-  .btn-generate:disabled { opacity: 0.5; cursor: default; transform: none; }
-  .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
-  .btn-generate.loading .spinner { display: block; }
-  .btn-generate.loading .btn-text { display: none; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+/* ─────────────────────────────────────────────
+   KWP MATERIALS TABLE
+───────────────────────────────────────────── */
+.material-table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
+.material-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 920px; }
+.material-table th {
+  background: var(--navy);
+  color: rgba(255,255,255,.7);
+  padding: 11px 10px;
+  text-align: left;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+}
+.material-table td { padding: 7px 5px; border-bottom: 1px solid #f1f5f9; }
+.material-table tr:hover td { background: #fafbfc; }
+.material-table input,
+.material-table select {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  padding: 5px 7px;
+  font-size: 12px;
+  font-family: inherit;
+  width: 100%;
+  background: var(--surface-2);
+  outline: none;
+  transition: border-color var(--transition);
+}
+.material-table input:focus,
+.material-table select:focus {
+  border-color: var(--accent);
+  background: #fff;
+}
+.btn-delete-row {
+  background: none;
+  border: none;
+  color: var(--muted-2);
+  font-size: 15px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 5px;
+  transition: all var(--transition);
+  line-height: 1;
+}
+.btn-delete-row:hover { color: var(--danger); background: #fef2f2; }
 
-  /* ── Calculator import banner ───────────────────────────── */
-  .import-banner { background: linear-gradient(135deg, #1a4a6e, #2e8b6e); border-radius: 10px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
-  .import-banner .ib-text { color: white; }
-  .import-banner .ib-text strong { font-size: 15px; display: block; margin-bottom: 4px; }
-  .import-banner .ib-text span { font-size: 13px; opacity: 0.85; }
-  .import-banner .ib-action { flex-shrink: 0; }
-  .btn-import { background: white; color: var(--teal); border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
-  .btn-import:hover { background: var(--blue-light); }
+/* ─────────────────────────────────────────────
+   REUSE ITEMS
+───────────────────────────────────────────── */
+.reuse-item {
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 22px;
+  margin-bottom: 14px;
+  background: var(--surface-2);
+  transition: border-color var(--transition);
+  position: relative;
+}
+.reuse-item:hover { border-color: var(--border-2); }
+.reuse-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.reuse-item-number {
+  width: 28px; height: 28px;
+  background: linear-gradient(135deg, var(--accent), var(--sky));
+  color: var(--navy);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800;
+  flex-shrink: 0;
+}
 
-  /* ── Calc totals bar ────────────────────────────────────── */
-  .totals-bar { background: var(--teal); color: white; border-radius: 10px; padding: 14px 20px; margin-top: 20px; display: flex; gap: 32px; flex-wrap: wrap; }
-  .totals-bar .tb-item { display: flex; flex-direction: column; }
-  .totals-bar .tb-label { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.4px; }
-  .totals-bar .tb-value { font-size: 20px; font-weight: 700; }
+/* ─────────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────────── */
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 10px 22px; border-radius: var(--radius-sm);
+  font-size: 13.5px; font-weight: 600; cursor: pointer; border: none;
+  transition: all var(--transition); text-decoration: none;
+  font-family: inherit; letter-spacing: -0.1px;
+}
+.btn-primary {
+  background: var(--accent);
+  color: var(--navy);
+  box-shadow: 0 2px 8px rgba(0,195,124,.25);
+}
+.btn-primary:hover {
+  background: var(--accent-dim);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(0,195,124,.35);
+}
+.btn-secondary {
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1.5px solid var(--border-2);
+}
+.btn-secondary:hover { background: var(--surface-2); border-color: var(--muted-2); }
+.btn-add-row {
+  margin-top: 14px;
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px dashed rgba(0,195,124,.4);
+  border-radius: var(--radius-sm);
+  padding: 9px 18px;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all var(--transition);
+  font-family: inherit;
+}
+.btn-add-row:hover { background: var(--accent-glow); border-color: var(--accent); }
 
-  /* ── Responsive ─────────────────────────────────────────── */
-  @media (max-width: 640px) {
-    .form-grid, .form-grid.cols-3, .form-grid.cols-4 { grid-template-columns: 1fr; }
-    .span-2, .span-3, .span-4 { grid-column: span 1; }
-    .main-wrap { padding: 0 12px 80px; }
-    .step-bar { padding: 10px 12px; }
-    .import-banner { flex-direction: column; }
-  }
+.step-nav {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 24px; padding-top: 22px;
+  border-top: 1px solid var(--border);
+}
+
+/* ─────────────────────────────────────────────
+   AI TEXT AREA
+───────────────────────────────────────────── */
+.ai-text-wrap { position: relative; }
+.ai-text-wrap textarea { padding-right: 120px; }
+.ai-btn-inline {
+  position: absolute; top: 8px; right: 8px;
+  background: linear-gradient(135deg, #7c3aed, #a855f7);
+  color: white; border: none; border-radius: 6px;
+  padding: 7px 13px; font-size: 11px; font-weight: 600;
+  cursor: pointer; display: flex; align-items: center; gap: 5px;
+  font-family: inherit; transition: all var(--transition);
+  box-shadow: 0 2px 8px rgba(124,58,237,.3);
+}
+.ai-btn-inline:hover { opacity: 0.9; transform: translateY(-1px); }
+.ai-btn-inline:disabled { opacity: 0.45; cursor: default; transform: none; }
+
+/* ─────────────────────────────────────────────
+   TOAST
+───────────────────────────────────────────── */
+#toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: var(--navy-2);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-size: 13.5px;
+  font-weight: 500;
+  opacity: 0; transform: translateY(8px);
+  transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
+  z-index: 9999; max-width: 340px; pointer-events: none;
+  border: 1px solid rgba(255,255,255,.1);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 8px 32px rgba(0,0,0,.3);
+}
+#toast.show { opacity: 1; transform: translateY(0); }
+#toast.success { background: var(--accent); color: var(--navy); border-color: rgba(0,0,0,.1); }
+#toast.error   { background: var(--danger); color: white; }
+
+/* ─────────────────────────────────────────────
+   GENERATE STEP
+───────────────────────────────────────────── */
+.generate-section {
+  text-align: center;
+  padding: 52px 32px 40px;
+  background: linear-gradient(180deg, var(--navy) 0%, #0e2640 100%);
+  position: relative;
+  overflow: hidden;
+}
+.generate-section::before {
+  content: '';
+  position: absolute;
+  top: -60px; left: 50%; transform: translateX(-50%);
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(0,195,124,.15), transparent 70%);
+  pointer-events: none;
+}
+.generate-section h3 { font-size: 26px; color: #fff; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.6px; position: relative; }
+.generate-section > p { color: rgba(255,255,255,.5); font-size: 13.5px; margin-bottom: 30px; position: relative; }
+.btn-generate {
+  background: linear-gradient(135deg, var(--accent) 0%, #00a8f3 100%);
+  color: var(--navy);
+  border: none;
+  border-radius: 12px;
+  padding: 17px 54px;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 6px 28px rgba(0,195,124,.35), 0 0 0 1px rgba(255,255,255,.1) inset;
+  transition: all 0.2s;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-family: inherit;
+  letter-spacing: -0.3px;
+  position: relative;
+}
+.btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,195,124,.45); }
+.btn-generate:active { transform: translateY(0); }
+.btn-generate:disabled { opacity: 0.45; cursor: default; transform: none; }
+.btn-generate .note { font-size: 12px; color: rgba(11,31,53,.65); font-weight: 500; }
+
+.spinner {
+  width: 19px; height: 19px;
+  border: 2.5px solid rgba(11,31,53,.25);
+  border-top-color: var(--navy);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+  display: none;
+}
+.btn-generate.loading .spinner  { display: block; }
+.btn-generate.loading .btn-text { display: none; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Summary card in generate step */
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-top: 4px;
+}
+.sg-item {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+}
+.sg-item .sg-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
+.sg-item .sg-value { font-size: 14px; font-weight: 600; color: var(--text); }
+
+/* ─────────────────────────────────────────────
+   RESPONSIVE
+───────────────────────────────────────────── */
+@media (max-width: 680px) {
+  .form-grid, .form-grid.cols-3, .form-grid.cols-4 { grid-template-columns: 1fr; }
+  .span-2, .span-3, .span-4 { grid-column: span 1; }
+  .main-wrap { padding: 0 14px 80px; }
+  .step-bar { padding: 0 16px; }
+  .panel-body { padding: 20px 18px; }
+  .panel-head { padding: 18px 20px; }
+  .summary-grid { grid-template-columns: 1fr 1fr; }
+  .import-banner { flex-direction: column; align-items: flex-start; }
+  .totals-bar { gap: 20px; }
+}
 </style>
 </head>
 <body>
-<!-- ── Header ────────────────────────────────────────────── -->
+
+<!-- ── HEADER ──────────────────────────────────────────────── -->
 <header class="app-header">
-  <h1>⚒ Pre-Demolition Audit Generator</h1>
+  <div class="header-left">
+    <div class="header-logo">⚒</div>
+    <h1>Pre-Demolition Audit <span>/ Generator</span></h1>
+  </div>
   <span class="header-badge">LAWMENS</span>
 </header>
-<!-- ── Step bar ──────────────────────────────────────────── -->
+
+<!-- ── STEP BAR ────────────────────────────────────────────── -->
 <div class="step-bar" id="stepBar">
-  <div class="step-pill active" onclick="goToStep(0)">1 · Project</div>
-  <div class="step-pill" onclick="goToStep(1)">2 · Team</div>
-  <div class="step-pill" onclick="goToStep(2)">3 · Photos</div>
-  <div class="step-pill" onclick="goToStep(3)">4 · Calculator</div>
-  <div class="step-pill" onclick="goToStep(4)">5 · Materials</div>
-  <div class="step-pill" onclick="goToStep(5)">6 · Reuse</div>
-  <div class="step-pill" onclick="goToStep(6)">7 · Text</div>
-  <div class="step-pill" onclick="goToStep(7)">8 · Generate</div>
+  <div class="step-pill active" onclick="goToStep(0)"><span class="sp-num">1</span><span class="sp-label">Project</span></div>
+  <div class="step-pill" onclick="goToStep(1)"><span class="sp-num">2</span><span class="sp-label">Team</span></div>
+  <div class="step-pill" onclick="goToStep(2)"><span class="sp-num">3</span><span class="sp-label">Photos</span></div>
+  <div class="step-pill" onclick="goToStep(3)"><span class="sp-num">4</span><span class="sp-label">Calculator</span></div>
+  <div class="step-pill" onclick="goToStep(4)"><span class="sp-num">5</span><span class="sp-label">Materials</span></div>
+  <div class="step-pill" onclick="goToStep(5)"><span class="sp-num">6</span><span class="sp-label">Reuse</span></div>
+  <div class="step-pill" onclick="goToStep(6)"><span class="sp-num">7</span><span class="sp-label">Text</span></div>
+  <div class="step-pill" onclick="goToStep(7)"><span class="sp-num">8</span><span class="sp-label">Generate</span></div>
 </div>
-<!-- ═══════════════════════════════════════════════════════
+
+<!-- ═══════════════════════════════════════════════════════════
      FORM
-═══════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════════════════════ -->
 <form id="auditForm" enctype="multipart/form-data">
 <div class="main-wrap">
 
-<!-- ══════════ STEP 1: Project Details ═════════════════ -->
+<!-- ══ STEP 1: Project Details ══════════════════════════════ -->
 <div class="step-panel active" id="step-0">
   <div class="panel-card">
     <div class="panel-head">
+      <span class="ph-step">STEP 1 OF 8</span>
       <h2>Project Details</h2>
       <p>Enter the basic information about this audit job</p>
     </div>
@@ -279,10 +879,11 @@
   </div>
 </div>
 
-<!-- ══════════ STEP 2: Report Team ═════════════════════ -->
+<!-- ══ STEP 2: Report Team ═══════════════════════════════════ -->
 <div class="step-panel" id="step-1">
   <div class="panel-card">
     <div class="panel-head">
+      <span class="ph-step">STEP 2 OF 8</span>
       <h2>Report Team</h2>
       <p>Details of the people who prepared and authorised this report</p>
     </div>
@@ -308,8 +909,8 @@
               <div class="upload-zone" id="prepPhotoZone">
                 <input type="file" name="prepared_by_photo" accept="image/*"
                        onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
-                <div class="uz-icon">📷</div>
-                <div class="uz-label">Upload photo</div>
+                <span class="uz-icon">📷</span>
+                <span class="uz-label">Upload photo</span>
                 <div class="uz-hint">JPG or PNG, square crop recommended</div>
                 <img id="prepThumb" class="preview-thumb" style="display:none;">
               </div>
@@ -336,8 +937,8 @@
               <div class="upload-zone" id="authPhotoZone">
                 <input type="file" name="authorised_by_photo" accept="image/*"
                        onchange="handlePhotoPreview(this,'authPhotoZone','authThumb')">
-                <div class="uz-icon">📷</div>
-                <div class="uz-label">Upload photo</div>
+                <span class="uz-icon">📷</span>
+                <span class="uz-label">Upload photo</span>
                 <div class="uz-hint">JPG or PNG, square crop recommended</div>
                 <img id="authThumb" class="preview-thumb" style="display:none;">
               </div>
@@ -353,107 +954,78 @@
   </div>
 </div>
 
-<!-- ══════════ STEP 3: Photos & Spec Sheets ════════════ -->
+<!-- ══ STEP 3: Photos & Spec Sheets ═════════════════════════ -->
 <div class="step-panel" id="step-2">
   <div class="panel-card">
     <div class="panel-head">
+      <span class="ph-step">STEP 3 OF 8</span>
       <h2>Photos &amp; Spec Sheet Images</h2>
-      <p>Building photo for the cover page, and up to 7 full-page spec sheet images for the KWP slides</p>
+      <p>Building photo for the cover page, and up to 7 full-page spec sheet images for KWP slides</p>
     </div>
     <div class="panel-body">
-      <!-- Building photo -->
-      <div class="form-group" style="max-width:360px;">
+      <div class="form-group" style="max-width:380px;">
         <label>Building Photo (Cover Page)</label>
         <div class="upload-zone" id="buildingPhotoZone">
           <input type="file" name="building_photo" accept="image/*"
                  onchange="handlePhotoPreview(this,'buildingPhotoZone','buildingThumb')">
-          <div class="uz-icon">🏢</div>
-          <div class="uz-label">Upload building photo</div>
+          <span class="uz-icon">🏢</span>
+          <span class="uz-label">Upload building photo</span>
           <div class="uz-hint">Appears on the executive summary slide</div>
           <img id="buildingThumb" class="preview-thumb" style="display:none;max-width:200px;">
         </div>
       </div>
-
-      <div class="section-divider" style="margin-top:28px;">Spec Sheet Images (Slides 20-26)</div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:18px;">
-        Each spec slot is a full-page image slide. Upload a product/material spec sheet photo for each Key Waste Product.
-        Leave blank if not needed — the slide will remain as-is.
+      <div class="section-divider" style="margin-top:30px;">Spec Sheet Images — Slides 20–26</div>
+      <p style="color:var(--muted);font-size:12.5px;margin-bottom:18px;line-height:1.6;">
+        Each spec slot is a full-page image slide. Upload a product or material spec sheet for each Key Waste Product.
+        Leave blank if not needed.
       </p>
       <div class="spec-grid">
-        <div class="spec-card" id="specCard1">
-          <label>Spec Photo 1</label>
+        <div class="spec-card"><label>Spec Photo 1</label>
           <div class="upload-zone" id="specZone1">
-            <input type="file" name="spec_photo_1" accept="image/*,.pdf"
-                   onchange="handleSpecPreview(this,'specZone1','specThumb1','specLabel1')">
-            <div class="uz-icon">📄</div>
-            <div class="uz-label" id="specLabel1">Upload spec image</div>
-            <div class="uz-hint">Full slide image</div>
+            <input type="file" name="spec_photo_1" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone1','specThumb1','specLabel1')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel1">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb1" class="preview-thumb" style="display:none;">
           </div>
         </div>
-        <div class="spec-card" id="specCard2">
-          <label>Spec Photo 2</label>
+        <div class="spec-card"><label>Spec Photo 2</label>
           <div class="upload-zone" id="specZone2">
-            <input type="file" name="spec_photo_2" accept="image/*,.pdf"
-                   onchange="handleSpecPreview(this,'specZone2','specThumb2','specLabel2')">
-            <div class="uz-icon">📄</div>
-            <div class="uz-label" id="specLabel2">Upload spec image</div>
-            <div class="uz-hint">Full slide image</div>
+            <input type="file" name="spec_photo_2" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone2','specThumb2','specLabel2')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel2">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb2" class="preview-thumb" style="display:none;">
           </div>
         </div>
-        <div class="spec-card" id="specCard3">
-          <label>Spec Photo 3</label>
+        <div class="spec-card"><label>Spec Photo 3</label>
           <div class="upload-zone" id="specZone3">
-            <input type="file" name="spec_photo_3" accept="image/*,.pdf"
-                   onchange="handleSpecPreview(this,'specZone3','specThumb3','specLabel3')">
-            <div class="uz-icon">📄</div>
-            <div class="uz-label" id="specLabel3">Upload spec image</div>
-            <div class="uz-hint">Full slide image</div>
+            <input type="file" name="spec_photo_3" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone3','specThumb3','specLabel3')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel3">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb3" class="preview-thumb" style="display:none;">
           </div>
         </div>
-        <div class="spec-card" id="specCard4">
-          <label>Spec Photo 4</label>
+        <div class="spec-card"><label>Spec Photo 4</label>
           <div class="upload-zone" id="specZone4">
-            <input type="file" name="spec_photo_4" accept="image/*,.pdf"
-                   onchange="handleSpecPreview(this,'specZone4','specThumb4','specLabel4')">
-            <div class="uz-icon">📄</div>
-            <div class="uz-label" id="specLabel4">Upload spec image</div>
-            <div class="uz-hint">Full slide image</div>
+            <input type="file" name="spec_photo_4" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone4','specThumb4','specLabel4')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel4">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb4" class="preview-thumb" style="display:none;">
           </div>
         </div>
-        <div class="spec-card" id="specCard5">
-          <label>Spec Photo 5</label>
+        <div class="spec-card"><label>Spec Photo 5</label>
           <div class="upload-zone" id="specZone5">
-            <input type="file" name="spec_photo_5" accept="image/*,.pdf"
-                   onchange="handleSpecPreview(this,'specZone5','specThumb5','specLabel5')">
-            <div class="uz-icon">📄</div>
-            <div class="uz-label" id="specLabel5">Upload spec image</div>
-            <div class="uz-hint">Full slide image</div>
+            <input type="file" name="spec_photo_5" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone5','specThumb5','specLabel5')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel5">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb5" class="preview-thumb" style="display:none;">
           </div>
         </div>
-        <div class="spec-card" id="specCard6">
-          <label>Spec Photo 6</label>
+        <div class="spec-card"><label>Spec Photo 6</label>
           <div class="upload-zone" id="specZone6">
-            <input type="file" name="spec_photo_6" accept="image/*,.pdf"
-                   onchange="handleSpecPreview(this,'specZone6','specThumb6','specLabel6')">
-            <div class="uz-icon">📄</div>
-            <div class="uz-label" id="specLabel6">Upload spec image</div>
-            <div class="uz-hint">Full slide image</div>
+            <input type="file" name="spec_photo_6" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone6','specThumb6','specLabel6')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel6">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb6" class="preview-thumb" style="display:none;">
           </div>
         </div>
-        <div class="spec-card" id="specCard7">
-          <label>Spec Photo 7</label>
+        <div class="spec-card"><label>Spec Photo 7</label>
           <div class="upload-zone" id="specZone7">
-            <input type="file" name="spec_photo_7" accept="image/*,.pdf"
-                   onchange="handleSpecPreview(this,'specZone7','specThumb7','specLabel7')">
-            <div class="uz-icon">📄</div>
-            <div class="uz-label" id="specLabel7">Upload spec image</div>
-            <div class="uz-hint">Full slide image</div>
+            <input type="file" name="spec_photo_7" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone7','specThumb7','specLabel7')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel7">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb7" class="preview-thumb" style="display:none;">
           </div>
         </div>
@@ -466,145 +1038,91 @@
   </div>
 </div>
 
-<!-- ══════════ STEP 4: Pre Demo Audit Calculator ════════ -->
+<!-- ══ STEP 4: Calculator ════════════════════════════════════ -->
 <div class="step-panel" id="step-3">
   <div class="panel-card">
     <div class="panel-head">
+      <span class="ph-step">STEP 4 OF 8</span>
       <h2>Pre Demo Audit Calculator</h2>
-      <p>Enter quantities for each item — weights and volumes are calculated automatically and feed the KWP pie charts</p>
+      <p>Enter quantities for each item — weights are calculated automatically and feed the KWP pie charts</p>
     </div>
     <div class="panel-body">
-      <!-- Import from Excel banner -->
       <div class="import-banner">
         <div class="ib-text">
           <strong>📂 Import from Excel</strong>
-          <span>Upload your "Pre Demo Audit Calculator.xlsx" to auto-fill all quantities below</span>
+          <span>Upload your "Pre Demo Audit Calculator.xlsx" to auto-fill all quantities</span>
         </div>
         <div class="ib-action">
           <label class="btn-import" style="cursor:pointer;">
             📥 Import Excel
-            <input type="file" accept=".xlsx,.xls" id="calcImportFile" style="display:none;"
-                   onchange="importCalculatorExcel(this)">
+            <input type="file" accept=".xlsx,.xls" id="calcImportFile" style="display:none;" onchange="importCalculatorExcel(this)">
           </label>
         </div>
       </div>
 
-      <!-- FLOORING -->
       <div class="calc-section">
-        <div class="calc-section-title">
-          <span>🏠 Flooring</span>
-          <span style="font-size:11px;opacity:0.8;">Enter quantities — unit weights pre-filled</span>
-        </div>
-        <div class="calc-table-wrap">
-          <table class="calc-table" id="calcFlooring">
-            <thead>
-              <tr>
-                <th style="min-width:200px;">Item</th>
-                <th>Quantity</th>
-                <th>Unit</th>
-                <th>Unit Weight (kg)</th>
-                <th>Total Weight (kg)</th>
-                <th>Material</th>
-              </tr>
-            </thead>
-            <tbody id="calcFlooringBody"></tbody>
-            <tfoot>
-              <tr class="calc-totals">
-                <td colspan="4" style="text-align:right;">Flooring Total:</td>
-                <td id="flooringTotal">0 kg</td>
-                <td></td>
-              </tr>
-            </tfoot>
-          </table>
-        </div>
+        <div class="calc-section-title"><span>🏠 Flooring</span><span class="cst-hint">Enter quantities — unit weights pre-filled</span></div>
+        <div class="calc-table-wrap"><table class="calc-table" id="calcFlooring">
+          <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Wt (kg)</th><th>Total Wt (kg)</th><th>Material</th></tr></thead>
+          <tbody id="calcFlooringBody"></tbody>
+          <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">Flooring Total:</td><td id="flooringTotal">0 kg</td><td></td></tr></tfoot>
+        </table></div>
       </div>
-
-      <!-- WALLS -->
       <div class="calc-section">
         <div class="calc-section-title"><span>🧱 Walls</span></div>
-        <div class="calc-table-wrap">
-          <table class="calc-table">
-            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
-            <tbody id="calcWallsBody"></tbody>
-            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Walls Total:</td><td id="wallsTotal">0 kg</td><td></td></tr></tfoot>
-          </table>
-        </div>
+        <div class="calc-table-wrap"><table class="calc-table">
+          <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Wt (kg)</th><th>Total Wt (kg)</th><th>Material</th></tr></thead>
+          <tbody id="calcWallsBody"></tbody>
+          <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">Walls Total:</td><td id="wallsTotal">0 kg</td><td></td></tr></tfoot>
+        </table></div>
       </div>
-
-      <!-- CEILINGS -->
       <div class="calc-section">
         <div class="calc-section-title"><span>🔲 Ceilings</span></div>
-        <div class="calc-table-wrap">
-          <table class="calc-table">
-            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
-            <tbody id="calcCeilingsBody"></tbody>
-            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Ceilings Total:</td><td id="ceilingsTotal">0 kg</td><td></td></tr></tfoot>
-          </table>
-        </div>
+        <div class="calc-table-wrap"><table class="calc-table">
+          <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Wt (kg)</th><th>Total Wt (kg)</th><th>Material</th></tr></thead>
+          <tbody id="calcCeilingsBody"></tbody>
+          <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">Ceilings Total:</td><td id="ceilingsTotal">0 kg</td><td></td></tr></tfoot>
+        </table></div>
       </div>
-
-      <!-- FIXTURES & FITTINGS -->
       <div class="calc-section">
         <div class="calc-section-title"><span>🔧 Fixtures &amp; Fittings</span></div>
-        <div class="calc-table-wrap">
-          <table class="calc-table">
-            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
-            <tbody id="calcFixturesBody"></tbody>
-            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Fixtures Total:</td><td id="fixturesTotal">0 kg</td><td></td></tr></tfoot>
-          </table>
-        </div>
+        <div class="calc-table-wrap"><table class="calc-table">
+          <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Wt (kg)</th><th>Total Wt (kg)</th><th>Material</th></tr></thead>
+          <tbody id="calcFixturesBody"></tbody>
+          <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">Fixtures Total:</td><td id="fixturesTotal">0 kg</td><td></td></tr></tfoot>
+        </table></div>
       </div>
-
-      <!-- M&E -->
       <div class="calc-section">
         <div class="calc-section-title"><span>⚡ M&amp;E / Services</span></div>
-        <div class="calc-table-wrap">
-          <table class="calc-table">
-            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
-            <tbody id="calcMEBody"></tbody>
-            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">M&amp;E Total:</td><td id="meTotal">0 kg</td><td></td></tr></tfoot>
-          </table>
-        </div>
+        <div class="calc-table-wrap"><table class="calc-table">
+          <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Wt (kg)</th><th>Total Wt (kg)</th><th>Material</th></tr></thead>
+          <tbody id="calcMEBody"></tbody>
+          <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">M&amp;E Total:</td><td id="meTotal">0 kg</td><td></td></tr></tfoot>
+        </table></div>
       </div>
-
-      <!-- WC / SHOWER -->
       <div class="calc-section">
         <div class="calc-section-title"><span>🚿 WC / Shower / Kitchen</span></div>
-        <div class="calc-table-wrap">
-          <table class="calc-table">
-            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
-            <tbody id="calcWCBody"></tbody>
-            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">WC/Shower Total:</td><td id="wcTotal">0 kg</td><td></td></tr></tfoot>
-          </table>
-        </div>
+        <div class="calc-table-wrap"><table class="calc-table">
+          <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Wt (kg)</th><th>Total Wt (kg)</th><th>Material</th></tr></thead>
+          <tbody id="calcWCBody"></tbody>
+          <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">WC/Shower Total:</td><td id="wcTotal">0 kg</td><td></td></tr></tfoot>
+        </table></div>
       </div>
-
-      <!-- FURNITURE -->
       <div class="calc-section">
         <div class="calc-section-title"><span>🪑 Furniture</span></div>
-        <div class="calc-table-wrap">
-          <table class="calc-table">
-            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
-            <tbody id="calcFurnitureBody"></tbody>
-            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Furniture Total:</td><td id="furnitureTotal">0 kg</td><td></td></tr></tfoot>
-          </table>
-        </div>
+        <div class="calc-table-wrap"><table class="calc-table">
+          <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Wt (kg)</th><th>Total Wt (kg)</th><th>Material</th></tr></thead>
+          <tbody id="calcFurnitureBody"></tbody>
+          <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">Furniture Total:</td><td id="furnitureTotal">0 kg</td><td></td></tr></tfoot>
+        </table></div>
       </div>
 
-      <!-- Totals bar -->
       <div class="totals-bar">
-        <div class="tb-item">
-          <span class="tb-label">Total Weight</span>
-          <span class="tb-value" id="grandTotalKg">0 kg</span>
-        </div>
-        <div class="tb-item">
-          <span class="tb-label">Total Weight (tonnes)</span>
-          <span class="tb-value" id="grandTotalT">0.000 t</span>
-        </div>
+        <div class="tb-item"><span class="tb-label">Total Weight</span><span class="tb-value" id="grandTotalKg">0 kg</span></div>
+        <div class="tb-item"><span class="tb-label">Total (tonnes)</span><span class="tb-value" id="grandTotalT">0.000 t</span></div>
       </div>
-
-      <p style="color:var(--muted);font-size:12px;margin-top:14px;">
-        💡 These quantities auto-populate the KWP materials table on the next step. You can also edit entries there directly.
+      <p style="color:var(--muted-2);font-size:11.5px;margin-top:14px;">
+        💡 Click "Next" to auto-populate the KWP materials table from these quantities.
       </p>
     </div>
   </div>
@@ -614,12 +1132,13 @@
   </div>
 </div>
 
-<!-- ══════════ STEP 5: Key Waste Products Table ══════════ -->
+<!-- ══ STEP 5: KWP Materials Table ══════════════════════════ -->
 <div class="step-panel" id="step-4">
   <div class="panel-card">
     <div class="panel-head">
+      <span class="ph-step">STEP 5 OF 8</span>
       <h2>Key Waste Products (KWP)</h2>
-      <p>These values feed the 3 pie charts in the report. Review and adjust as needed.</p>
+      <p>These values feed the 3 pie charts in the report — review and adjust as needed</p>
     </div>
     <div class="panel-body">
       <div class="material-table-wrap">
@@ -629,21 +1148,21 @@
               <th style="width:150px;">Material Name</th>
               <th style="width:90px;">EWC Code</th>
               <th style="width:80px;">Vol (m³)</th>
-              <th style="width:80px;">Weight (t)</th>
+              <th style="width:85px;">Weight (t)</th>
               <th style="width:60px;">% Wt</th>
               <th style="width:80px;">Carbon Factor</th>
               <th style="width:90px;">Carbon (tCO₂e)</th>
-              <th style="width:55px;">% Reuse</th>
+              <th style="width:60px;">% Reuse</th>
               <th style="width:65px;">% Recycle</th>
               <th style="width:65px;">% Landfill</th>
-              <th style="width:30px;"></th>
+              <th style="width:32px;"></th>
             </tr>
           </thead>
           <tbody id="kwpBody"></tbody>
         </table>
       </div>
       <button type="button" class="btn-add-row" onclick="addMaterialRow()">+ Add Material</button>
-      <div class="form-grid cols-3" style="margin-top:20px;">
+      <div class="form-grid cols-3" style="margin-top:22px;">
         <div class="form-group">
           <label>Total Project Weight (tonnes)</label>
           <input type="text" name="project_weight" id="projectWeightField" placeholder="Auto-calculated or override">
@@ -665,12 +1184,13 @@
   </div>
 </div>
 
-<!-- ══════════ STEP 6: Material Reuse Items ═════════════ -->
+<!-- ══ STEP 6: Material Reuse ════════════════════════════════ -->
 <div class="step-panel" id="step-5">
   <div class="panel-card">
     <div class="panel-head">
+      <span class="ph-step">STEP 6 OF 8</span>
       <h2>Material Reuse Items</h2>
-      <p>Up to 20 items — these fill the Material Reuse slides (slides 38-44) with name, description, potential and risks</p>
+      <p>Up to 20 items — these fill the Material Reuse slides with name, description, potential and risk factors</p>
     </div>
     <div class="panel-body">
       <div id="reuseItemList"></div>
@@ -683,10 +1203,11 @@
   </div>
 </div>
 
-<!-- ══════════ STEP 7: Report Text ══════════════════════ -->
+<!-- ══ STEP 7: Report Text ═══════════════════════════════════ -->
 <div class="step-panel" id="step-6">
   <div class="panel-card">
     <div class="panel-head">
+      <span class="ph-step">STEP 7 OF 8</span>
       <h2>Report Text &amp; AI Generation</h2>
       <p>Enter text manually or use AI to generate key sections</p>
     </div>
@@ -695,14 +1216,10 @@
       <div class="ai-text-wrap">
         <div class="form-group">
           <label>Executive Summary</label>
-          <textarea name="executive_summary" id="execSummaryText" rows="6"
-            placeholder="Write or generate the executive summary..."></textarea>
+          <textarea name="executive_summary" id="execSummaryText" rows="6" placeholder="Write or generate the executive summary..."></textarea>
         </div>
-        <button type="button" class="ai-btn-inline" onclick="generateAIText('executive_summary','execSummaryText')" id="aiExec">
-          ✨ AI Generate
-        </button>
+        <button type="button" class="ai-btn-inline" onclick="generateAIText('executive_summary','execSummaryText')" id="aiExec">✨ AI Write</button>
       </div>
-
       <div class="section-divider">Key Figures</div>
       <div class="form-grid cols-3">
         <div class="form-group">
@@ -714,28 +1231,22 @@
           <input type="text" name="benchmark_resource_efficiency" placeholder="e.g. GLA WLC Benchmark">
         </div>
       </div>
-
-      <div class="section-divider">Additional Report Sections</div>
+      <div class="section-divider">Additional Sections</div>
       <div class="form-grid full">
         <div class="ai-text-wrap">
           <div class="form-group">
             <label>Conclusion &amp; Recommendations</label>
-            <textarea name="conclusion_text" id="conclusionText" rows="5"
-              placeholder="Write or generate the conclusion..."></textarea>
+            <textarea name="conclusion_text" id="conclusionText" rows="5" placeholder="Write or generate the conclusion..."></textarea>
           </div>
-          <button type="button" class="ai-btn-inline" onclick="generateAIText('conclusion','conclusionText')" id="aiConclusion">
-            ✨ AI Generate
-          </button>
+          <button type="button" class="ai-btn-inline" onclick="generateAIText('conclusion','conclusionText')" id="aiConclusion">✨ AI Write</button>
         </div>
         <div class="form-group" style="margin-top:18px;">
           <label>Information Provided</label>
-          <textarea name="information_provided" rows="4"
-            placeholder="List the documents and information provided — e.g. 'Architectural drawings (Rev A), Structural report, Previous asbestos survey (2019)'"></textarea>
+          <textarea name="information_provided" rows="4" placeholder="List the documents and information provided — e.g. 'Architectural drawings (Rev A), Structural report, Previous asbestos survey (2019)'"></textarea>
         </div>
         <div class="form-group">
           <label>Circular Economy Commitments</label>
-          <textarea name="circular_economy_commitments" rows="4"
-            placeholder="Describe the circular economy commitments — e.g. 'Minimum 95% diversion from landfill; maximise reuse of structural steel'"></textarea>
+          <textarea name="circular_economy_commitments" rows="4" placeholder="Describe the circular economy commitments — e.g. 'Minimum 95% diversion from landfill; maximise reuse of structural steel'"></textarea>
         </div>
       </div>
     </div>
@@ -746,23 +1257,23 @@
   </div>
 </div>
 
-<!-- ══════════ STEP 8: Generate ═════════════════════════ -->
+<!-- ══ STEP 8: Generate ══════════════════════════════════════ -->
 <div class="step-panel" id="step-7">
   <div class="panel-card">
     <div class="generate-section">
-      <h3>🎉 Ready to Generate</h3>
-      <p>All data collected. Click below to build your PPTX report.</p>
+      <h3>Ready to Generate</h3>
+      <p>All data collected — click below to build your PPTX report</p>
       <button type="submit" class="btn-generate" id="generateBtn">
         <span class="btn-text">⬇ Generate PPTX Report</span>
         <div class="spinner"></div>
       </button>
-      <p style="margin-top:16px;font-size:12px;color:var(--muted);">
-        This may take 20–40 seconds while the report is assembled.
+      <p style="margin-top:16px;font-size:12px;color:rgba(255,255,255,.35);position:relative;">
+        This may take 20–40 seconds while the report is assembled
       </p>
     </div>
-    <div class="panel-body" style="padding-top:0;">
-      <div class="section-divider">Summary</div>
-      <div id="summaryView" style="font-size:13px;color:var(--muted);line-height:2;"></div>
+    <div class="panel-body">
+      <div class="section-divider">Report Summary</div>
+      <div id="summaryView" class="summary-grid"></div>
     </div>
   </div>
   <div class="step-nav">
@@ -775,9 +1286,9 @@
 </form>
 <div id="toast"></div>
 
-<!-- ═══════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT
-═══════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════════════════════ -->
 <script>
 // ── State ──────────────────────────────────────────────────
 let currentStep = 0;
@@ -831,7 +1342,6 @@ function handleSpecPreview(input, zoneId, thumbId, labelId) {
 }
 
 // ── Calculator data ────────────────────────────────────────
-// Each item: [description, qty_default, unit, unit_weight_kg, material]
 const CALC_ITEMS = {
   flooring: [
     ['Carpet Tiles (standard)',        0, 'm²',  3.5,  'Carpet'],
@@ -906,7 +1416,6 @@ const CALC_ITEMS = {
   ]
 };
 
-// Build calculator tables
 function buildCalcTables() {
   const sections = [
     ['calcFlooringBody', 'flooring', 'flooringTotal'],
@@ -944,14 +1453,12 @@ function recalcSection(section) {
     const unitWt = parseFloat(inp.dataset.unitwt) || 0;
     const total = qty * unitWt;
     sectionTotal += total;
-    const idx = inp.dataset.idx;
-    const cell = document.getElementById(`calcCell_${section}_${idx}`);
+    const cell = document.getElementById(`calcCell_${section}_${inp.dataset.idx}`);
     if (cell) cell.textContent = total.toFixed(1);
   });
-
   const sectionTotals = {
-    flooring: 'flooringTotal', walls: 'wallsTotal', ceilings: 'ceilingsTotal',
-    fixtures: 'fixturesTotal', me: 'meTotal', wc: 'wcTotal', furniture: 'furnitureTotal'
+    flooring:'flooringTotal', walls:'wallsTotal', ceilings:'ceilingsTotal',
+    fixtures:'fixturesTotal', me:'meTotal', wc:'wcTotal', furniture:'furnitureTotal'
   };
   const el = document.getElementById(sectionTotals[section]);
   if (el) el.textContent = sectionTotal.toFixed(1) + ' kg';
@@ -959,23 +1466,20 @@ function recalcSection(section) {
 }
 
 function recalcGrandTotal() {
-  const allInputs = document.querySelectorAll('.calc-qty');
   let grand = 0;
-  allInputs.forEach(inp => {
+  document.querySelectorAll('.calc-qty').forEach(inp => {
     grand += (parseFloat(inp.value) || 0) * (parseFloat(inp.dataset.unitwt) || 0);
   });
   document.getElementById('grandTotalKg').textContent = grand.toFixed(0) + ' kg';
   document.getElementById('grandTotalT').textContent = (grand / 1000).toFixed(3) + ' t';
 }
 
-// Aggregate calculator data into material totals for KWP table
 function getCalcMaterialTotals() {
-  const totals = {}; // materialName → {weight_kg, volume_m3}
-  const DENSITY = { // approximate m³ per tonne for volume estimates
-    'Carpet': 200, 'Vinyl': 1200, 'Rubber': 1500, 'Timber': 600,
-    'Metal': 7800, 'Hardcore': 2200, 'Plasterboard': 950, 'Glass': 2500,
-    'Insulation': 40, 'Fibre Ceiling Tiles': 300, 'Plastic': 950, 'Fabric': 200,
-    'Fluorescent Tubes': 1000, 'Oil / Hydraulic Fluid': 900,
+  const totals = {};
+  const DENSITY = {
+    'Carpet':200,'Vinyl':1200,'Rubber':1500,'Timber':600,'Metal':7800,'Hardcore':2200,
+    'Plasterboard':950,'Glass':2500,'Insulation':40,'Fibre Ceiling Tiles':300,
+    'Plastic':950,'Fabric':200,'Fluorescent Tubes':1000,'Oil / Hydraulic Fluid':900,
   };
   document.querySelectorAll('.calc-qty').forEach(inp => {
     const qty = parseFloat(inp.value) || 0;
@@ -989,8 +1493,7 @@ function getCalcMaterialTotals() {
     const wt = qty * unitWt;
     if (!totals[mat]) totals[mat] = { weight_kg: 0, volume_m3: 0 };
     totals[mat].weight_kg += wt;
-    const density = DENSITY[mat] || 1000;
-    totals[mat].volume_m3 += (wt / density);
+    totals[mat].volume_m3 += (wt / (DENSITY[mat] || 1000));
   });
   return totals;
 }
@@ -999,39 +1502,25 @@ function calcToKWP() {
   const matTotals = getCalcMaterialTotals();
   const keys = Object.keys(matTotals).filter(k => matTotals[k].weight_kg > 0);
   if (!keys.length) return;
-
-  const tbody = document.getElementById('kwpBody');
-  tbody.innerHTML = '';
-
   const EWC = {
     'Carpet':'20 03 01','Vinyl':'20 01 39','Rubber':'16 01 03','Timber':'17 02 01',
     'Metal':'17 04 05','Hardcore':'17 01 01','Plasterboard':'17 08 02','Glass':'17 02 02',
     'Insulation':'17 06 04','Fibre Ceiling Tiles':'17 06 05','Plastic':'17 02 03',
     'Fabric':'20 01 10','Fluorescent Tubes':'20 01 21','Oil / Hydraulic Fluid':'13 01 10',
   };
-
+  document.getElementById('kwpBody').innerHTML = '';
   let totalWt = keys.reduce((s, k) => s + matTotals[k].weight_kg, 0);
-
   keys.sort((a, b) => matTotals[b].weight_kg - matTotals[a].weight_kg);
   keys.forEach(mat => {
     const d = matTotals[mat];
     const wt_t = d.weight_kg / 1000;
     const pct = totalWt > 0 ? (d.weight_kg / totalWt * 100) : 0;
-    addMaterialRow({
-      name: mat,
-      ewc: EWC[mat] || '',
-      vol: d.volume_m3.toFixed(2),
-      wt: wt_t.toFixed(3),
-      pct: pct.toFixed(1),
-    });
+    addMaterialRow({ name:mat, ewc:EWC[mat]||'', vol:d.volume_m3.toFixed(2), wt:wt_t.toFixed(3), pct:pct.toFixed(1) });
   });
-
-  const totalT = (totalWt / 1000).toFixed(3);
-  document.getElementById('projectWeightField').value = totalT;
+  document.getElementById('projectWeightField').value = (totalWt / 1000).toFixed(3);
   autoCalcPct();
 }
 
-// Import from Excel
 async function importCalculatorExcel(input) {
   if (!input.files || !input.files[0]) return;
   showToast('Importing from Excel…');
@@ -1041,18 +1530,10 @@ async function importCalculatorExcel(input) {
     const resp = await fetch('/parse-calculator', { method: 'POST', body: fd });
     const result = await resp.json();
     if (result.error) { showToast('Import error: ' + result.error, 'error'); return; }
-
-    // Clear KWP table and populate from parsed data
     document.getElementById('kwpBody').innerHTML = '';
     result.materials.forEach(m => {
       if (!m.weight_kg && !m.volume_m3) return;
-      addMaterialRow({
-        name: m.name,
-        ewc: m.ewc || '',
-        vol: m.volume_m3.toFixed(2),
-        wt: m.weight_t.toFixed(3),
-        pct: m.weight_pct.toFixed(1),
-      });
+      addMaterialRow({ name:m.name, ewc:m.ewc||'', vol:m.volume_m3.toFixed(2), wt:m.weight_t.toFixed(3), pct:m.weight_pct.toFixed(1) });
     });
     document.getElementById('projectWeightField').value = result.total_weight_t.toFixed(3);
     showToast('Calculator imported — KWP table updated!', 'success');
@@ -1105,10 +1586,11 @@ function addReuseItem() {
     <div class="reuse-item-header">
       <div style="display:flex;align-items:center;gap:10px;">
         <div class="reuse-item-number">${num}</div>
-        <span style="font-weight:600;color:var(--teal);font-size:14px;">Material Item ${num}</span>
+        <span style="font-weight:600;color:var(--text);font-size:13.5px;">Material Item ${num}</span>
       </div>
       <button type="button" onclick="this.closest('.reuse-item').remove()"
-              style="background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;">✕</button>
+              style="background:none;border:none;color:var(--muted-2);font-size:18px;cursor:pointer;padding:4px;border-radius:5px;transition:color var(--transition);"
+              onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted-2)'">✕</button>
     </div>
     <div class="form-grid">
       <div class="form-group">
@@ -1125,13 +1607,11 @@ function addReuseItem() {
       </div>
       <div class="form-group span-2">
         <label>Description</label>
-        <textarea name="reuse_description" rows="2"
-          placeholder="Describe the material condition, quantity, and reuse opportunity..."></textarea>
+        <textarea name="reuse_description" rows="2" placeholder="Describe the material condition, quantity, and reuse opportunity..."></textarea>
       </div>
       <div class="form-group span-2">
         <label>Risk Factors</label>
-        <textarea name="reuse_risk_factors" rows="2"
-          placeholder="e.g. Potential asbestos contamination; access constraints; market availability..."></textarea>
+        <textarea name="reuse_risk_factors" rows="2" placeholder="e.g. Potential asbestos contamination; access constraints; market availability..."></textarea>
       </div>
     </div>
   `;
@@ -1143,14 +1623,12 @@ async function generateAIText(section, targetId) {
   const btnMap = { executive_summary: 'aiExec', conclusion: 'aiConclusion' };
   const btn = document.getElementById(btnMap[section]);
   const textarea = document.getElementById(targetId);
-  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating...'; }
-  const form = document.getElementById('auditForm');
-  const fd = new FormData(form);
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing...'; }
+  const fd = new FormData(document.getElementById('auditForm'));
   const reportData = {
     job_address: fd.get('job_address') || '',
     client_name: fd.get('client_name') || '',
-    kwp_materials: Array.from(document.querySelectorAll('[name="material_name"]'))
-      .map(i => ({ name: i.value })).filter(m => m.name),
+    kwp_materials: Array.from(document.querySelectorAll('[name="material_name"]')).map(i => ({ name: i.value })).filter(m => m.name),
   };
   try {
     const resp = await fetch('/generate-ai-text', {
@@ -1168,7 +1646,7 @@ async function generateAIText(section, targetId) {
   } catch (err) {
     showToast('Network error: ' + err.message, 'error');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '✨ AI Generate'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '✨ AI Write'; }
   }
 }
 
@@ -1181,14 +1659,17 @@ function buildSummary() {
     const el = document.querySelector(`[name="spec_photo_${i}"]`);
     return el && el.files && el.files.length > 0;
   }).length;
-  document.getElementById('summaryView').innerHTML = `
-    <strong>Address:</strong> ${fd.get('job_address') || '—'}<br>
-    <strong>Client:</strong> ${fd.get('client_name') || '—'}<br>
-    <strong>Report No.:</strong> ${fd.get('report_number') || '—'}<br>
-    <strong>KWP Materials:</strong> ${kwpNames.length} (${kwpNames.join(', ') || 'none'})<br>
-    <strong>Reuse Items:</strong> ${reuseItems.length}<br>
-    <strong>Spec Photos:</strong> ${specCount} of 7 uploaded<br>
-  `;
+  const items = [
+    ['Address', fd.get('job_address') || '—'],
+    ['Client', fd.get('client_name') || '—'],
+    ['Report No.', fd.get('report_number') || '—'],
+    ['KWP Materials', `${kwpNames.length}${kwpNames.length ? ' (' + kwpNames.slice(0,3).join(', ') + (kwpNames.length > 3 ? '…' : '') + ')' : ''}`],
+    ['Reuse Items', String(reuseItems.length)],
+    ['Spec Photos', `${specCount} / 7`],
+  ];
+  document.getElementById('summaryView').innerHTML = items.map(([l,v]) =>
+    `<div class="sg-item"><div class="sg-label">${l}</div><div class="sg-value">${v}</div></div>`
+  ).join('');
 }
 
 // ── Form submit ────────────────────────────────────────────
@@ -1201,7 +1682,6 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
 
   const formData = new FormData(this);
 
-  // ── Remap reuse items → numbered MATERIAL_N fields (for PPTX placeholders) ──
   const reuseNames  = Array.from(document.querySelectorAll('[name="reuse_name"]')).map(i => i.value);
   const reuseDescs  = Array.from(document.querySelectorAll('[name="reuse_description"]')).map(i => i.value);
   const reusePots   = Array.from(document.querySelectorAll('[name="reuse_potential"]')).map(i => i.value);
@@ -1214,7 +1694,6 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
     formData.append(`material_${n}_risks`,       reuseRisks[i] || '');
   });
 
-  // ── Auto-build key_waste_products text ────────────────────
   const kwpNames = Array.from(document.querySelectorAll('[name="material_name"]')).map(i => i.value).filter(Boolean);
   if (kwpNames.length) formData.append('key_waste_products', kwpNames.join(', '));
 
