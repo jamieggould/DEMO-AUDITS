@@ -21,419 +21,203 @@
     --success: #27ae60;
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: 'Segoe UI', Arial, sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-  }
-  /* ── Header ───────────────────────────────────────────── */
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* ── Header ────────────────────────────────────────────── */
   .app-header {
-    background: var(--teal);
-    padding: 0 32px;
-    height: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    background: var(--teal); padding: 0 32px; height: 60px;
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.25);
   }
-  .app-header h1 {
-    color: white;
-    font-size: 17px;
-    font-weight: 600;
-    letter-spacing: 0.5px;
-  }
-  .header-badge {
-    background: var(--amber);
-    color: #fff;
-    font-size: 11px;
-    font-weight: 700;
-    padding: 3px 10px;
-    border-radius: 20px;
-    letter-spacing: 0.5px;
-  }
-  /* ── Step progress bar ────────────────────────────────── */
-  .step-bar {
-    background: var(--teal-light);
-    padding: 12px 32px;
-    display: flex;
-    gap: 4px;
-    overflow-x: auto;
-  }
+  .app-header h1 { color: white; font-size: 17px; font-weight: 600; letter-spacing: 0.5px; }
+  .header-badge { background: var(--amber); color: #fff; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+
+  /* ── Step bar ──────────────────────────────────────────── */
+  .step-bar { background: var(--teal-light); padding: 12px 32px; display: flex; gap: 4px; overflow-x: auto; }
   .step-pill {
-    flex: 1;
-    min-width: 80px;
-    background: rgba(255,255,255,0.15);
-    border-radius: 20px;
-    padding: 6px 12px;
-    text-align: center;
-    font-size: 11px;
-    color: rgba(255,255,255,0.6);
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    border: 1px solid transparent;
+    flex: 1; min-width: 70px; background: rgba(255,255,255,0.15); border-radius: 20px;
+    padding: 6px 10px; text-align: center; font-size: 11px; color: rgba(255,255,255,0.6);
+    cursor: pointer; transition: all 0.2s; white-space: nowrap; border: 1px solid transparent;
   }
-  .step-pill.active {
-    background: white;
-    color: var(--teal);
-    font-weight: 700;
-    border-color: var(--teal);
-  }
-  .step-pill.done {
-    background: var(--green);
-    color: white;
-    font-weight: 600;
-  }
-  /* ── Layout ───────────────────────────────────────────── */
-  .main-wrap {
-    max-width: 900px;
-    margin: 32px auto;
-    padding: 0 20px 80px;
-  }
-  /* ── Step panels ──────────────────────────────────────── */
+  .step-pill.active { background: white; color: var(--teal); font-weight: 700; border-color: var(--teal); }
+  .step-pill.done { background: var(--green); color: white; font-weight: 600; }
+
+  /* ── Layout ────────────────────────────────────────────── */
+  .main-wrap { max-width: 960px; margin: 32px auto; padding: 0 20px 80px; }
   .step-panel { display: none; }
   .step-panel.active { display: block; }
-  .panel-card {
-    background: var(--card);
-    border-radius: 12px;
-    box-shadow: 0 2px 12px rgba(13,79,108,0.10);
-    overflow: hidden;
-    margin-bottom: 24px;
-  }
-  .panel-head {
-    background: linear-gradient(135deg, var(--teal), var(--teal-light));
-    padding: 20px 28px;
-  }
-  .panel-head h2 {
-    color: white;
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 4px;
-  }
+  .panel-card { background: var(--card); border-radius: 12px; box-shadow: 0 2px 12px rgba(13,79,108,0.10); overflow: hidden; margin-bottom: 24px; }
+  .panel-head { background: linear-gradient(135deg, var(--teal), var(--teal-light)); padding: 20px 28px; }
+  .panel-head h2 { color: white; font-size: 20px; font-weight: 700; margin-bottom: 4px; }
   .panel-head p { color: rgba(255,255,255,0.75); font-size: 13px; }
   .panel-body { padding: 28px; }
-  /* ── Form elements ────────────────────────────────────── */
-  .form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-  }
+
+  /* ── Form elements ─────────────────────────────────────── */
+  .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
   .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
-  .form-grid.full   { grid-template-columns: 1fr; }
+  .form-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
+  .form-grid.full { grid-template-columns: 1fr; }
   .span-2 { grid-column: span 2; }
+  .span-3 { grid-column: span 3; }
+  .span-4 { grid-column: span 4; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
-  .form-group label {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--teal);
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-  .form-group input,
-  .form-group select,
-  .form-group textarea {
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 14px;
-    font-family: inherit;
-    color: var(--text);
-    background: #fafcfe;
+  .form-group label { font-size: 12px; font-weight: 600; color: var(--teal); text-transform: uppercase; letter-spacing: 0.4px; }
+  .form-group input, .form-group select, .form-group textarea {
+    border: 1.5px solid var(--border); border-radius: 8px; padding: 10px 12px;
+    font-size: 14px; font-family: inherit; color: var(--text); background: #fafcfe;
     transition: border-color 0.2s, box-shadow 0.2s;
   }
-  .form-group input:focus,
-  .form-group select:focus,
-  .form-group textarea:focus {
-    outline: none;
-    border-color: var(--teal);
-    box-shadow: 0 0 0 3px rgba(13,79,108,0.10);
-    background: white;
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+    outline: none; border-color: var(--teal); box-shadow: 0 0 0 3px rgba(13,79,108,0.10); background: white;
   }
   .form-group textarea { resize: vertical; min-height: 90px; }
-  /* upload zones */
+
+  /* ── Upload zones ──────────────────────────────────────── */
   .upload-zone {
-    border: 2px dashed var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.2s;
-    background: #fafcfe;
-    position: relative;
+    border: 2px dashed var(--border); border-radius: 10px; padding: 20px;
+    text-align: center; cursor: pointer; transition: all 0.2s; background: #fafcfe; position: relative;
   }
   .upload-zone:hover { border-color: var(--teal); background: var(--blue-light); }
-  .upload-zone input[type="file"] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
   .upload-zone .uz-icon { font-size: 28px; margin-bottom: 6px; }
   .upload-zone .uz-label { font-size: 13px; color: var(--muted); }
-  .upload-zone .uz-hint  { font-size: 11px; color: var(--blue-mid); margin-top: 4px; }
-  .upload-zone.has-file  { border-color: var(--green); background: #f0fff6; }
-  .preview-thumb {
-    max-width: 120px;
-    max-height: 80px;
-    border-radius: 6px;
-    margin-top: 8px;
-    object-fit: cover;
-    border: 2px solid var(--green);
+  .upload-zone .uz-hint { font-size: 11px; color: var(--blue-mid); margin-top: 4px; }
+  .upload-zone.has-file { border-color: var(--green); background: #f0fff6; }
+  .preview-thumb { max-width: 120px; max-height: 80px; border-radius: 6px; margin-top: 8px; object-fit: cover; border: 2px solid var(--green); }
+
+  /* ── Staff cards ────────────────────────────────────────── */
+  .staff-card { background: var(--blue-light); border-radius: 10px; padding: 20px; border: 1px solid var(--border); }
+  .staff-card h3 { color: var(--teal); font-size: 14px; font-weight: 700; margin-bottom: 14px; text-transform: uppercase; letter-spacing: 0.4px; }
+
+  /* ── Spec photo grid ───────────────────────────────────── */
+  .spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+  .spec-card { background: #fafcfe; border: 1.5px solid var(--border); border-radius: 10px; padding: 14px; }
+  .spec-card label { font-size: 11px; font-weight: 700; color: var(--teal); text-transform: uppercase; display: block; margin-bottom: 8px; }
+
+  /* ── Calculator table ──────────────────────────────────── */
+  .calc-section { margin-bottom: 24px; }
+  .calc-section-title {
+    background: var(--teal); color: white; padding: 10px 16px; border-radius: 8px 8px 0 0;
+    font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px;
+    display: flex; justify-content: space-between; align-items: center;
   }
-  /* staff card */
-  .staff-card {
-    background: var(--blue-light);
-    border-radius: 10px;
-    padding: 20px;
-    border: 1px solid var(--border);
+  .calc-table-wrap { overflow-x: auto; border: 1px solid var(--border); border-top: none; border-radius: 0 0 8px 8px; }
+  .calc-table { width: 100%; border-collapse: collapse; font-size: 12px; min-width: 500px; }
+  .calc-table th { background: #e8f4fb; color: var(--teal); padding: 8px 8px; text-align: left; font-size: 11px; font-weight: 700; border-bottom: 1px solid var(--border); }
+  .calc-table td { padding: 5px 4px; border-bottom: 1px solid #eef2f5; }
+  .calc-table tr:last-child td { border-bottom: none; }
+  .calc-table td:first-child { padding-left: 12px; color: var(--text); font-size: 12px; white-space: nowrap; }
+  .calc-table input[type="number"] {
+    border: 1px solid var(--border); border-radius: 4px; padding: 4px 6px;
+    font-size: 12px; width: 80px; background: #fafcfe; text-align: right;
   }
-  .staff-card h3 {
-    color: var(--teal);
-    font-size: 14px;
-    font-weight: 700;
-    margin-bottom: 14px;
-    text-transform: uppercase;
-    letter-spacing: 0.4px;
-  }
-  /* ── Dynamic material table ───────────────────────────── */
+  .calc-table input[type="number"]:focus { outline: none; border-color: var(--teal); background: white; }
+  .calc-table .unit { color: var(--muted); font-size: 11px; padding-left: 4px; }
+  .calc-totals { background: #e8f4fb; border-top: 2px solid var(--teal); }
+  .calc-totals td { font-weight: 700; color: var(--teal); padding: 8px 8px; }
+
+  /* ── KWP materials table ────────────────────────────────── */
   .material-table-wrap { overflow-x: auto; }
-  .material-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    min-width: 900px;
-  }
-  .material-table th {
-    background: var(--teal);
-    color: white;
-    padding: 10px 8px;
-    text-align: left;
-    font-size: 11px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-  }
+  .material-table { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 920px; }
+  .material-table th { background: var(--teal); color: white; padding: 10px 8px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; }
   .material-table td { padding: 6px 4px; border-bottom: 1px solid var(--border); }
-  .material-table input,
-  .material-table select {
-    border: 1px solid var(--border);
-    border-radius: 5px;
-    padding: 5px 7px;
-    font-size: 12px;
-    width: 100%;
-    background: #fafcfe;
-  }
-  .material-table input:focus,
-  .material-table select:focus {
-    outline: none;
-    border-color: var(--teal);
-    background: white;
-  }
-  .btn-delete-row {
-    background: none;
-    border: none;
-    color: var(--danger);
-    font-size: 18px;
-    cursor: pointer;
-    padding: 4px;
-    line-height: 1;
-  }
-  .btn-add-row {
-    margin-top: 12px;
-    background: var(--teal);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 18px;
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-  }
+  .material-table input, .material-table select { border: 1px solid var(--border); border-radius: 5px; padding: 5px 7px; font-size: 12px; width: 100%; background: #fafcfe; }
+  .material-table input:focus, .material-table select:focus { outline: none; border-color: var(--teal); background: white; }
+  .btn-delete-row { background: none; border: none; color: var(--danger); font-size: 18px; cursor: pointer; padding: 4px; }
+  .btn-add-row { margin-top: 12px; background: var(--teal); color: white; border: none; border-radius: 8px; padding: 9px 18px; font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; }
   .btn-add-row:hover { background: var(--teal-light); }
-  /* ── Reuse items ──────────────────────────────────────── */
-  .reuse-item {
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 20px;
-    margin-bottom: 16px;
-    background: #fafcfe;
-  }
-  .reuse-item-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 14px;
-  }
-  .reuse-item-number {
-    background: var(--teal);
-    color: white;
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 13px; font-weight: 700;
-  }
-  /* ── Buttons ──────────────────────────────────────────── */
-  .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 11px 24px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    border: none;
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-  .btn-primary   { background: var(--teal); color: white; }
-  .btn-primary:hover   { background: var(--teal-light); }
+
+  /* ── Reuse items ────────────────────────────────────────── */
+  .reuse-item { border: 1.5px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; background: #fafcfe; }
+  .reuse-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .reuse-item-number { background: var(--teal); color: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; }
+
+  /* ── Buttons ────────────────────────────────────────────── */
+  .btn { display: inline-flex; align-items: center; gap: 8px; padding: 11px 24px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; transition: all 0.2s; text-decoration: none; }
+  .btn-primary { background: var(--teal); color: white; }
+  .btn-primary:hover { background: var(--teal-light); }
   .btn-secondary { background: white; color: var(--teal); border: 2px solid var(--teal); }
   .btn-secondary:hover { background: var(--blue-light); }
-  .btn-success   { background: var(--green); color: white; }
-  .btn-success:hover   { background: #237a5f; }
-  .btn-danger    { background: var(--danger); color: white; }
-  .btn-ai {
-    background: linear-gradient(135deg, #6c3d91, #a044cc);
-    color: white;
-  }
-  .btn-ai:hover { opacity: 0.9; }
-  .step-nav {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 24px;
-    padding-top: 20px;
-    border-top: 1px solid var(--border);
-  }
-  /* ── Section divider ──────────────────────────────────── */
-  .section-divider {
-    font-size: 12px;
-    font-weight: 700;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    margin: 22px 0 14px;
-    padding-bottom: 6px;
-    border-bottom: 2px solid var(--border);
-  }
-  /* ── AI text area ─────────────────────────────────────── */
+  .btn-success { background: var(--green); color: white; }
+  .btn-success:hover { background: #237a5f; }
+  .step-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+
+  /* ── Section divider ────────────────────────────────────── */
+  .section-divider { font-size: 12px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; margin: 22px 0 14px; padding-bottom: 6px; border-bottom: 2px solid var(--border); }
+
+  /* ── AI textarea ────────────────────────────────────────── */
   .ai-text-wrap { position: relative; }
   .ai-text-wrap textarea { padding-right: 110px; }
-  .ai-btn-inline {
-    position: absolute;
-    top: 8px; right: 8px;
-    background: linear-gradient(135deg, #6c3d91, #a044cc);
-    color: white;
-    border: none;
-    border-radius: 6px;
-    padding: 6px 12px;
-    font-size: 11px;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex; align-items: center; gap: 4px;
-  }
+  .ai-btn-inline { position: absolute; top: 8px; right: 8px; background: linear-gradient(135deg, #6c3d91, #a044cc); color: white; border: none; border-radius: 6px; padding: 6px 12px; font-size: 11px; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 4px; }
   .ai-btn-inline:disabled { opacity: 0.5; cursor: default; }
-  /* ── Toast ────────────────────────────────────────────── */
-  #toast {
-    position: fixed;
-    bottom: 28px; right: 28px;
-    background: #222;
-    color: white;
-    padding: 12px 20px;
-    border-radius: 10px;
-    font-size: 14px;
-    opacity: 0;
-    transform: translateY(10px);
-    transition: all 0.3s;
-    z-index: 9999;
-    max-width: 340px;
-    pointer-events: none;
-  }
+
+  /* ── Toast ──────────────────────────────────────────────── */
+  #toast { position: fixed; bottom: 28px; right: 28px; background: #222; color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; opacity: 0; transform: translateY(10px); transition: all 0.3s; z-index: 9999; max-width: 340px; pointer-events: none; }
   #toast.show { opacity: 1; transform: translateY(0); }
   #toast.success { background: var(--green); }
-  #toast.error   { background: var(--danger); }
-  /* ── Generate button ──────────────────────────────────── */
-  .generate-section {
-    text-align: center;
-    padding: 36px 28px;
-  }
-  .generate-section h3 {
-    font-size: 22px;
-    color: var(--teal);
-    margin-bottom: 8px;
-  }
-  .generate-section p {
-    color: var(--muted);
-    font-size: 14px;
-    margin-bottom: 24px;
-  }
-  .btn-generate {
-    background: linear-gradient(135deg, var(--teal), var(--green));
-    color: white;
-    border: none;
-    border-radius: 12px;
-    padding: 16px 48px;
-    font-size: 17px;
-    font-weight: 700;
-    cursor: pointer;
-    box-shadow: 0 4px 18px rgba(13,79,108,0.30);
-    transition: all 0.2s;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-  }
+  #toast.error { background: var(--danger); }
+
+  /* ── Generate button ────────────────────────────────────── */
+  .generate-section { text-align: center; padding: 36px 28px; }
+  .generate-section h3 { font-size: 22px; color: var(--teal); margin-bottom: 8px; }
+  .generate-section p { color: var(--muted); font-size: 14px; margin-bottom: 24px; }
+  .btn-generate { background: linear-gradient(135deg, var(--teal), var(--green)); color: white; border: none; border-radius: 12px; padding: 16px 48px; font-size: 17px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 18px rgba(13,79,108,0.30); transition: all 0.2s; display: inline-flex; align-items: center; gap: 10px; }
   .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 6px 22px rgba(13,79,108,0.38); }
-  .btn-generate:active { transform: translateY(0); }
   .btn-generate:disabled { opacity: 0.5; cursor: default; transform: none; }
-  /* spinner */
-  .spinner {
-    width: 20px; height: 20px;
-    border: 3px solid rgba(255,255,255,0.4);
-    border-top-color: white;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-    display: none;
-  }
-  .btn-generate.loading .spinner  { display: block; }
+  .spinner { width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.4); border-top-color: white; border-radius: 50%; animation: spin 0.7s linear infinite; display: none; }
+  .btn-generate.loading .spinner { display: block; }
   .btn-generate.loading .btn-text { display: none; }
   @keyframes spin { to { transform: rotate(360deg); } }
-  /* ── Responsive ────────────────────────────────────────── */
+
+  /* ── Calculator import banner ───────────────────────────── */
+  .import-banner { background: linear-gradient(135deg, #1a4a6e, #2e8b6e); border-radius: 10px; padding: 18px 22px; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .import-banner .ib-text { color: white; }
+  .import-banner .ib-text strong { font-size: 15px; display: block; margin-bottom: 4px; }
+  .import-banner .ib-text span { font-size: 13px; opacity: 0.85; }
+  .import-banner .ib-action { flex-shrink: 0; }
+  .btn-import { background: white; color: var(--teal); border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .btn-import:hover { background: var(--blue-light); }
+
+  /* ── Calc totals bar ────────────────────────────────────── */
+  .totals-bar { background: var(--teal); color: white; border-radius: 10px; padding: 14px 20px; margin-top: 20px; display: flex; gap: 32px; flex-wrap: wrap; }
+  .totals-bar .tb-item { display: flex; flex-direction: column; }
+  .totals-bar .tb-label { font-size: 11px; opacity: 0.75; text-transform: uppercase; letter-spacing: 0.4px; }
+  .totals-bar .tb-value { font-size: 20px; font-weight: 700; }
+
+  /* ── Responsive ─────────────────────────────────────────── */
   @media (max-width: 640px) {
-    .form-grid { grid-template-columns: 1fr; }
-    .form-grid.cols-3 { grid-template-columns: 1fr; }
-    .span-2 { grid-column: span 1; }
+    .form-grid, .form-grid.cols-3, .form-grid.cols-4 { grid-template-columns: 1fr; }
+    .span-2, .span-3, .span-4 { grid-column: span 1; }
     .main-wrap { padding: 0 12px 80px; }
     .step-bar { padding: 10px 12px; }
+    .import-banner { flex-direction: column; }
   }
 </style>
 </head>
 <body>
-<!-- ─────── Header ──────────────────────────────────────── -->
+<!-- ── Header ────────────────────────────────────────────── -->
 <header class="app-header">
   <h1>⚒ Pre-Demolition Audit Generator</h1>
   <span class="header-badge">LAWMENS</span>
 </header>
-<!-- ─────── Step progress ───────────────────────────────── -->
+<!-- ── Step bar ──────────────────────────────────────────── -->
 <div class="step-bar" id="stepBar">
   <div class="step-pill active" onclick="goToStep(0)">1 · Project</div>
   <div class="step-pill" onclick="goToStep(1)">2 · Team</div>
   <div class="step-pill" onclick="goToStep(2)">3 · Photos</div>
-  <div class="step-pill" onclick="goToStep(3)">4 · Materials</div>
-  <div class="step-pill" onclick="goToStep(4)">5 · Reuse</div>
-  <div class="step-pill" onclick="goToStep(5)">6 · Text</div>
-  <div class="step-pill" onclick="goToStep(6)">7 · Generate</div>
+  <div class="step-pill" onclick="goToStep(3)">4 · Calculator</div>
+  <div class="step-pill" onclick="goToStep(4)">5 · Materials</div>
+  <div class="step-pill" onclick="goToStep(5)">6 · Reuse</div>
+  <div class="step-pill" onclick="goToStep(6)">7 · Text</div>
+  <div class="step-pill" onclick="goToStep(7)">8 · Generate</div>
 </div>
-<!-- ═════════════════════════════════════════════════════════
+<!-- ═══════════════════════════════════════════════════════
      FORM
-═════════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════════════════ -->
 <form id="auditForm" enctype="multipart/form-data">
 <div class="main-wrap">
-<!-- ══════════ STEP 1: Project Details ══════════════════ -->
+
+<!-- ══════════ STEP 1: Project Details ═════════════════ -->
 <div class="step-panel active" id="step-0">
   <div class="panel-card">
     <div class="panel-head">
@@ -451,21 +235,12 @@
           <input type="text" name="client_name" placeholder="e.g. Savills" required>
         </div>
         <div class="form-group">
-          <label>Report Title</label>
-          <input type="text" name="report_title" value="Pre-Demolition Audit">
-        </div>
-        <div class="form-group">
           <label>Report Number</label>
           <input type="text" name="report_number" placeholder="e.g. LAW-2024-001">
         </div>
         <div class="form-group">
           <label>Report Date</label>
-          <!-- name changed from report_date → date_of_report to match app.py -->
           <input type="text" name="date_of_report" placeholder="e.g. January 2025">
-        </div>
-        <div class="form-group">
-          <label>Planning Reference</label>
-          <input type="text" name="planning_ref" placeholder="e.g. 2024/01234/FUL">
         </div>
         <div class="form-group">
           <label>Building Type</label>
@@ -496,13 +271,6 @@
           <input type="text" name="num_storeys" placeholder="e.g. 6">
         </div>
       </div>
-      <div class="form-grid full" style="margin-top:18px;">
-        <div class="form-group">
-          <label>Building Description</label>
-          <textarea name="building_description" rows="3"
-            placeholder="Brief description of the building — e.g. '1980s mid-rise office block with concrete frame, curtain walling and raised access floors...'"></textarea>
-        </div>
-      </div>
     </div>
   </div>
   <div class="step-nav">
@@ -510,7 +278,8 @@
     <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Report Team →</button>
   </div>
 </div>
-<!-- ══════════ STEP 2: Report Team ══════════════════════ -->
+
+<!-- ══════════ STEP 2: Report Team ═════════════════════ -->
 <div class="step-panel" id="step-1">
   <div class="panel-card">
     <div class="panel-head">
@@ -524,28 +293,25 @@
           <div class="form-grid full">
             <div class="form-group">
               <label>Full Name</label>
-              <!-- name changed from prepared_by_name → prepared_by to match app.py -->
               <input type="text" name="prepared_by" placeholder="e.g. James Smith">
             </div>
             <div class="form-group">
               <label>Position / Title</label>
-              <!-- name changed from prepared_by_position → prepared_by_role to match app.py -->
               <input type="text" name="prepared_by_role" placeholder="e.g. Sustainability Consultant">
             </div>
             <div class="form-group">
               <label>Date</label>
-              <!-- name changed from prepared_by_date → prepared_date to match app.py -->
               <input type="text" name="prepared_date" placeholder="e.g. 15 January 2025">
             </div>
             <div class="form-group">
               <label>Profile Photo</label>
-              <div class="upload-zone" id="preparedPhotoZone">
+              <div class="upload-zone" id="prepPhotoZone">
                 <input type="file" name="prepared_by_photo" accept="image/*"
-                       onchange="handlePhotoPreview(this, 'preparedPhotoZone', 'preparedThumb')">
+                       onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
                 <div class="uz-icon">📷</div>
                 <div class="uz-label">Upload photo</div>
                 <div class="uz-hint">JPG or PNG, square crop recommended</div>
-                <img id="preparedThumb" class="preview-thumb" style="display:none;">
+                <img id="prepThumb" class="preview-thumb" style="display:none;">
               </div>
             </div>
           </div>
@@ -555,28 +321,25 @@
           <div class="form-grid full">
             <div class="form-group">
               <label>Full Name</label>
-              <!-- name changed from authorised_by_name → authorised_by to match app.py -->
               <input type="text" name="authorised_by" placeholder="e.g. Sarah Johnson">
             </div>
             <div class="form-group">
               <label>Position / Title</label>
-              <!-- name changed from authorised_by_position → authorised_by_role to match app.py -->
               <input type="text" name="authorised_by_role" placeholder="e.g. Director">
             </div>
             <div class="form-group">
               <label>Date</label>
-              <!-- name changed from authorised_by_date → authorised_date to match app.py -->
               <input type="text" name="authorised_date" placeholder="e.g. 18 January 2025">
             </div>
             <div class="form-group">
               <label>Profile Photo</label>
-              <div class="upload-zone" id="authorisedPhotoZone">
+              <div class="upload-zone" id="authPhotoZone">
                 <input type="file" name="authorised_by_photo" accept="image/*"
-                       onchange="handlePhotoPreview(this, 'authorisedPhotoZone', 'authorisedThumb')">
+                       onchange="handlePhotoPreview(this,'authPhotoZone','authThumb')">
                 <div class="uz-icon">📷</div>
                 <div class="uz-label">Upload photo</div>
                 <div class="uz-hint">JPG or PNG, square crop recommended</div>
-                <img id="authorisedThumb" class="preview-thumb" style="display:none;">
+                <img id="authThumb" class="preview-thumb" style="display:none;">
               </div>
             </div>
           </div>
@@ -586,88 +349,314 @@
   </div>
   <div class="step-nav">
     <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
-    <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Photos & Plans →</button>
+    <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Photos →</button>
   </div>
 </div>
-<!-- ══════════ STEP 3: Photos & Floor Plans ══════════════ -->
+
+<!-- ══════════ STEP 3: Photos & Spec Sheets ════════════ -->
 <div class="step-panel" id="step-2">
   <div class="panel-card">
     <div class="panel-head">
-      <h2>Photos &amp; Floor Plans</h2>
-      <p>Upload a building photo (used on the executive summary page) and floor plan drawings</p>
+      <h2>Photos &amp; Spec Sheet Images</h2>
+      <p>Building photo for the cover page, and up to 7 full-page spec sheet images for the KWP slides</p>
     </div>
     <div class="panel-body">
-      <div class="form-group">
-        <label>Building Exterior Photo</label>
+      <!-- Building photo -->
+      <div class="form-group" style="max-width:360px;">
+        <label>Building Photo (Cover Page)</label>
         <div class="upload-zone" id="buildingPhotoZone">
           <input type="file" name="building_photo" accept="image/*"
-                 onchange="handlePhotoPreview(this, 'buildingPhotoZone', 'buildingThumb')">
+                 onchange="handlePhotoPreview(this,'buildingPhotoZone','buildingThumb')">
           <div class="uz-icon">🏢</div>
           <div class="uz-label">Upload building photo</div>
-          <div class="uz-hint">Will appear on the Executive Summary page</div>
-          <img id="buildingThumb" class="preview-thumb" style="display:none; max-width:200px;">
+          <div class="uz-hint">Appears on the executive summary slide</div>
+          <img id="buildingThumb" class="preview-thumb" style="display:none;max-width:200px;">
         </div>
       </div>
-      <div class="section-divider" style="margin-top:28px;">Floor Plans</div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:16px;">
-        Upload floor plan images (CAD exports, PDFs converted to PNG, etc.). Add one per floor.
+
+      <div class="section-divider" style="margin-top:28px;">Spec Sheet Images (Slides 20-26)</div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:18px;">
+        Each spec slot is a full-page image slide. Upload a product/material spec sheet photo for each Key Waste Product.
+        Leave blank if not needed — the slide will remain as-is.
       </p>
-      <div id="floorPlanList"></div>
-      <button type="button" class="btn-add-row" onclick="addFloorPlan()">
-        + Add Floor Plan
-      </button>
+      <div class="spec-grid">
+        <div class="spec-card" id="specCard1">
+          <label>Spec Photo 1</label>
+          <div class="upload-zone" id="specZone1">
+            <input type="file" name="spec_photo_1" accept="image/*,.pdf"
+                   onchange="handleSpecPreview(this,'specZone1','specThumb1','specLabel1')">
+            <div class="uz-icon">📄</div>
+            <div class="uz-label" id="specLabel1">Upload spec image</div>
+            <div class="uz-hint">Full slide image</div>
+            <img id="specThumb1" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card" id="specCard2">
+          <label>Spec Photo 2</label>
+          <div class="upload-zone" id="specZone2">
+            <input type="file" name="spec_photo_2" accept="image/*,.pdf"
+                   onchange="handleSpecPreview(this,'specZone2','specThumb2','specLabel2')">
+            <div class="uz-icon">📄</div>
+            <div class="uz-label" id="specLabel2">Upload spec image</div>
+            <div class="uz-hint">Full slide image</div>
+            <img id="specThumb2" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card" id="specCard3">
+          <label>Spec Photo 3</label>
+          <div class="upload-zone" id="specZone3">
+            <input type="file" name="spec_photo_3" accept="image/*,.pdf"
+                   onchange="handleSpecPreview(this,'specZone3','specThumb3','specLabel3')">
+            <div class="uz-icon">📄</div>
+            <div class="uz-label" id="specLabel3">Upload spec image</div>
+            <div class="uz-hint">Full slide image</div>
+            <img id="specThumb3" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card" id="specCard4">
+          <label>Spec Photo 4</label>
+          <div class="upload-zone" id="specZone4">
+            <input type="file" name="spec_photo_4" accept="image/*,.pdf"
+                   onchange="handleSpecPreview(this,'specZone4','specThumb4','specLabel4')">
+            <div class="uz-icon">📄</div>
+            <div class="uz-label" id="specLabel4">Upload spec image</div>
+            <div class="uz-hint">Full slide image</div>
+            <img id="specThumb4" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card" id="specCard5">
+          <label>Spec Photo 5</label>
+          <div class="upload-zone" id="specZone5">
+            <input type="file" name="spec_photo_5" accept="image/*,.pdf"
+                   onchange="handleSpecPreview(this,'specZone5','specThumb5','specLabel5')">
+            <div class="uz-icon">📄</div>
+            <div class="uz-label" id="specLabel5">Upload spec image</div>
+            <div class="uz-hint">Full slide image</div>
+            <img id="specThumb5" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card" id="specCard6">
+          <label>Spec Photo 6</label>
+          <div class="upload-zone" id="specZone6">
+            <input type="file" name="spec_photo_6" accept="image/*,.pdf"
+                   onchange="handleSpecPreview(this,'specZone6','specThumb6','specLabel6')">
+            <div class="uz-icon">📄</div>
+            <div class="uz-label" id="specLabel6">Upload spec image</div>
+            <div class="uz-hint">Full slide image</div>
+            <img id="specThumb6" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card" id="specCard7">
+          <label>Spec Photo 7</label>
+          <div class="upload-zone" id="specZone7">
+            <input type="file" name="spec_photo_7" accept="image/*,.pdf"
+                   onchange="handleSpecPreview(this,'specZone7','specThumb7','specLabel7')">
+            <div class="uz-icon">📄</div>
+            <div class="uz-label" id="specLabel7">Upload spec image</div>
+            <div class="uz-hint">Full slide image</div>
+            <img id="specThumb7" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+      </div>
     </div>
   </div>
   <div class="step-nav">
     <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
-    <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Materials →</button>
+    <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Calculator →</button>
   </div>
 </div>
-<!-- ══════════ STEP 4: Key Waste Products ════════════════ -->
+
+<!-- ══════════ STEP 4: Pre Demo Audit Calculator ════════ -->
 <div class="step-panel" id="step-3">
   <div class="panel-card">
     <div class="panel-head">
+      <h2>Pre Demo Audit Calculator</h2>
+      <p>Enter quantities for each item — weights and volumes are calculated automatically and feed the KWP pie charts</p>
+    </div>
+    <div class="panel-body">
+      <!-- Import from Excel banner -->
+      <div class="import-banner">
+        <div class="ib-text">
+          <strong>📂 Import from Excel</strong>
+          <span>Upload your "Pre Demo Audit Calculator.xlsx" to auto-fill all quantities below</span>
+        </div>
+        <div class="ib-action">
+          <label class="btn-import" style="cursor:pointer;">
+            📥 Import Excel
+            <input type="file" accept=".xlsx,.xls" id="calcImportFile" style="display:none;"
+                   onchange="importCalculatorExcel(this)">
+          </label>
+        </div>
+      </div>
+
+      <!-- FLOORING -->
+      <div class="calc-section">
+        <div class="calc-section-title">
+          <span>🏠 Flooring</span>
+          <span style="font-size:11px;opacity:0.8;">Enter quantities — unit weights pre-filled</span>
+        </div>
+        <div class="calc-table-wrap">
+          <table class="calc-table" id="calcFlooring">
+            <thead>
+              <tr>
+                <th style="min-width:200px;">Item</th>
+                <th>Quantity</th>
+                <th>Unit</th>
+                <th>Unit Weight (kg)</th>
+                <th>Total Weight (kg)</th>
+                <th>Material</th>
+              </tr>
+            </thead>
+            <tbody id="calcFlooringBody"></tbody>
+            <tfoot>
+              <tr class="calc-totals">
+                <td colspan="4" style="text-align:right;">Flooring Total:</td>
+                <td id="flooringTotal">0 kg</td>
+                <td></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- WALLS -->
+      <div class="calc-section">
+        <div class="calc-section-title"><span>🧱 Walls</span></div>
+        <div class="calc-table-wrap">
+          <table class="calc-table">
+            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
+            <tbody id="calcWallsBody"></tbody>
+            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Walls Total:</td><td id="wallsTotal">0 kg</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- CEILINGS -->
+      <div class="calc-section">
+        <div class="calc-section-title"><span>🔲 Ceilings</span></div>
+        <div class="calc-table-wrap">
+          <table class="calc-table">
+            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
+            <tbody id="calcCeilingsBody"></tbody>
+            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Ceilings Total:</td><td id="ceilingsTotal">0 kg</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- FIXTURES & FITTINGS -->
+      <div class="calc-section">
+        <div class="calc-section-title"><span>🔧 Fixtures &amp; Fittings</span></div>
+        <div class="calc-table-wrap">
+          <table class="calc-table">
+            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
+            <tbody id="calcFixturesBody"></tbody>
+            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Fixtures Total:</td><td id="fixturesTotal">0 kg</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- M&E -->
+      <div class="calc-section">
+        <div class="calc-section-title"><span>⚡ M&amp;E / Services</span></div>
+        <div class="calc-table-wrap">
+          <table class="calc-table">
+            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
+            <tbody id="calcMEBody"></tbody>
+            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">M&amp;E Total:</td><td id="meTotal">0 kg</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- WC / SHOWER -->
+      <div class="calc-section">
+        <div class="calc-section-title"><span>🚿 WC / Shower / Kitchen</span></div>
+        <div class="calc-table-wrap">
+          <table class="calc-table">
+            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
+            <tbody id="calcWCBody"></tbody>
+            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">WC/Shower Total:</td><td id="wcTotal">0 kg</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- FURNITURE -->
+      <div class="calc-section">
+        <div class="calc-section-title"><span>🪑 Furniture</span></div>
+        <div class="calc-table-wrap">
+          <table class="calc-table">
+            <thead><tr><th style="min-width:200px;">Item</th><th>Quantity</th><th>Unit</th><th>Unit Weight (kg)</th><th>Total Weight (kg)</th><th>Material</th></tr></thead>
+            <tbody id="calcFurnitureBody"></tbody>
+            <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;">Furniture Total:</td><td id="furnitureTotal">0 kg</td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+
+      <!-- Totals bar -->
+      <div class="totals-bar">
+        <div class="tb-item">
+          <span class="tb-label">Total Weight</span>
+          <span class="tb-value" id="grandTotalKg">0 kg</span>
+        </div>
+        <div class="tb-item">
+          <span class="tb-label">Total Weight (tonnes)</span>
+          <span class="tb-value" id="grandTotalT">0.000 t</span>
+        </div>
+      </div>
+
+      <p style="color:var(--muted);font-size:12px;margin-top:14px;">
+        💡 These quantities auto-populate the KWP materials table on the next step. You can also edit entries there directly.
+      </p>
+    </div>
+  </div>
+  <div class="step-nav">
+    <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
+    <button type="button" class="btn btn-primary" onclick="calcToKWP(); nextStep();">Next: KWP Materials →</button>
+  </div>
+</div>
+
+<!-- ══════════ STEP 5: Key Waste Products Table ══════════ -->
+<div class="step-panel" id="step-4">
+  <div class="panel-card">
+    <div class="panel-head">
       <h2>Key Waste Products (KWP)</h2>
-      <p>Enter each material found in the building. These feed the tables and charts in the report.</p>
+      <p>These values feed the 3 pie charts in the report. Review and adjust as needed.</p>
     </div>
     <div class="panel-body">
       <div class="material-table-wrap">
         <table class="material-table" id="kwpTable">
           <thead>
             <tr>
-              <th style="width:140px">Material</th>
-              <th style="width:90px">EWC Code</th>
-              <th style="width:75px">Vol (m³)</th>
-              <th style="width:75px">Weight (t)</th>
-              <th style="width:60px">% Wt</th>
-              <th style="width:80px">Carbon Factor</th>
-              <th style="width:90px">Source</th>
-              <th style="width:80px">A1-A3 Carbon (tCO₂e)</th>
-              <th style="width:55px">% Reuse</th>
-              <th style="width:65px">% Recycle</th>
-              <th style="width:65px">% Landfill</th>
-              <th style="width:200px">Recommendation</th>
-              <th style="width:30px"></th>
+              <th style="width:150px;">Material Name</th>
+              <th style="width:90px;">EWC Code</th>
+              <th style="width:80px;">Vol (m³)</th>
+              <th style="width:80px;">Weight (t)</th>
+              <th style="width:60px;">% Wt</th>
+              <th style="width:80px;">Carbon Factor</th>
+              <th style="width:90px;">Carbon (tCO₂e)</th>
+              <th style="width:55px;">% Reuse</th>
+              <th style="width:65px;">% Recycle</th>
+              <th style="width:65px;">% Landfill</th>
+              <th style="width:30px;"></th>
             </tr>
           </thead>
-          <tbody id="kwpBody">
-          </tbody>
+          <tbody id="kwpBody"></tbody>
         </table>
       </div>
-      <button type="button" class="btn-add-row" onclick="addMaterialRow()">
-        + Add Material
-      </button>
-      <!-- Added: total project weight field for {{PROJECT_WEIGHT}} placeholder -->
+      <button type="button" class="btn-add-row" onclick="addMaterialRow()">+ Add Material</button>
       <div class="form-grid cols-3" style="margin-top:20px;">
         <div class="form-group">
           <label>Total Project Weight (tonnes)</label>
-          <input type="text" name="project_weight" placeholder="e.g. 2,450 — auto-calculated or override">
+          <input type="text" name="project_weight" id="projectWeightField" placeholder="Auto-calculated or override">
+        </div>
+        <div class="form-group">
+          <label>Landfill Diversion Target (%)</label>
+          <input type="text" name="landfill_target_percent" placeholder="e.g. 95" value="95">
+        </div>
+        <div class="form-group">
+          <label>Recycling Target (%)</label>
+          <input type="text" name="recycle_target_percent" placeholder="e.g. 80" value="80">
         </div>
       </div>
-      <p style="color:var(--muted);font-size:12px;margin-top:12px;">
-        💡 Tip: Leave % Weight blank — it will be auto-calculated from the weight column.
-        Common EWC codes: Concrete 17 01 01 · Brickwork 17 01 02 · Steel 17 04 05 · Timber 17 02 01 · Plasterboard 17 08 02
-      </p>
     </div>
   </div>
   <div class="step-nav">
@@ -675,18 +664,17 @@
     <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Reuse Items →</button>
   </div>
 </div>
-<!-- ══════════ STEP 5: Material Reuse Section ═════════════ -->
-<div class="step-panel" id="step-4">
+
+<!-- ══════════ STEP 6: Material Reuse Items ═════════════ -->
+<div class="step-panel" id="step-5">
   <div class="panel-card">
     <div class="panel-head">
       <h2>Material Reuse Items</h2>
-      <p>Add individual materials with reuse potential for the final "Material Reuse" section of the report</p>
+      <p>Up to 20 items — these fill the Material Reuse slides (slides 38-44) with name, description, potential and risks</p>
     </div>
     <div class="panel-body">
       <div id="reuseItemList"></div>
-      <button type="button" class="btn-add-row" onclick="addReuseItem()">
-        + Add Reuse Item
-      </button>
+      <button type="button" class="btn-add-row" onclick="addReuseItem()">+ Add Reuse Item</button>
     </div>
   </div>
   <div class="step-nav">
@@ -694,12 +682,13 @@
     <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Report Text →</button>
   </div>
 </div>
-<!-- ══════════ STEP 6: Text & AI ════════════════════════ -->
-<div class="step-panel" id="step-5">
+
+<!-- ══════════ STEP 7: Report Text ══════════════════════ -->
+<div class="step-panel" id="step-6">
   <div class="panel-card">
     <div class="panel-head">
       <h2>Report Text &amp; AI Generation</h2>
-      <p>Enter text manually or use AI to auto-generate key sections</p>
+      <p>Enter text manually or use AI to generate key sections</p>
     </div>
     <div class="panel-body">
       <div class="section-divider">Executive Summary</div>
@@ -709,45 +698,44 @@
           <textarea name="executive_summary" id="execSummaryText" rows="6"
             placeholder="Write or generate the executive summary..."></textarea>
         </div>
-        <!-- AI button now works without needing a key — uses server env var -->
-        <button type="button" class="ai-btn-inline" onclick="generateAIText('executive_summary', 'execSummaryText')" id="aiExec">
+        <button type="button" class="ai-btn-inline" onclick="generateAIText('executive_summary','execSummaryText')" id="aiExec">
           ✨ AI Generate
         </button>
       </div>
-      <div class="section-divider">Introduction</div>
-      <div class="ai-text-wrap">
+
+      <div class="section-divider">Key Figures</div>
+      <div class="form-grid cols-3">
         <div class="form-group">
-          <label>Introduction (page-specific intro)</label>
-          <textarea name="introduction_text" id="introText" rows="4"
-            placeholder="Write or generate the introduction..."></textarea>
+          <label>Overall Reuse % Achieved</label>
+          <input type="text" name="overall_reuse_percent" placeholder="e.g. 35%">
         </div>
-        <button type="button" class="ai-btn-inline" onclick="generateAIText('introduction', 'introText')" id="aiIntro">
-          ✨ AI Generate
-        </button>
-      </div>
-      <div class="section-divider">Conclusion &amp; Recommendations</div>
-      <div class="ai-text-wrap">
         <div class="form-group">
-          <label>Conclusion &amp; Recommendations</label>
-          <textarea name="conclusion_text" id="conclusionText" rows="6"
-            placeholder="Write or generate the conclusion..."></textarea>
+          <label>Benchmark for Resource Efficiency</label>
+          <input type="text" name="benchmark_resource_efficiency" placeholder="e.g. GLA WLC Benchmark">
         </div>
-        <button type="button" class="ai-btn-inline" onclick="generateAIText('conclusion', 'conclusionText')" id="aiConclusion">
-          ✨ AI Generate
-        </button>
       </div>
-      <!-- Added: information_provided and circular_economy_commitments for template placeholders -->
+
       <div class="section-divider">Additional Report Sections</div>
       <div class="form-grid full">
-        <div class="form-group">
+        <div class="ai-text-wrap">
+          <div class="form-group">
+            <label>Conclusion &amp; Recommendations</label>
+            <textarea name="conclusion_text" id="conclusionText" rows="5"
+              placeholder="Write or generate the conclusion..."></textarea>
+          </div>
+          <button type="button" class="ai-btn-inline" onclick="generateAIText('conclusion','conclusionText')" id="aiConclusion">
+            ✨ AI Generate
+          </button>
+        </div>
+        <div class="form-group" style="margin-top:18px;">
           <label>Information Provided</label>
           <textarea name="information_provided" rows="4"
-            placeholder="List the documents, drawings, and information provided for this audit — e.g. 'Architectural drawings (Rev A), Structural engineer's report, Previous asbestos survey (2019)'..."></textarea>
+            placeholder="List the documents and information provided — e.g. 'Architectural drawings (Rev A), Structural report, Previous asbestos survey (2019)'"></textarea>
         </div>
         <div class="form-group">
           <label>Circular Economy Commitments</label>
           <textarea name="circular_economy_commitments" rows="4"
-            placeholder="Describe the circular economy commitments for this project — e.g. 'Minimum 95% diversion from landfill; maximise reuse of structural steel; all salvageable materials offered to local charities'..."></textarea>
+            placeholder="Describe the circular economy commitments — e.g. 'Minimum 95% diversion from landfill; maximise reuse of structural steel'"></textarea>
         </div>
       </div>
     </div>
@@ -757,23 +745,24 @@
     <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Generate →</button>
   </div>
 </div>
-<!-- ══════════ STEP 7: Generate ══════════════════════════ -->
-<div class="step-panel" id="step-6">
+
+<!-- ══════════ STEP 8: Generate ═════════════════════════ -->
+<div class="step-panel" id="step-7">
   <div class="panel-card">
     <div class="generate-section">
       <h3>🎉 Ready to Generate</h3>
-      <p>All data has been collected. Click the button below to produce your PPTX report.</p>
+      <p>All data collected. Click below to build your PPTX report.</p>
       <button type="submit" class="btn-generate" id="generateBtn">
         <span class="btn-text">⬇ Generate PPTX Report</span>
         <div class="spinner"></div>
       </button>
-      <p style="margin-top:16px; font-size:12px; color:var(--muted);">
-        This may take 20–40 seconds while AI text is generated and the report is assembled.
+      <p style="margin-top:16px;font-size:12px;color:var(--muted);">
+        This may take 20–40 seconds while the report is assembled.
       </p>
     </div>
     <div class="panel-body" style="padding-top:0;">
       <div class="section-divider">Summary</div>
-      <div id="summaryView" style="font-size:13px; color:var(--muted); line-height:1.8;"></div>
+      <div id="summaryView" style="font-size:13px;color:var(--muted);line-height:2;"></div>
     </div>
   </div>
   <div class="step-nav">
@@ -781,26 +770,24 @@
     <span></span>
   </div>
 </div>
+
 </div><!-- /main-wrap -->
 </form>
 <div id="toast"></div>
-<!-- ═════════════════════════════════════════════════════════
+
+<!-- ═══════════════════════════════════════════════════════
      JAVASCRIPT
-═════════════════════════════════════════════════════════ -->
+═══════════════════════════════════════════════════════ -->
 <script>
-// ── State ─────────────────────────────────────────────────
+// ── State ──────────────────────────────────────────────────
 let currentStep = 0;
-const totalSteps = 7;
+const totalSteps = 8;
 let reuseCount = 0;
-let floorPlanCount = 0;
 
 // ── Step navigation ────────────────────────────────────────
 function goToStep(n) {
-  document.querySelectorAll('.step-panel').forEach((el, i) => {
-    el.classList.toggle('active', i === n);
-  });
-  const pills = document.querySelectorAll('.step-pill');
-  pills.forEach((p, i) => {
+  document.querySelectorAll('.step-panel').forEach((el, i) => el.classList.toggle('active', i === n));
+  document.querySelectorAll('.step-pill').forEach((p, i) => {
     p.classList.remove('active', 'done');
     if (i === n) p.classList.add('active');
     else if (i < n) p.classList.add('done');
@@ -827,40 +814,250 @@ function handlePhotoPreview(input, zoneId, thumbId) {
     reader.readAsDataURL(input.files[0]);
   }
 }
-
-// ── Floor plans ────────────────────────────────────────────
-function addFloorPlan() {
-  const list = document.getElementById('floorPlanList');
-  const idx = floorPlanCount++;
-  const div = document.createElement('div');
-  div.style.cssText = 'display:flex;gap:12px;align-items:flex-start;margin-bottom:12px;background:#f0f4f7;border-radius:8px;padding:12px;';
-  div.innerHTML = `
-    <div style="flex:0 0 140px;">
-      <label style="font-size:11px;font-weight:600;color:var(--teal);text-transform:uppercase;display:block;margin-bottom:4px;">Floor Name</label>
-      <input type="text" name="floor_plan_names" placeholder="e.g. Ground Floor"
-             style="border:1.5px solid var(--border);border-radius:6px;padding:7px 10px;font-size:13px;width:100%;">
-    </div>
-    <div style="flex:1;">
-      <label style="font-size:11px;font-weight:600;color:var(--teal);text-transform:uppercase;display:block;margin-bottom:4px;">Floor Plan Image</label>
-      <input type="file" name="floor_plan_images" accept="image/*,.pdf"
-             onchange="previewFloorPlan(this, 'fp_thumb_${idx}')"
-             style="border:1.5px solid var(--border);border-radius:6px;padding:6px;font-size:13px;width:100%;background:#fafcfe;">
-      <img id="fp_thumb_${idx}" style="display:none;max-height:60px;margin-top:6px;border-radius:4px;">
-    </div>
-    <button type="button" onclick="this.parentElement.remove()"
-            style="background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;padding:4px;margin-top:18px;">✕</button>
-  `;
-  list.appendChild(div);
+function handleSpecPreview(input, zoneId, thumbId, labelId) {
+  const zone = document.getElementById(zoneId);
+  const thumb = document.getElementById(thumbId);
+  const label = document.getElementById(labelId);
+  if (input.files && input.files[0]) {
+    const f = input.files[0];
+    label.textContent = f.name;
+    zone.classList.add('has-file');
+    if (f.type.startsWith('image/')) {
+      const reader = new FileReader();
+      reader.onload = e => { thumb.src = e.target.result; thumb.style.display = 'block'; };
+      reader.readAsDataURL(f);
+    }
+  }
 }
-function previewFloorPlan(input, thumbId) {
-  if (input.files && input.files[0] && input.files[0].type.startsWith('image/')) {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const t = document.getElementById(thumbId);
-      t.src = e.target.result;
-      t.style.display = 'block';
-    };
-    reader.readAsDataURL(input.files[0]);
+
+// ── Calculator data ────────────────────────────────────────
+// Each item: [description, qty_default, unit, unit_weight_kg, material]
+const CALC_ITEMS = {
+  flooring: [
+    ['Carpet Tiles (standard)',        0, 'm²',  3.5,  'Carpet'],
+    ['Carpet (broadloom)',             0, 'm²',  2.8,  'Carpet'],
+    ['Vinyl Sheet Flooring',           0, 'm²',  3.2,  'Vinyl'],
+    ['Vinyl Tiles',                    0, 'm²',  2.9,  'Vinyl'],
+    ['Rubber Flooring',                0, 'm²',  4.5,  'Rubber'],
+    ['Timber Parquet / Strip',         0, 'm²',  8.0,  'Timber'],
+    ['Raised Access Floor Panels',     0, 'm²',  18.0, 'Metal'],
+    ['Raised Access Floor Pedestals',  0, 'No.', 0.5,  'Metal'],
+    ['Ceramic / Porcelain Tiles',      0, 'm²',  22.0, 'Hardcore'],
+    ['Screed',                         0, 'm²',  24.0, 'Hardcore'],
+  ],
+  walls: [
+    ['Plasterboard (single layer)',    0, 'm²',  8.5,  'Plasterboard'],
+    ['Plasterboard (double layer)',    0, 'm²',  17.0, 'Plasterboard'],
+    ['Acoustic / Fire-rated Board',    0, 'm²',  10.0, 'Plasterboard'],
+    ['Timber Stud Partitions',         0, 'm²',  6.0,  'Timber'],
+    ['Metal Stud & Track',             0, 'm²',  4.5,  'Metal'],
+    ['Ceramic / Tile Cladding',        0, 'm²',  22.0, 'Hardcore'],
+    ['Glass Partitions / Screens',     0, 'm²',  14.0, 'Glass'],
+    ['Insulation (batt / slab)',       0, 'm²',  2.0,  'Insulation'],
+    ['Mineral Wool in Partitions',     0, 'm²',  2.5,  'Insulation'],
+  ],
+  ceilings: [
+    ['Suspended Ceiling Grid',         0, 'm²',  3.2,  'Metal'],
+    ['Mineral Fibre Ceiling Tiles',    0, 'm²',  4.0,  'Fibre Ceiling Tiles'],
+    ['Plasterboard Ceiling (skim)',    0, 'm²',  9.0,  'Plasterboard'],
+    ['Acoustic Ceiling Tiles',         0, 'm²',  5.5,  'Fibre Ceiling Tiles'],
+    ['Lighting Troffers / Panels',     0, 'No.', 2.5,  'Metal'],
+  ],
+  fixtures: [
+    ['Flush Doors (inc. frame)',       0, 'No.', 18.0, 'Timber'],
+    ['Fire Doors (inc. frame)',        0, 'No.', 28.0, 'Timber'],
+    ['Glazed Internal Doors',          0, 'No.', 22.0, 'Glass'],
+    ['Skirting / Architrave',          0, 'm',   0.4,  'Timber'],
+    ['Window Blinds',                  0, 'No.', 2.0,  'Fabric'],
+    ['Curtain Track / Rail',           0, 'm',   0.6,  'Metal'],
+    ['Signage (wall / wayfinding)',    0, 'No.', 1.5,  'Plastic'],
+  ],
+  me: [
+    ['Fluorescent Tubes (linear)',     0, 'No.', 0.25, 'Fluorescent Tubes'],
+    ['LED Panel Lights',               0, 'No.', 1.8,  'Metal'],
+    ['Switch / Socket Faceplates',     0, 'No.', 0.15, 'Plastic'],
+    ['Cable Trays (steel)',            0, 'm',   3.5,  'Metal'],
+    ['Conduit (plastic)',              0, 'm',   0.4,  'Plastic'],
+    ['Fan Coil Units',                 0, 'No.', 35.0, 'Metal'],
+    ['Radiators',                      0, 'No.', 14.0, 'Metal'],
+    ['Sprinkler Heads',                0, 'No.', 0.1,  'Metal'],
+    ['Hydraulic / Oil (litres)',       0, 'l',   0.9,  'Oil / Hydraulic Fluid'],
+  ],
+  wc: [
+    ['WC Pans',                        0, 'No.', 22.0, 'Hardcore'],
+    ['Cisterns (ceramic)',             0, 'No.', 8.0,  'Hardcore'],
+    ['Wash Hand Basins',               0, 'No.', 7.0,  'Glass'],
+    ['Shower Trays',                   0, 'No.', 12.0, 'Hardcore'],
+    ['Shower Screens',                 0, 'No.', 8.0,  'Glass'],
+    ['Kitchen Sink Units',             0, 'No.', 18.0, 'Metal'],
+    ['Kitchen Base Units',             0, 'No.', 22.0, 'Timber'],
+    ['Kitchen Wall Units',             0, 'No.', 12.0, 'Timber'],
+    ['Worktops (solid surface)',       0, 'm',   20.0, 'Hardcore'],
+  ],
+  furniture: [
+    ['Office Desks',                   0, 'No.', 28.0, 'Timber'],
+    ['Office Chairs (task)',           0, 'No.', 8.0,  'Fabric'],
+    ['Meeting Room Chairs',            0, 'No.', 6.0,  'Fabric'],
+    ['Bookcases / Shelving',           0, 'No.', 20.0, 'Timber'],
+    ['Filing Cabinets (metal)',        0, 'No.', 30.0, 'Metal'],
+    ['Lockers (metal)',                0, 'No.', 22.0, 'Metal'],
+    ['Reception Desk',                 0, 'No.', 80.0, 'Timber'],
+    ['Soft Seating (sofa/armchair)',   0, 'No.', 35.0, 'Fabric'],
+  ]
+};
+
+// Build calculator tables
+function buildCalcTables() {
+  const sections = [
+    ['calcFlooringBody', 'flooring', 'flooringTotal'],
+    ['calcWallsBody',    'walls',    'wallsTotal'],
+    ['calcCeilingsBody', 'ceilings', 'ceilingsTotal'],
+    ['calcFixturesBody', 'fixtures', 'fixturesTotal'],
+    ['calcMEBody',       'me',       'meTotal'],
+    ['calcWCBody',       'wc',       'wcTotal'],
+    ['calcFurnitureBody','furniture','furnitureTotal'],
+  ];
+  sections.forEach(([tbodyId, key]) => {
+    const tbody = document.getElementById(tbodyId);
+    CALC_ITEMS[key].forEach((item, idx) => {
+      const [desc, qty, unit, unitWt, mat] = item;
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${desc}</td>
+        <td><input type="number" class="calc-qty" data-section="${key}" data-idx="${idx}" data-unitwt="${unitWt}"
+                   value="${qty}" min="0" step="1" oninput="recalcSection('${key}')"></td>
+        <td class="unit">${unit}</td>
+        <td class="unit">${unitWt}</td>
+        <td class="calc-total-cell" id="calcCell_${key}_${idx}">0</td>
+        <td class="unit" style="font-size:11px;">${mat}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  });
+}
+
+function recalcSection(section) {
+  const inputs = document.querySelectorAll(`.calc-qty[data-section="${section}"]`);
+  let sectionTotal = 0;
+  inputs.forEach(inp => {
+    const qty = parseFloat(inp.value) || 0;
+    const unitWt = parseFloat(inp.dataset.unitwt) || 0;
+    const total = qty * unitWt;
+    sectionTotal += total;
+    const idx = inp.dataset.idx;
+    const cell = document.getElementById(`calcCell_${section}_${idx}`);
+    if (cell) cell.textContent = total.toFixed(1);
+  });
+
+  const sectionTotals = {
+    flooring: 'flooringTotal', walls: 'wallsTotal', ceilings: 'ceilingsTotal',
+    fixtures: 'fixturesTotal', me: 'meTotal', wc: 'wcTotal', furniture: 'furnitureTotal'
+  };
+  const el = document.getElementById(sectionTotals[section]);
+  if (el) el.textContent = sectionTotal.toFixed(1) + ' kg';
+  recalcGrandTotal();
+}
+
+function recalcGrandTotal() {
+  const allInputs = document.querySelectorAll('.calc-qty');
+  let grand = 0;
+  allInputs.forEach(inp => {
+    grand += (parseFloat(inp.value) || 0) * (parseFloat(inp.dataset.unitwt) || 0);
+  });
+  document.getElementById('grandTotalKg').textContent = grand.toFixed(0) + ' kg';
+  document.getElementById('grandTotalT').textContent = (grand / 1000).toFixed(3) + ' t';
+}
+
+// Aggregate calculator data into material totals for KWP table
+function getCalcMaterialTotals() {
+  const totals = {}; // materialName → {weight_kg, volume_m3}
+  const DENSITY = { // approximate m³ per tonne for volume estimates
+    'Carpet': 200, 'Vinyl': 1200, 'Rubber': 1500, 'Timber': 600,
+    'Metal': 7800, 'Hardcore': 2200, 'Plasterboard': 950, 'Glass': 2500,
+    'Insulation': 40, 'Fibre Ceiling Tiles': 300, 'Plastic': 950, 'Fabric': 200,
+    'Fluorescent Tubes': 1000, 'Oil / Hydraulic Fluid': 900,
+  };
+  document.querySelectorAll('.calc-qty').forEach(inp => {
+    const qty = parseFloat(inp.value) || 0;
+    if (!qty) return;
+    const unitWt = parseFloat(inp.dataset.unitwt) || 0;
+    const section = inp.dataset.section;
+    const idx = parseInt(inp.dataset.idx);
+    const item = CALC_ITEMS[section][idx];
+    if (!item) return;
+    const mat = item[4];
+    const wt = qty * unitWt;
+    if (!totals[mat]) totals[mat] = { weight_kg: 0, volume_m3: 0 };
+    totals[mat].weight_kg += wt;
+    const density = DENSITY[mat] || 1000;
+    totals[mat].volume_m3 += (wt / density);
+  });
+  return totals;
+}
+
+function calcToKWP() {
+  const matTotals = getCalcMaterialTotals();
+  const keys = Object.keys(matTotals).filter(k => matTotals[k].weight_kg > 0);
+  if (!keys.length) return;
+
+  const tbody = document.getElementById('kwpBody');
+  tbody.innerHTML = '';
+
+  const EWC = {
+    'Carpet':'20 03 01','Vinyl':'20 01 39','Rubber':'16 01 03','Timber':'17 02 01',
+    'Metal':'17 04 05','Hardcore':'17 01 01','Plasterboard':'17 08 02','Glass':'17 02 02',
+    'Insulation':'17 06 04','Fibre Ceiling Tiles':'17 06 05','Plastic':'17 02 03',
+    'Fabric':'20 01 10','Fluorescent Tubes':'20 01 21','Oil / Hydraulic Fluid':'13 01 10',
+  };
+
+  let totalWt = keys.reduce((s, k) => s + matTotals[k].weight_kg, 0);
+
+  keys.sort((a, b) => matTotals[b].weight_kg - matTotals[a].weight_kg);
+  keys.forEach(mat => {
+    const d = matTotals[mat];
+    const wt_t = d.weight_kg / 1000;
+    const pct = totalWt > 0 ? (d.weight_kg / totalWt * 100) : 0;
+    addMaterialRow({
+      name: mat,
+      ewc: EWC[mat] || '',
+      vol: d.volume_m3.toFixed(2),
+      wt: wt_t.toFixed(3),
+      pct: pct.toFixed(1),
+    });
+  });
+
+  const totalT = (totalWt / 1000).toFixed(3);
+  document.getElementById('projectWeightField').value = totalT;
+  autoCalcPct();
+}
+
+// Import from Excel
+async function importCalculatorExcel(input) {
+  if (!input.files || !input.files[0]) return;
+  showToast('Importing from Excel…');
+  const fd = new FormData();
+  fd.append('calculator_file', input.files[0]);
+  try {
+    const resp = await fetch('/parse-calculator', { method: 'POST', body: fd });
+    const result = await resp.json();
+    if (result.error) { showToast('Import error: ' + result.error, 'error'); return; }
+
+    // Clear KWP table and populate from parsed data
+    document.getElementById('kwpBody').innerHTML = '';
+    result.materials.forEach(m => {
+      if (!m.weight_kg && !m.volume_m3) return;
+      addMaterialRow({
+        name: m.name,
+        ewc: m.ewc || '',
+        vol: m.volume_m3.toFixed(2),
+        wt: m.weight_t.toFixed(3),
+        pct: m.weight_pct.toFixed(1),
+      });
+    });
+    document.getElementById('projectWeightField').value = result.total_weight_t.toFixed(3);
+    showToast('Calculator imported — KWP table updated!', 'success');
+  } catch (err) {
+    showToast('Import failed: ' + err.message, 'error');
   }
 }
 
@@ -869,59 +1066,46 @@ function addMaterialRow(data = {}) {
   const tbody = document.getElementById('kwpBody');
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td><input type="text" name="material_name" value="${data.name||''}" placeholder="e.g. Concrete"></td>
+    <td><input type="text" name="material_name" value="${data.name||''}" placeholder="e.g. Carpet"></td>
     <td><input type="text" name="ewc_code" value="${data.ewc||''}" placeholder="17 01 01"></td>
-    <td><input type="number" name="volume_m3" value="${data.vol||''}" step="0.1" placeholder="0.0"></td>
-    <td><input type="number" name="weight_tonnes" value="${data.wt||''}" step="0.1" placeholder="0.0"
-               oninput="autoCalcPct(this)"></td>
+    <td><input type="number" name="volume_m3" value="${data.vol||''}" step="0.01" placeholder="0.00"></td>
+    <td><input type="number" name="weight_tonnes" value="${data.wt||''}" step="0.001" placeholder="0.000" oninput="autoCalcPct()"></td>
     <td><input type="number" name="pct_weight" value="${data.pct||''}" step="0.1" placeholder="auto"></td>
-    <td><input type="text" name="carbon_factor" value="${data.cf||''}" placeholder="0.0"></td>
-    <td><input type="text" name="material_source" value="${data.src||''}" placeholder="RICS / BRE"></td>
+    <td><input type="text" name="carbon_factor" value="${data.cf||''}" placeholder="0.000"></td>
     <td><input type="number" name="embodied_carbon" value="${data.ec||''}" step="0.1" placeholder="0.0"></td>
     <td><input type="number" name="reuse_pct" value="${data.reuse||''}" step="1" min="0" max="100" placeholder="0"></td>
     <td><input type="number" name="recycling_pct" value="${data.recycle||''}" step="1" min="0" max="100" placeholder="0"></td>
     <td><input type="number" name="landfill_pct" value="${data.landfill||''}" step="1" min="0" max="100" placeholder="0"></td>
-    <td><input type="text" name="material_recommendation" value="${data.rec||''}" placeholder="Brief recommendation..."></td>
-    <td><button type="button" class="btn-delete-row" onclick="this.closest('tr').remove()">✕</button></td>
+    <td><button type="button" class="btn-delete-row" onclick="this.closest('tr').remove();autoCalcPct();">✕</button></td>
   `;
   tbody.appendChild(tr);
 }
-function autoCalcPct(weightInput) {
+function autoCalcPct() {
   const rows = document.querySelectorAll('#kwpBody tr');
   let total = 0;
-  rows.forEach(r => {
-    const w = parseFloat(r.querySelector('[name="weight_tonnes"]').value) || 0;
-    total += w;
-  });
+  rows.forEach(r => { total += parseFloat(r.querySelector('[name="weight_tonnes"]').value) || 0; });
   if (total > 0) {
     rows.forEach(r => {
       const w = parseFloat(r.querySelector('[name="weight_tonnes"]').value) || 0;
       r.querySelector('[name="pct_weight"]').value = (w / total * 100).toFixed(1);
     });
+    const pf = document.getElementById('projectWeightField');
+    if (pf && !pf.value) pf.value = total.toFixed(3);
   }
 }
-
-// Default material rows
-const defaultMaterials = [
-  { name:'Reinforced Concrete', ewc:'17 01 01', cf:'0.103', src:'ICE DB', reuse:'0', recycle:'95', landfill:'5' },
-  { name:'Brickwork & Masonry',  ewc:'17 01 02', cf:'0.215', src:'ICE DB', reuse:'10', recycle:'85', landfill:'5' },
-  { name:'Structural Steel',     ewc:'17 04 05', cf:'1.550', src:'ICE DB', reuse:'5',  recycle:'93', landfill:'2' },
-  { name:'Timber',               ewc:'17 02 01', cf:'0.470', src:'ICE DB', reuse:'20', recycle:'75', landfill:'5' },
-  { name:'Plasterboard',         ewc:'17 08 02', cf:'0.120', src:'WRAP',   reuse:'0',  recycle:'90', landfill:'10' },
-];
-defaultMaterials.forEach(m => addMaterialRow(m));
 
 // ── Reuse items ────────────────────────────────────────────
 function addReuseItem() {
   const list = document.getElementById('reuseItemList');
   const idx = reuseCount++;
+  const num = idx + 1;
   const div = document.createElement('div');
   div.className = 'reuse-item';
   div.innerHTML = `
     <div class="reuse-item-header">
       <div style="display:flex;align-items:center;gap:10px;">
-        <div class="reuse-item-number">${idx + 1}</div>
-        <span style="font-weight:600;color:var(--teal);font-size:14px;">Material Item ${idx + 1}</span>
+        <div class="reuse-item-number">${num}</div>
+        <span style="font-weight:600;color:var(--teal);font-size:14px;">Material Item ${num}</span>
       </div>
       <button type="button" onclick="this.closest('.reuse-item').remove()"
               style="background:none;border:none;color:var(--danger);font-size:20px;cursor:pointer;">✕</button>
@@ -947,43 +1131,27 @@ function addReuseItem() {
       <div class="form-group span-2">
         <label>Risk Factors</label>
         <textarea name="reuse_risk_factors" rows="2"
-          placeholder="e.g. Potential asbestos contamination; Market availability uncertain; Access constraints during stripping..."></textarea>
-      </div>
-      <div class="form-group span-2">
-        <label>Site Photos (up to 4)</label>
-        <input type="file" name="reuse_photos_${idx}" accept="image/*" multiple
-               style="border:1.5px solid var(--border);border-radius:6px;padding:7px;font-size:13px;background:#fafcfe;"
-               onchange="previewReusePhotos(this, 'rp_preview_${idx}')">
-        <div id="rp_preview_${idx}" style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px;"></div>
+          placeholder="e.g. Potential asbestos contamination; access constraints; market availability..."></textarea>
       </div>
     </div>
   `;
   list.appendChild(div);
 }
-function previewReusePhotos(input, previewId) {
-  const container = document.getElementById(previewId);
-  container.innerHTML = '';
-  Array.from(input.files).slice(0, 4).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const img = document.createElement('img');
-      img.src = e.target.result;
-      img.style.cssText = 'width:80px;height:60px;object-fit:cover;border-radius:5px;border:2px solid var(--green);';
-      container.appendChild(img);
-    };
-    reader.readAsDataURL(file);
-  });
-}
 
 // ── AI text generation ─────────────────────────────────────
-// API key is now handled server-side via OPENAI_API_KEY env var — no client key needed
 async function generateAIText(section, targetId) {
-  const btnMap = { executive_summary: 'aiExec', conclusion: 'aiConclusion', introduction: 'aiIntro' };
+  const btnMap = { executive_summary: 'aiExec', conclusion: 'aiConclusion' };
   const btn = document.getElementById(btnMap[section]);
   const textarea = document.getElementById(targetId);
-  btn.disabled = true;
-  btn.textContent = '⏳ Generating...';
-  const reportData = collectFormData();
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ Generating...'; }
+  const form = document.getElementById('auditForm');
+  const fd = new FormData(form);
+  const reportData = {
+    job_address: fd.get('job_address') || '',
+    client_name: fd.get('client_name') || '',
+    kwp_materials: Array.from(document.querySelectorAll('[name="material_name"]'))
+      .map(i => ({ name: i.value })).filter(m => m.name),
+  };
   try {
     const resp = await fetch('/generate-ai-text', {
       method: 'POST',
@@ -1000,51 +1168,30 @@ async function generateAIText(section, targetId) {
   } catch (err) {
     showToast('Network error: ' + err.message, 'error');
   } finally {
-    btn.disabled = false;
-    btn.innerHTML = '✨ AI Generate';
+    if (btn) { btn.disabled = false; btn.innerHTML = '✨ AI Generate'; }
   }
 }
-function collectFormData() {
-  const fd = new FormData(document.getElementById('auditForm'));
-  const obj = {};
-  fd.forEach((v, k) => {
-    if (obj[k]) {
-      if (!Array.isArray(obj[k])) obj[k] = [obj[k]];
-      obj[k].push(v);
-    } else {
-      obj[k] = v;
-    }
-  });
-  const names = Array.from(document.querySelectorAll('[name="material_name"]')).map(i => i.value);
-  const weights = Array.from(document.querySelectorAll('[name="weight_tonnes"]')).map(i => parseFloat(i.value) || 0);
-  const pcts = Array.from(document.querySelectorAll('[name="pct_weight"]')).map(i => parseFloat(i.value) || 0);
-  obj.kwp_materials = names.map((n, i) => ({
-    name: n, weight_tonnes: weights[i], pct_weight: pcts[i],
-  })).filter(m => m.name);
-  return obj;
-}
 
-// ── Summary view ───────────────────────────────────────────
+// ── Summary ────────────────────────────────────────────────
 function buildSummary() {
-  const form = document.getElementById('auditForm');
-  const fd = new FormData(form);
-  const addr = fd.get('job_address') || '—';
-  const client = fd.get('client_name') || '—';
-  const rnum = fd.get('report_number') || '—';
+  const fd = new FormData(document.getElementById('auditForm'));
   const kwpNames = Array.from(document.querySelectorAll('[name="material_name"]')).map(i => i.value).filter(Boolean);
   const reuseItems = Array.from(document.querySelectorAll('[name="reuse_name"]')).map(i => i.value).filter(Boolean);
-  const fps = document.querySelectorAll('[name="floor_plan_images"]').length;
+  const specCount = [1,2,3,4,5,6,7].filter(i => {
+    const el = document.querySelector(`[name="spec_photo_${i}"]`);
+    return el && el.files && el.files.length > 0;
+  }).length;
   document.getElementById('summaryView').innerHTML = `
-    <strong>Address:</strong> ${addr}<br>
-    <strong>Client:</strong> ${client}<br>
-    <strong>Report No.:</strong> ${rnum}<br>
-    <strong>Materials entered:</strong> ${kwpNames.length} (${kwpNames.join(', ') || 'none'})<br>
-    <strong>Reuse items:</strong> ${reuseItems.length}<br>
-    <strong>Floor plans:</strong> ${fps}<br>
+    <strong>Address:</strong> ${fd.get('job_address') || '—'}<br>
+    <strong>Client:</strong> ${fd.get('client_name') || '—'}<br>
+    <strong>Report No.:</strong> ${fd.get('report_number') || '—'}<br>
+    <strong>KWP Materials:</strong> ${kwpNames.length} (${kwpNames.join(', ') || 'none'})<br>
+    <strong>Reuse Items:</strong> ${reuseItems.length}<br>
+    <strong>Spec Photos:</strong> ${specCount} of 7 uploaded<br>
   `;
 }
 
-// ── Form submit — remap dynamic rows, POST to backend, download PPTX ──
+// ── Form submit ────────────────────────────────────────────
 document.getElementById('auditForm').addEventListener('submit', async function(e) {
   e.preventDefault();
   const btn = document.getElementById('generateBtn');
@@ -1052,71 +1199,37 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
   btn.classList.add('loading');
   showToast('Generating report…');
 
-  // Start with all standard form fields (includes file inputs)
   const formData = new FormData(this);
 
-  // ── Remap KWP table rows → numbered material fields ──────
-  const matNames   = Array.from(document.querySelectorAll('[name="material_name"]')).map(i => i.value);
-  const matEWC     = Array.from(document.querySelectorAll('[name="ewc_code"]')).map(i => i.value);
-  const matVol     = Array.from(document.querySelectorAll('[name="volume_m3"]')).map(i => i.value);
-  const matWeigh   = Array.from(document.querySelectorAll('[name="weight_tonnes"]')).map(i => i.value);
-  const matWeighP  = Array.from(document.querySelectorAll('[name="pct_weight"]')).map(i => i.value);
-  const matCF      = Array.from(document.querySelectorAll('[name="carbon_factor"]')).map(i => i.value);
-  const matEC      = Array.from(document.querySelectorAll('[name="embodied_carbon"]')).map(i => i.value);
-  const matReuse   = Array.from(document.querySelectorAll('[name="reuse_pct"]')).map(i => i.value);
-
-  matNames.forEach((name, i) => {
+  // ── Remap reuse items → numbered MATERIAL_N fields (for PPTX placeholders) ──
+  const reuseNames  = Array.from(document.querySelectorAll('[name="reuse_name"]')).map(i => i.value);
+  const reuseDescs  = Array.from(document.querySelectorAll('[name="reuse_description"]')).map(i => i.value);
+  const reusePots   = Array.from(document.querySelectorAll('[name="reuse_potential"]')).map(i => i.value);
+  const reuseRisks  = Array.from(document.querySelectorAll('[name="reuse_risk_factors"]')).map(i => i.value);
+  reuseNames.forEach((name, i) => {
     const n = i + 1;
-    formData.append(`material_${n}`,      name);
-    formData.append(`material_${n}_ewc`,  matEWC[i]    || '');
-    formData.append(`mat_${n}_vol`,       matVol[i]    || '');
-    formData.append(`mat_${n}_weigh`,     matWeigh[i]  || '');
-    formData.append(`mat_${n}_weighp`,    matWeighP[i] || '');
-    formData.append(`mat_${n}_ecf`,       matCF[i]     || '');
-    formData.append(`mat_${n}_carb`,      matEC[i]     || '');
-    formData.append(`mat_${n}_reuse`,     matReuse[i]  || '');
-    formData.append(`mat_${n}_ewc`,       matEWC[i]    || '');
-  });
-
-  // Auto-build key_waste_products from material names
-  const kwpList = matNames.filter(Boolean).join(', ');
-  formData.append('key_waste_products', kwpList);
-
-  // ── Remap reuse items → numbered description/potential/risks ──
-  const reuseDescs = Array.from(document.querySelectorAll('[name="reuse_description"]')).map(i => i.value);
-  const reusePots  = Array.from(document.querySelectorAll('[name="reuse_potential"]')).map(i => i.value);
-  const reuseRisks = Array.from(document.querySelectorAll('[name="reuse_risk_factors"]')).map(i => i.value);
-
-  reuseDescs.forEach((desc, i) => {
-    const n = i + 1;
-    formData.append(`material_${n}_description`, desc);
+    formData.append(`material_${n}`,             name);
+    formData.append(`material_${n}_description`, reuseDescs[i] || '');
     formData.append(`material_${n}_potential`,   reusePots[i]  || '');
     formData.append(`material_${n}_risks`,       reuseRisks[i] || '');
   });
 
-  try {
-    const response = await fetch('/generate-canva-report', {
-      method: 'POST',
-      body: formData
-    });
+  // ── Auto-build key_waste_products text ────────────────────
+  const kwpNames = Array.from(document.querySelectorAll('[name="material_name"]')).map(i => i.value).filter(Boolean);
+  if (kwpNames.length) formData.append('key_waste_products', kwpNames.join(', '));
 
+  try {
+    const response = await fetch('/generate-canva-report', { method: 'POST', body: formData });
     if (!response.ok) {
       let errMsg = 'Generation failed';
-      try {
-        const err = await response.json();
-        errMsg = err.error || errMsg;
-      } catch (_) {}
+      try { const err = await response.json(); errMsg = err.error || errMsg; } catch (_) {}
       showToast('Error: ' + errMsg, 'error');
       return;
     }
-
-    // Trigger file download from blob
     const blob = await response.blob();
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
     a.href = url;
-
-    // Use filename from Content-Disposition header if server sends one
     const disposition = response.headers.get('Content-Disposition');
     let filename = 'audit.pptx';
     if (disposition) {
@@ -1128,7 +1241,6 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
     showToast('Report downloaded!', 'success');
   } catch (err) {
     showToast('Network error: ' + err.message, 'error');
@@ -1145,6 +1257,9 @@ function showToast(msg, type = '') {
   t.className = 'show ' + type;
   setTimeout(() => t.className = '', 3500);
 }
+
+// ── Init ───────────────────────────────────────────────────
+buildCalcTables();
 </script>
 </body>
 </html>
