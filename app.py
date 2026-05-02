@@ -4,6 +4,7 @@ Template: Savills-6.pptx
 """
 import os
 import io
+import re
 import traceback
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_file
@@ -439,11 +440,103 @@ def _replace_kwp_chart_placeholders(prs, kwp_materials):
             _add_kwp_pie_chart(slide, left, top, w, h, mats, val_col)
 
 # ─────────────────────────────────────────────────────────────
+# PPTX — TRIM UNUSED MATERIAL ROWS & SLIDES
+# Must run BEFORE text replacement so {{MATERIAL_N}} tags are
+# still intact and scannable.
+# ─────────────────────────────────────────────────────────────
+
+# Matches {{MATERIAL_EWC_N}}, {{MATERIAL_N}}, {{MATERIAL_N_xxx}}, {{MAT_N_xxx}}
+_MAT_PLACEHOLDER_RE = re.compile(
+    r'\{\{(?:MATERIAL_EWC_(\d+)|MATERIAL_(\d+)|MAT_(\d+)_)'
+)
+
+def _row_full_text(row):
+    """Return the full merged text for a table row (handles split runs)."""
+    parts = []
+    for cell in row.cells:
+        for para in cell.text_frame.paragraphs:
+            parts.append(''.join(run.text for run in para.runs))
+    return ''.join(parts)
+
+def _slide_full_text(slide):
+    """Return all merged text from every shape/table on a slide."""
+    parts = []
+    for shape in slide.shapes:
+        if shape.has_text_frame:
+            for para in shape.text_frame.paragraphs:
+                parts.append(''.join(run.text for run in para.runs))
+        if shape.has_table:
+            for row in shape.table.rows:
+                parts.append(_row_full_text(row))
+        if shape.shape_type == 6:  # GROUP
+            for s in shape.shapes:
+                if s.has_text_frame:
+                    for para in s.text_frame.paragraphs:
+                        parts.append(''.join(run.text for run in para.runs))
+    return ''.join(parts)
+
+def _mat_indices_in_text(text):
+    """Return set of material N indices found in a text string."""
+    indices = set()
+    for m in _MAT_PLACEHOLDER_RE.finditer(text):
+        idx_str = next((g for g in m.groups() if g), None)
+        if idx_str:
+            indices.add(int(idx_str))
+    return indices
+
+def _trim_material_table_rows(prs, mat_count):
+    """
+    Delete table rows whose placeholders reference a material index > mat_count.
+    E.g. if mat_count=7, rows for materials 8–20 are removed from every table.
+    """
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if not shape.has_table:
+                continue
+            table = shape.table
+            rows_to_remove = []
+            for row_idx, row in enumerate(table.rows):
+                indices = _mat_indices_in_text(_row_full_text(row))
+                if indices and all(idx > mat_count for idx in indices):
+                    rows_to_remove.append(row_idx)
+            # Remove in reverse so indices stay valid
+            for row_idx in sorted(set(rows_to_remove), reverse=True):
+                tr = table.rows[row_idx]._tr
+                tr.getparent().remove(tr)
+
+def _trim_empty_material_slides(prs, mat_count):
+    """
+    Delete entire slides whose ONLY material references are for index > mat_count.
+    Preserves slides that have mixed content or materials within the used range.
+    """
+    from pptx.oxml.ns import qn as _qn
+    slides_to_remove = []
+    for slide_idx, slide in enumerate(prs.slides):
+        text = _slide_full_text(slide)
+        indices = _mat_indices_in_text(text)
+        # Only remove if the slide has material placeholders AND
+        # every one of them is beyond the used count
+        if indices and all(idx > mat_count for idx in indices):
+            slides_to_remove.append(slide_idx)
+
+    xml_slides = prs.slides._sldIdLst
+    for slide_idx in sorted(slides_to_remove, reverse=True):
+        rId = xml_slides[slide_idx].get(_qn('r:id'))
+        prs.part.drop_rel(rId)
+        del xml_slides[slide_idx]
+
+# ─────────────────────────────────────────────────────────────
 # FILL TEMPLATE
 # ─────────────────────────────────────────────────────────────
 
 def fill_pptx_template(replacements, image_data=None, kwp_materials=None):
     prs = Presentation(PPTX_TEMPLATE_PATH)
+    mat_count = len(kwp_materials) if kwp_materials else 0
+    # Trim unused material rows and slides BEFORE text replacement
+    # (placeholders must be intact so we can identify which rows/slides to drop)
+    if mat_count < 20:
+        _trim_material_table_rows(prs, mat_count)
+        _trim_empty_material_slides(prs, mat_count)
     for slide in prs.slides:
         for shape in slide.shapes:
             _replace_in_shape(shape, replacements)
