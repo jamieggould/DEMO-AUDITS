@@ -8,39 +8,34 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-/* ─────────────────────────────────────────────
-   TOKENS
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── TOKENS ───────────────────────────────────────────── */
 :root {
-  --navy:       #0b1f35;
-  --navy-2:     #112843;
-  --navy-3:     #1a3a5c;
-  --accent:     #00c37c;
+  --navy: #0b1f35;
+  --navy-2: #112843;
+  --navy-3: #1a3a5c;
+  --accent: #00c37c;
   --accent-dim: #00a568;
   --accent-glow:rgba(0,195,124,0.18);
-  --sky:        #0ea5e9;
-  --amber:      #f59e0b;
-  --danger:     #ef4444;
-  --bg:         #f0f4f8;
-  --surface:    #ffffff;
-  --surface-2:  #f8fafc;
-  --border:     #e2e8f0;
-  --border-2:   #cbd5e1;
-  --text:       #0f1e2e;
-  --text-2:     #334155;
-  --muted:      #64748b;
-  --muted-2:    #94a3b8;
-  --radius:     14px;
-  --radius-sm:  8px;
-  --shadow-sm:  0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
-  --shadow:     0 4px 16px rgba(11,31,53,.08), 0 1px 4px rgba(11,31,53,.04);
-  --shadow-lg:  0 12px 40px rgba(11,31,53,.12), 0 4px 12px rgba(11,31,53,.06);
+  --sky: #0ea5e9;
+  --amber: #f59e0b;
+  --danger: #ef4444;
+  --bg: #f0f4f8;
+  --surface: #ffffff;
+  --surface-2: #f8fafc;
+  --border: #e2e8f0;
+  --border-2: #cbd5e1;
+  --text: #0f1e2e;
+  --text-2: #334155;
+  --muted: #64748b;
+  --muted-2: #94a3b8;
+  --radius: 14px;
+  --radius-sm: 8px;
+  --shadow-sm: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+  --shadow: 0 4px 16px rgba(11,31,53,.08), 0 1px 4px rgba(11,31,53,.04);
+  --shadow-lg: 0 12px 40px rgba(11,31,53,.12), 0 4px 12px rgba(11,31,53,.06);
   --transition: 0.18s cubic-bezier(0.4,0,0.2,1);
 }
-
-/* ─────────────────────────────────────────────
-   RESET
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── RESET ───────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; }
 body {
@@ -52,10 +47,7 @@ body {
   font-size: 14px;
   line-height: 1.5;
 }
-
-/* ─────────────────────────────────────────────
-   HEADER
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── HEADER ───────────────────────────────────────────── */
 .app-header {
   background: var(--navy);
   height: 64px;
@@ -81,52 +73,34 @@ body {
   background: linear-gradient(135deg, var(--accent), var(--sky));
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 16px;
-  flex-shrink: 0;
+  font-size: 16px; flex-shrink: 0;
 }
-.app-header h1 {
-  color: #fff;
-  font-size: 15px;
-  font-weight: 600;
-  letter-spacing: -0.2px;
-}
+.app-header h1 { color: #fff; font-size: 15px; font-weight: 600; letter-spacing: -0.2px; }
 .app-header h1 span { color: var(--muted-2); font-weight: 400; }
 .header-badge {
   background: rgba(0,195,124,.15);
   color: var(--accent);
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 20px;
+  font-size: 10px; font-weight: 700;
+  padding: 4px 10px; border-radius: 20px;
   border: 1px solid rgba(0,195,124,.3);
-  letter-spacing: 0.6px;
-  text-transform: uppercase;
+  letter-spacing: 0.6px; text-transform: uppercase;
 }
-
-/* ─────────────────────────────────────────────
-   STEP PROGRESS BAR
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── STEP PROGRESS BAR ───────────────────────────────────────────── */
 .step-bar {
   background: var(--navy-2);
   padding: 0 32px;
-  display: flex;
-  align-items: center;
-  gap: 0;
+  display: flex; align-items: center; gap: 0;
   overflow-x: auto;
   border-bottom: 1px solid rgba(255,255,255,.06);
   scrollbar-width: none;
 }
 .step-bar::-webkit-scrollbar { display: none; }
 .step-pill {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+  display: flex; align-items: center; gap: 8px;
   padding: 16px 14px;
-  font-size: 11.5px;
-  font-weight: 500;
+  font-size: 11.5px; font-weight: 500;
   color: var(--muted);
-  cursor: pointer;
-  white-space: nowrap;
+  cursor: pointer; white-space: nowrap;
   position: relative;
   transition: color var(--transition);
   border-bottom: 2px solid transparent;
@@ -134,51 +108,25 @@ body {
   letter-spacing: 0.1px;
 }
 .step-pill .sp-num {
-  width: 20px; height: 20px;
-  border-radius: 50%;
+  width: 20px; height: 20px; border-radius: 50%;
   background: rgba(255,255,255,.08);
   display: flex; align-items: center; justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  flex-shrink: 0;
+  font-size: 10px; font-weight: 700; flex-shrink: 0;
   transition: all var(--transition);
 }
 .step-pill:hover { color: #fff; }
-.step-pill.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-  font-weight: 600;
-}
-.step-pill.active .sp-num {
-  background: var(--accent);
-  color: var(--navy);
-}
+.step-pill.active { color: var(--accent); border-bottom-color: var(--accent); font-weight: 600; }
+.step-pill.active .sp-num { background: var(--accent); color: var(--navy); }
 .step-pill.done { color: rgba(255,255,255,.5); }
-.step-pill.done .sp-num {
-  background: rgba(0,195,124,.25);
-  color: var(--accent);
-}
+.step-pill.done .sp-num { background: rgba(0,195,124,.25); color: var(--accent); }
 .step-pill.done .sp-num::after { content: '✓'; }
 .step-pill.done .sp-label { display: none; }
-
-/* ─────────────────────────────────────────────
-   LAYOUT
-───────────────────────────────────────────── */
-.main-wrap {
-  max-width: 980px;
-  margin: 36px auto;
-  padding: 0 24px 100px;
-}
+/* ───────────────────────────────────────────── LAYOUT ───────────────────────────────────────────── */
+.main-wrap { max-width: 980px; margin: 36px auto; padding: 0 24px 100px; }
 .step-panel { display: none; }
 .step-panel.active { display: block; animation: fadeUp .28s ease both; }
-@keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-/* ─────────────────────────────────────────────
-   CARDS
-───────────────────────────────────────────── */
+@keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+/* ───────────────────────────────────────────── CARDS ───────────────────────────────────────────── */
 .panel-card {
   background: var(--surface);
   border-radius: var(--radius);
@@ -190,311 +138,159 @@ body {
 .panel-head {
   padding: 24px 32px 22px;
   background: var(--navy);
-  position: relative;
-  overflow: hidden;
+  position: relative; overflow: hidden;
 }
 .panel-head::before {
   content: '';
-  position: absolute;
-  top: -40px; right: -40px;
+  position: absolute; top: -40px; right: -40px;
   width: 180px; height: 180px;
   background: radial-gradient(circle, rgba(0,195,124,.12) 0%, transparent 70%);
   pointer-events: none;
 }
 .panel-head::after {
   content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
+  position: absolute; bottom: 0; left: 0; right: 0;
   height: 1px;
   background: linear-gradient(90deg, var(--accent) 0%, var(--sky) 60%, transparent 100%);
   opacity: 0.4;
 }
-.panel-head h2 {
-  color: #fff;
-  font-size: 19px;
-  font-weight: 700;
-  letter-spacing: -0.4px;
-  margin-bottom: 4px;
-}
+.panel-head h2 { color: #fff; font-size: 19px; font-weight: 700; letter-spacing: -0.4px; margin-bottom: 4px; }
 .panel-head p { color: rgba(255,255,255,.5); font-size: 13px; font-weight: 400; }
 .panel-head .ph-step {
-  position: absolute;
-  top: 20px; right: 28px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-glow);
-  padding: 4px 10px;
-  border-radius: 20px;
-  border: 1px solid rgba(0,195,124,.25);
-  letter-spacing: 0.4px;
+  position: absolute; top: 20px; right: 28px;
+  font-size: 11px; font-weight: 600; color: var(--accent);
+  background: var(--accent-glow); padding: 4px 10px;
+  border-radius: 20px; border: 1px solid rgba(0,195,124,.25); letter-spacing: 0.4px;
 }
 .panel-body { padding: 28px 32px; }
-
-/* ─────────────────────────────────────────────
-   FORM ELEMENTS
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── FORM ELEMENTS ───────────────────────────────────────────── */
 .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .form-grid.cols-3 { grid-template-columns: 1fr 1fr 1fr; }
 .form-grid.cols-4 { grid-template-columns: 1fr 1fr 1fr 1fr; }
-.form-grid.full   { grid-template-columns: 1fr; }
+.form-grid.full { grid-template-columns: 1fr; }
 .span-2 { grid-column: span 2; }
 .span-3 { grid-column: span 3; }
 .span-4 { grid-column: span 4; }
-
 .form-group { display: flex; flex-direction: column; gap: 6px; }
-.form-group label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-}
-.form-group input,
-.form-group select,
-.form-group textarea {
+.form-group label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+.form-group input, .form-group select, .form-group textarea {
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 10px 13px;
-  font-size: 13.5px;
-  font-family: inherit;
-  color: var(--text);
+  font-size: 13.5px; font-family: inherit; color: var(--text);
   background: var(--surface-2);
   transition: border-color var(--transition), box-shadow var(--transition), background var(--transition);
-  outline: none;
-  font-weight: 400;
-  -webkit-appearance: none;
+  outline: none; font-weight: 400; -webkit-appearance: none;
 }
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-glow);
   background: #fff;
 }
-.form-group input::placeholder,
-.form-group textarea::placeholder { color: var(--muted-2); }
+.form-group input::placeholder, .form-group textarea::placeholder { color: var(--muted-2); }
 .form-group textarea { resize: vertical; min-height: 88px; line-height: 1.6; }
 .form-group select {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2394a3b8' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-  padding-right: 32px;
-  cursor: pointer;
+  background-repeat: no-repeat; background-position: right 12px center;
+  padding-right: 32px; cursor: pointer;
 }
-
-/* ─────────────────────────────────────────────
-   SECTION DIVIDER
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── SECTION DIVIDER ───────────────────────────────────────────── */
 .section-divider {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+  display: flex; align-items: center; gap: 12px;
   margin: 26px 0 18px;
-  font-size: 11px;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: 0.8px;
 }
-.section-divider::after {
-  content: '';
-  flex: 1;
-  height: 1px;
-  background: var(--border);
-}
-
-/* ─────────────────────────────────────────────
-   UPLOAD ZONES
-───────────────────────────────────────────── */
+.section-divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+/* ───────────────────────────────────────────── UPLOAD ZONES ───────────────────────────────────────────── */
 .upload-zone {
   border: 1.5px dashed var(--border-2);
   border-radius: var(--radius-sm);
-  padding: 22px 16px;
-  text-align: center;
+  padding: 22px 16px; text-align: center;
   cursor: pointer;
   transition: all var(--transition);
   background: var(--surface-2);
   position: relative;
 }
-.upload-zone:hover {
-  border-color: var(--accent);
-  background: rgba(0,195,124,.04);
-}
-.upload-zone input[type="file"] {
-  position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-}
-.upload-zone .uz-icon {
-  font-size: 26px;
-  margin-bottom: 7px;
-  display: block;
-  filter: grayscale(0.3);
-}
-.upload-zone .uz-label {
-  font-size: 12.5px;
-  font-weight: 500;
-  color: var(--text-2);
-  display: block;
-  margin-bottom: 3px;
-}
-.upload-zone .uz-hint {
-  font-size: 11px;
-  color: var(--muted-2);
-}
-.upload-zone.has-file {
-  border-color: var(--accent);
-  background: rgba(0,195,124,.05);
-  border-style: solid;
-}
+.upload-zone:hover { border-color: var(--accent); background: rgba(0,195,124,.04); }
+.upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+.upload-zone .uz-icon { font-size: 26px; margin-bottom: 7px; display: block; filter: grayscale(0.3); }
+.upload-zone .uz-label { font-size: 12.5px; font-weight: 500; color: var(--text-2); display: block; margin-bottom: 3px; }
+.upload-zone .uz-hint { font-size: 11px; color: var(--muted-2); }
+.upload-zone.has-file { border-color: var(--accent); background: rgba(0,195,124,.05); border-style: solid; }
 .upload-zone.has-file .uz-label { color: var(--accent); }
 .preview-thumb {
-  max-width: 110px;
-  max-height: 72px;
-  border-radius: 6px;
-  margin-top: 10px;
-  object-fit: cover;
-  border: 2px solid var(--accent);
-  box-shadow: 0 2px 8px rgba(0,195,124,.2);
+  max-width: 110px; max-height: 72px; border-radius: 6px; margin-top: 10px;
+  object-fit: cover; border: 2px solid var(--accent); box-shadow: 0 2px 8px rgba(0,195,124,.2);
 }
-
-/* ─────────────────────────────────────────────
-   STAFF CARDS
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── STAFF CARDS ───────────────────────────────────────────── */
 .staff-card {
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-  padding: 22px;
-  border: 1.5px solid var(--border);
-  position: relative;
-  overflow: hidden;
+  background: var(--surface-2); border-radius: var(--radius-sm);
+  padding: 22px; border: 1.5px solid var(--border);
+  position: relative; overflow: hidden;
 }
 .staff-card::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0;
+  content: ''; position: absolute; top: 0; left: 0;
   width: 3px; height: 100%;
   background: linear-gradient(180deg, var(--accent), var(--sky));
   border-radius: 3px 0 0 3px;
 }
 .staff-card h3 {
-  color: var(--text);
-  font-size: 12px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  display: flex;
-  align-items: center;
-  gap: 7px;
+  color: var(--text); font-size: 12px; font-weight: 700;
+  margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.6px;
+  display: flex; align-items: center; gap: 7px;
 }
-
-/* ─────────────────────────────────────────────
-   SPEC PHOTO GRID
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── SPEC PHOTO GRID ───────────────────────────────────────────── */
 .spec-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 14px; }
 .spec-card {
-  background: var(--surface-2);
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px;
-  transition: border-color var(--transition);
+  background: var(--surface-2); border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm); padding: 14px; transition: border-color var(--transition);
 }
 .spec-card:hover { border-color: var(--border-2); }
-.spec-card label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.6px;
-  display: block;
-  margin-bottom: 8px;
-}
-
-/* ─────────────────────────────────────────────
-   IMPORT BANNER
-───────────────────────────────────────────── */
+.spec-card label { font-size: 10px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
+/* ───────────────────────────────────────────── IMPORT BANNER ───────────────────────────────────────────── */
 .import-banner {
   background: linear-gradient(135deg, var(--navy), var(--navy-3));
-  border-radius: var(--radius-sm);
-  padding: 18px 22px;
+  border-radius: var(--radius-sm); padding: 18px 22px;
   margin-bottom: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
   border: 1px solid rgba(255,255,255,.08);
-  position: relative;
-  overflow: hidden;
+  position: relative; overflow: hidden;
 }
 .import-banner::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, var(--accent), transparent);
-  opacity: 0.5;
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0;
+  height: 1px; background: linear-gradient(90deg, var(--accent), transparent); opacity: 0.5;
 }
-.import-banner .ib-text strong {
-  color: #fff;
-  font-size: 14px;
-  font-weight: 600;
-  display: block;
-  margin-bottom: 3px;
-  letter-spacing: -0.2px;
-}
+.import-banner .ib-text strong { color: #fff; font-size: 14px; font-weight: 600; display: block; margin-bottom: 3px; letter-spacing: -0.2px; }
 .import-banner .ib-text span { color: rgba(255,255,255,.5); font-size: 12.5px; }
 .btn-import {
-  background: var(--accent);
-  color: var(--navy);
-  border: none;
-  border-radius: var(--radius-sm);
-  padding: 10px 20px;
-  font-size: 12.5px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  white-space: nowrap;
-  letter-spacing: 0.1px;
-  transition: all var(--transition);
-  font-family: inherit;
+  background: var(--accent); color: var(--navy);
+  border: none; border-radius: var(--radius-sm);
+  padding: 10px 20px; font-size: 12.5px; font-weight: 700;
+  cursor: pointer; display: flex; align-items: center; gap: 6px;
+  white-space: nowrap; letter-spacing: 0.1px;
+  transition: all var(--transition); font-family: inherit;
 }
 .btn-import:hover { background: var(--accent-dim); transform: translateY(-1px); }
-
-/* ─────────────────────────────────────────────
-   CALCULATOR TABLE
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── CALCULATOR TABLE ───────────────────────────────────────────── */
 .calc-section { margin-bottom: 20px; }
 .calc-section-title {
-  background: var(--navy);
-  color: #fff;
+  background: var(--navy); color: #fff;
   padding: 11px 18px;
   border-radius: var(--radius-sm) var(--radius-sm) 0 0;
-  font-size: 12px;
-  font-weight: 600;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  letter-spacing: 0.2px;
+  font-size: 12px; font-weight: 600;
+  display: flex; justify-content: space-between; align-items: center; letter-spacing: 0.2px;
 }
 .calc-section-title .cst-hint { font-size: 11px; color: var(--muted-2); font-weight: 400; }
 .calc-table-wrap {
-  border: 1px solid var(--border);
-  border-top: none;
-  border-radius: 0 0 var(--radius-sm) var(--radius-sm);
-  overflow: hidden;
+  border: 1px solid var(--border); border-top: none;
+  border-radius: 0 0 var(--radius-sm) var(--radius-sm); overflow: hidden;
 }
 .calc-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 480px; }
 .calc-table th {
-  background: var(--surface-2);
-  color: var(--muted);
-  padding: 9px 10px;
-  text-align: left;
-  font-size: 10.5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
+  background: var(--surface-2); color: var(--muted);
+  padding: 9px 10px; text-align: left;
+  font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
   border-bottom: 1px solid var(--border);
 }
 .calc-table td { padding: 6px 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
@@ -502,168 +298,94 @@ body {
 .calc-table td:first-child { padding-left: 14px; color: var(--text-2); font-size: 12px; white-space: nowrap; }
 .calc-table .unit { color: var(--muted-2); font-size: 11px; }
 .calc-table input[type="number"] {
-  border: 1.5px solid var(--border);
-  border-radius: 6px;
-  padding: 5px 8px;
-  font-size: 12.5px;
-  font-family: inherit;
-  width: 82px;
-  background: var(--surface-2);
-  text-align: right;
-  transition: border-color var(--transition), box-shadow var(--transition);
-  outline: none;
+  border: 1.5px solid var(--border); border-radius: 6px;
+  padding: 5px 8px; font-size: 12.5px; font-family: inherit;
+  width: 82px; background: var(--surface-2); text-align: right;
+  transition: border-color var(--transition), box-shadow var(--transition); outline: none;
 }
-.calc-table input[type="number"]:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 2px var(--accent-glow);
-  background: #fff;
-}
+.calc-table input[type="number"]:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); background: #fff; }
 .calc-totals { background: #f8fafc; border-top: 1.5px solid var(--border); }
 .calc-totals td { font-weight: 600; color: var(--text-2); padding: 8px 10px; font-size: 12px; }
-
-/* ─────────────────────────────────────────────
-   TOTALS BAR
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── TOTALS BAR ───────────────────────────────────────────── */
 .totals-bar {
   background: linear-gradient(135deg, var(--navy), var(--navy-3));
-  border-radius: var(--radius-sm);
-  padding: 16px 22px;
-  margin-top: 20px;
-  display: flex;
-  gap: 36px;
-  flex-wrap: wrap;
-  border: 1px solid rgba(255,255,255,.07);
-  align-items: center;
+  border-radius: var(--radius-sm); padding: 16px 22px; margin-top: 20px;
+  display: flex; gap: 36px; flex-wrap: wrap;
+  border: 1px solid rgba(255,255,255,.07); align-items: center;
 }
 .totals-bar .tb-item { display: flex; flex-direction: column; gap: 2px; }
 .totals-bar .tb-label { font-size: 10px; color: var(--muted-2); text-transform: uppercase; letter-spacing: 0.6px; font-weight: 500; }
 .totals-bar .tb-value { font-size: 22px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; font-variant-numeric: tabular-nums; }
-
-/* ─────────────────────────────────────────────
-   KWP MATERIALS TABLE
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── KWP MATERIALS TABLE ───────────────────────────────────────────── */
 .material-table-wrap { overflow-x: auto; border-radius: var(--radius-sm); border: 1px solid var(--border); }
-.material-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 920px; }
+.material-table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 780px; }
 .material-table th {
-  background: var(--navy);
-  color: rgba(255,255,255,.7);
-  padding: 11px 10px;
-  text-align: left;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  white-space: nowrap;
+  background: var(--navy); color: rgba(255,255,255,.7);
+  padding: 11px 10px; text-align: left;
+  font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
 }
 .material-table td { padding: 7px 5px; border-bottom: 1px solid #f1f5f9; }
 .material-table tr:hover td { background: #fafbfc; }
-.material-table input,
-.material-table select {
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  padding: 5px 7px;
-  font-size: 12px;
-  font-family: inherit;
-  width: 100%;
-  background: var(--surface-2);
-  outline: none;
+.material-table input, .material-table select {
+  border: 1px solid var(--border); border-radius: 5px;
+  padding: 5px 7px; font-size: 12px; font-family: inherit;
+  width: 100%; background: var(--surface-2); outline: none;
   transition: border-color var(--transition);
 }
-.material-table input:focus,
-.material-table select:focus {
-  border-color: var(--accent);
-  background: #fff;
-}
+.material-table input:focus, .material-table select:focus { border-color: var(--accent); background: #fff; }
 .btn-delete-row {
-  background: none;
-  border: none;
-  color: var(--muted-2);
-  font-size: 15px;
-  cursor: pointer;
-  padding: 4px 6px;
-  border-radius: 5px;
-  transition: all var(--transition);
-  line-height: 1;
+  background: none; border: none; color: var(--muted-2);
+  font-size: 15px; cursor: pointer; padding: 4px 6px;
+  border-radius: 5px; transition: all var(--transition); line-height: 1;
 }
 .btn-delete-row:hover { color: var(--danger); background: #fef2f2; }
-
-/* ─────────────────────────────────────────────
-   REUSE ITEMS
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── REUSE / DETAIL ITEMS ───────────────────────────────────────────── */
 .reuse-item {
-  border: 1.5px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 22px;
-  margin-bottom: 14px;
+  border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  padding: 22px; margin-bottom: 14px;
   background: var(--surface-2);
-  transition: border-color var(--transition);
-  position: relative;
+  transition: border-color var(--transition); position: relative;
 }
 .reuse-item:hover { border-color: var(--border-2); }
 .reuse-item-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
 .reuse-item-number {
   width: 28px; height: 28px;
   background: linear-gradient(135deg, var(--accent), var(--sky));
-  color: var(--navy);
-  border-radius: 50%;
+  color: var(--navy); border-radius: 50%;
   display: flex; align-items: center; justify-content: center;
-  font-size: 12px; font-weight: 800;
-  flex-shrink: 0;
+  font-size: 12px; font-weight: 800; flex-shrink: 0;
 }
-
-/* ─────────────────────────────────────────────
-   BUTTONS
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── AUTOFILLED ───────────────────────────────────────────── */
+.autofilled {
+  border-color: var(--accent) !important;
+  background: rgba(0,195,124,.08) !important;
+  transition: all 0.4s;
+}
+/* ───────────────────────────────────────────── BUTTONS ───────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
   padding: 10px 22px; border-radius: var(--radius-sm);
   font-size: 13.5px; font-weight: 600; cursor: pointer; border: none;
-  transition: all var(--transition); text-decoration: none;
-  font-family: inherit; letter-spacing: -0.1px;
+  transition: all var(--transition); text-decoration: none; font-family: inherit; letter-spacing: -0.1px;
 }
-.btn-primary {
-  background: var(--accent);
-  color: var(--navy);
-  box-shadow: 0 2px 8px rgba(0,195,124,.25);
-}
-.btn-primary:hover {
-  background: var(--accent-dim);
-  transform: translateY(-1px);
-  box-shadow: 0 4px 14px rgba(0,195,124,.35);
-}
-.btn-secondary {
-  background: var(--surface);
-  color: var(--text-2);
-  border: 1.5px solid var(--border-2);
-}
+.btn-primary { background: var(--accent); color: var(--navy); box-shadow: 0 2px 8px rgba(0,195,124,.25); }
+.btn-primary:hover { background: var(--accent-dim); transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,195,124,.35); }
+.btn-secondary { background: var(--surface); color: var(--text-2); border: 1.5px solid var(--border-2); }
 .btn-secondary:hover { background: var(--surface-2); border-color: var(--muted-2); }
 .btn-add-row {
   margin-top: 14px;
-  background: transparent;
-  color: var(--accent);
-  border: 1.5px dashed rgba(0,195,124,.4);
-  border-radius: var(--radius-sm);
-  padding: 9px 18px;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: all var(--transition);
-  font-family: inherit;
+  background: transparent; color: var(--accent);
+  border: 1.5px dashed rgba(0,195,124,.4); border-radius: var(--radius-sm);
+  padding: 9px 18px; font-size: 12.5px; font-weight: 600; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px;
+  transition: all var(--transition); font-family: inherit;
 }
 .btn-add-row:hover { background: var(--accent-glow); border-color: var(--accent); }
-
 .step-nav {
   display: flex; justify-content: space-between; align-items: center;
-  margin-top: 24px; padding-top: 22px;
-  border-top: 1px solid var(--border);
+  margin-top: 24px; padding-top: 22px; border-top: 1px solid var(--border);
 }
-
-/* ─────────────────────────────────────────────
-   AI TEXT AREA
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── AI TEXT AREA ───────────────────────────────────────────── */
 .ai-text-wrap { position: relative; }
 .ai-text-wrap textarea { padding-right: 120px; }
 .ai-btn-inline {
@@ -677,18 +399,12 @@ body {
 }
 .ai-btn-inline:hover { opacity: 0.9; transform: translateY(-1px); }
 .ai-btn-inline:disabled { opacity: 0.45; cursor: default; transform: none; }
-
-/* ─────────────────────────────────────────────
-   TOAST
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── TOAST ───────────────────────────────────────────── */
 #toast {
   position: fixed; bottom: 28px; right: 28px;
-  background: var(--navy-2);
-  color: white;
-  padding: 12px 20px;
-  border-radius: 10px;
-  font-size: 13.5px;
-  font-weight: 500;
+  background: var(--navy-2); color: white;
+  padding: 12px 20px; border-radius: 10px;
+  font-size: 13.5px; font-weight: 500;
   opacity: 0; transform: translateY(8px);
   transition: all 0.25s cubic-bezier(0.4,0,0.2,1);
   z-index: 9999; max-width: 340px; pointer-events: none;
@@ -698,22 +414,15 @@ body {
 }
 #toast.show { opacity: 1; transform: translateY(0); }
 #toast.success { background: var(--accent); color: var(--navy); border-color: rgba(0,0,0,.1); }
-#toast.error   { background: var(--danger); color: white; }
-
-/* ─────────────────────────────────────────────
-   GENERATE STEP
-───────────────────────────────────────────── */
+#toast.error { background: var(--danger); color: white; }
+/* ───────────────────────────────────────────── GENERATE STEP ───────────────────────────────────────────── */
 .generate-section {
-  text-align: center;
-  padding: 52px 32px 40px;
+  text-align: center; padding: 52px 32px 40px;
   background: linear-gradient(180deg, var(--navy) 0%, #0e2640 100%);
-  position: relative;
-  overflow: hidden;
+  position: relative; overflow: hidden;
 }
 .generate-section::before {
-  content: '';
-  position: absolute;
-  top: -60px; left: 50%; transform: translateX(-50%);
+  content: ''; position: absolute; top: -60px; left: 50%; transform: translateX(-50%);
   width: 300px; height: 300px;
   background: radial-gradient(circle, rgba(0,195,124,.15), transparent 70%);
   pointer-events: none;
@@ -722,58 +431,30 @@ body {
 .generate-section > p { color: rgba(255,255,255,.5); font-size: 13.5px; margin-bottom: 30px; position: relative; }
 .btn-generate {
   background: linear-gradient(135deg, var(--accent) 0%, #00a8f3 100%);
-  color: var(--navy);
-  border: none;
-  border-radius: 12px;
-  padding: 17px 54px;
-  font-size: 16px;
-  font-weight: 700;
-  cursor: pointer;
+  color: var(--navy); border: none; border-radius: 12px;
+  padding: 17px 54px; font-size: 16px; font-weight: 700; cursor: pointer;
   box-shadow: 0 6px 28px rgba(0,195,124,.35), 0 0 0 1px rgba(255,255,255,.1) inset;
   transition: all 0.2s;
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-family: inherit;
-  letter-spacing: -0.3px;
-  position: relative;
+  display: inline-flex; align-items: center; gap: 10px;
+  font-family: inherit; letter-spacing: -0.3px; position: relative;
 }
 .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 36px rgba(0,195,124,.45); }
 .btn-generate:active { transform: translateY(0); }
 .btn-generate:disabled { opacity: 0.45; cursor: default; transform: none; }
 .btn-generate .note { font-size: 12px; color: rgba(11,31,53,.65); font-weight: 500; }
-
 .spinner {
   width: 19px; height: 19px;
-  border: 2.5px solid rgba(11,31,53,.25);
-  border-top-color: var(--navy);
-  border-radius: 50%;
-  animation: spin .7s linear infinite;
-  display: none;
+  border: 2.5px solid rgba(11,31,53,.25); border-top-color: var(--navy);
+  border-radius: 50%; animation: spin .7s linear infinite; display: none;
 }
-.btn-generate.loading .spinner  { display: block; }
+.btn-generate.loading .spinner { display: block; }
 .btn-generate.loading .btn-text { display: none; }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* Summary card in generate step */
-.summary-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 14px;
-  margin-top: 4px;
-}
-.sg-item {
-  background: var(--surface-2);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  padding: 14px 16px;
-}
+.summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-top: 4px; }
+.sg-item { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 16px; }
 .sg-item .sg-label { font-size: 10px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 4px; }
 .sg-item .sg-value { font-size: 14px; font-weight: 600; color: var(--text); }
-
-/* ─────────────────────────────────────────────
-   RESPONSIVE
-───────────────────────────────────────────── */
+/* ───────────────────────────────────────────── RESPONSIVE ───────────────────────────────────────────── */
 @media (max-width: 680px) {
   .form-grid, .form-grid.cols-3, .form-grid.cols-4 { grid-template-columns: 1fr; }
   .span-2, .span-3, .span-4 { grid-column: span 1; }
@@ -805,14 +486,14 @@ body {
   <div class="step-pill" onclick="goToStep(2)"><span class="sp-num">3</span><span class="sp-label">Photos</span></div>
   <div class="step-pill" onclick="goToStep(3)"><span class="sp-num">4</span><span class="sp-label">Calculator</span></div>
   <div class="step-pill" onclick="goToStep(4)"><span class="sp-num">5</span><span class="sp-label">Materials</span></div>
-  <div class="step-pill" onclick="goToStep(5)"><span class="sp-num">6</span><span class="sp-label">Reuse</span></div>
+  <div class="step-pill" onclick="goToStep(5)"><span class="sp-num">6</span><span class="sp-label">Details</span></div>
   <div class="step-pill" onclick="goToStep(6)"><span class="sp-num">7</span><span class="sp-label">Text</span></div>
   <div class="step-pill" onclick="goToStep(7)"><span class="sp-num">8</span><span class="sp-label">Generate</span></div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════════
      FORM
-═══════════════════════════════════════════════════════════ -->
+     ═══════════════════════════════════════════════════════════ -->
 <form id="auditForm" enctype="multipart/form-data">
 <div class="main-wrap">
 
@@ -859,7 +540,7 @@ body {
       <div class="section-divider">Building Information</div>
       <div class="form-grid cols-3">
         <div class="form-group">
-          <label>Gross Internal Area (m²)</label>
+          <label>Gross Internal Area (m2)</label>
           <input type="text" name="total_gia" placeholder="e.g. 4,250">
         </div>
         <div class="form-group">
@@ -907,8 +588,7 @@ body {
             <div class="form-group">
               <label>Profile Photo</label>
               <div class="upload-zone" id="prepPhotoZone">
-                <input type="file" name="prepared_by_photo" accept="image/*"
-                       onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
+                <input type="file" name="prepared_by_photo" accept="image/*" onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
                 <span class="uz-icon">📷</span>
                 <span class="uz-label">Upload photo</span>
                 <div class="uz-hint">JPG or PNG, square crop recommended</div>
@@ -935,8 +615,7 @@ body {
             <div class="form-group">
               <label>Profile Photo</label>
               <div class="upload-zone" id="authPhotoZone">
-                <input type="file" name="authorised_by_photo" accept="image/*"
-                       onchange="handlePhotoPreview(this,'authPhotoZone','authThumb')">
+                <input type="file" name="authorised_by_photo" accept="image/*" onchange="handlePhotoPreview(this,'authPhotoZone','authThumb')">
                 <span class="uz-icon">📷</span>
                 <span class="uz-label">Upload photo</span>
                 <div class="uz-hint">JPG or PNG, square crop recommended</div>
@@ -966,8 +645,7 @@ body {
       <div class="form-group" style="max-width:380px;">
         <label>Building Photo (Cover Page)</label>
         <div class="upload-zone" id="buildingPhotoZone">
-          <input type="file" name="building_photo" accept="image/*"
-                 onchange="handlePhotoPreview(this,'buildingPhotoZone','buildingThumb')">
+          <input type="file" name="building_photo" accept="image/*" onchange="handlePhotoPreview(this,'buildingPhotoZone','buildingThumb')">
           <span class="uz-icon">🏢</span>
           <span class="uz-label">Upload building photo</span>
           <div class="uz-hint">Appears on the executive summary slide</div>
@@ -976,8 +654,7 @@ body {
       </div>
       <div class="section-divider" style="margin-top:30px;">Spec Sheet Images — Slides 20–26</div>
       <p style="color:var(--muted);font-size:12.5px;margin-bottom:18px;line-height:1.6;">
-        Each spec slot is a full-page image slide. Upload a product or material spec sheet for each Key Waste Product.
-        Leave blank if not needed.
+        Each spec slot is a full-page image slide. Upload a product or material spec sheet for each Key Waste Product. Leave blank if not needed.
       </p>
       <div class="spec-grid">
         <div class="spec-card"><label>Spec Photo 1</label>
@@ -1059,7 +736,6 @@ body {
           </label>
         </div>
       </div>
-
       <div class="calc-section">
         <div class="calc-section-title"><span>🏠 Flooring</span><span class="cst-hint">Enter quantities — unit weights pre-filled</span></div>
         <div class="calc-table-wrap"><table class="calc-table" id="calcFlooring">
@@ -1116,7 +792,6 @@ body {
           <tfoot><tr class="calc-totals"><td colspan="4" style="text-align:right;padding-right:10px;">Furniture Total:</td><td id="furnitureTotal">0 kg</td><td></td></tr></tfoot>
         </table></div>
       </div>
-
       <div class="totals-bar">
         <div class="tb-item"><span class="tb-label">Total Weight</span><span class="tb-value" id="grandTotalKg">0 kg</span></div>
         <div class="tb-item"><span class="tb-label">Total (tonnes)</span><span class="tb-value" id="grandTotalT">0.000 t</span></div>
@@ -1153,8 +828,6 @@ body {
               <th style="width:80px;">Carbon Factor</th>
               <th style="width:90px;">Carbon (tCO₂e)</th>
               <th style="width:60px;">% Reuse</th>
-              <th style="width:65px;">% Recycle</th>
-              <th style="width:65px;">% Landfill</th>
               <th style="width:32px;"></th>
             </tr>
           </thead>
@@ -1180,21 +853,20 @@ body {
   </div>
   <div class="step-nav">
     <button type="button" class="btn btn-secondary" onclick="prevStep()">← Back</button>
-    <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Reuse Items →</button>
+    <button type="button" class="btn btn-primary" onclick="nextStep()">Next: Details →</button>
   </div>
 </div>
 
-<!-- ══ STEP 6: Material Reuse ════════════════════════════════ -->
+<!-- ══ STEP 6: Material Details & Photos ════════════════════ -->
 <div class="step-panel" id="step-5">
   <div class="panel-card">
     <div class="panel-head">
       <span class="ph-step">STEP 6 OF 8</span>
-      <h2>Material Reuse Items</h2>
-      <p>Up to 20 items — these fill the Material Reuse slides with name, description, potential and risk factors</p>
+      <h2>Material Details &amp; Photos</h2>
+      <p>Per-material descriptions, waste recommendations, risk factors and photos — auto-synced from Step 5</p>
     </div>
     <div class="panel-body">
       <div id="reuseItemList"></div>
-      <button type="button" class="btn-add-row" onclick="addReuseItem()">+ Add Reuse Item</button>
     </div>
   </div>
   <div class="step-nav">
@@ -1284,18 +956,35 @@ body {
 
 </div><!-- /main-wrap -->
 </form>
+
 <div id="toast"></div>
+
+<datalist id="materialNames">
+  <option value="Carpet"><option value="Timber"><option value="Plasterboard">
+  <option value="Glass"><option value="Metal"><option value="Hardcore">
+  <option value="Insulation"><option value="Fibre Ceiling Tiles">
+  <option value="Plastic"><option value="Vinyl"><option value="Rubber">
+  <option value="Fabric"><option value="Fluorescent Tubes"><option value="Oil / Hydraulic Fluid">
+</datalist>
+
+<datalist id="kwpMaterialNames">
+  <option value="Carpet"><option value="Timber"><option value="Plasterboard">
+  <option value="Glass"><option value="Metal"><option value="Hardcore">
+  <option value="Insulation"><option value="Fibre Ceiling Tiles">
+  <option value="Plastic"><option value="Vinyl"><option value="Rubber">
+  <option value="Fabric"><option value="Fluorescent Tubes"><option value="Oil / Hydraulic Fluid">
+</datalist>
 
 <!-- ═══════════════════════════════════════════════════════════
      JAVASCRIPT
-═══════════════════════════════════════════════════════════ -->
+     ═══════════════════════════════════════════════════════════ -->
 <script>
-// ── State ──────────────────────────────────────────────────
+// ── State ────────────────────────────────────────────────────
 let currentStep = 0;
 const totalSteps = 8;
-let reuseCount = 0;
+const ewcCache = {};
 
-// ── Step navigation ────────────────────────────────────────
+// ── Step navigation ──────────────────────────────────────────
 function goToStep(n) {
   document.querySelectorAll('.step-panel').forEach((el, i) => el.classList.toggle('active', i === n));
   document.querySelectorAll('.step-pill').forEach((p, i) => {
@@ -1304,15 +993,17 @@ function goToStep(n) {
     else if (i < n) p.classList.add('done');
   });
   currentStep = n;
+  if (n === 5) syncMaterialDetails();   // Step 6 — auto-sync details from KWP
   if (n === totalSteps - 1) buildSummary();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
+
 function nextStep() { if (currentStep < totalSteps - 1) goToStep(currentStep + 1); }
 function prevStep() { if (currentStep > 0) goToStep(currentStep - 1); }
 
-// ── Photo preview ──────────────────────────────────────────
+// ── Photo preview ────────────────────────────────────────────
 function handlePhotoPreview(input, zoneId, thumbId) {
-  const zone = document.getElementById(zoneId);
+  const zone  = document.getElementById(zoneId);
   const thumb = document.getElementById(thumbId);
   if (input.files && input.files[0]) {
     const reader = new FileReader();
@@ -1325,8 +1016,9 @@ function handlePhotoPreview(input, zoneId, thumbId) {
     reader.readAsDataURL(input.files[0]);
   }
 }
+
 function handleSpecPreview(input, zoneId, thumbId, labelId) {
-  const zone = document.getElementById(zoneId);
+  const zone  = document.getElementById(zoneId);
   const thumb = document.getElementById(thumbId);
   const label = document.getElementById(labelId);
   if (input.files && input.files[0]) {
@@ -1341,90 +1033,90 @@ function handleSpecPreview(input, zoneId, thumbId, labelId) {
   }
 }
 
-// ── Calculator data ────────────────────────────────────────
+// ── Calculator data ──────────────────────────────────────────
 const CALC_ITEMS = {
   flooring: [
-    ['Carpet Tiles (standard)',        0, 'm²',  3.5,  'Carpet'],
-    ['Carpet (broadloom)',             0, 'm²',  2.8,  'Carpet'],
-    ['Vinyl Sheet Flooring',           0, 'm²',  3.2,  'Vinyl'],
-    ['Vinyl Tiles',                    0, 'm²',  2.9,  'Vinyl'],
-    ['Rubber Flooring',                0, 'm²',  4.5,  'Rubber'],
-    ['Timber Parquet / Strip',         0, 'm²',  8.0,  'Timber'],
-    ['Raised Access Floor Panels',     0, 'm²',  18.0, 'Metal'],
-    ['Raised Access Floor Pedestals',  0, 'No.', 0.5,  'Metal'],
-    ['Ceramic / Porcelain Tiles',      0, 'm²',  22.0, 'Hardcore'],
-    ['Screed',                         0, 'm²',  24.0, 'Hardcore'],
+    ['Carpet Tiles (standard)',     0, 'm2',  3.5, 'Carpet'],
+    ['Carpet (broadloom)',           0, 'm2',  2.8, 'Carpet'],
+    ['Vinyl Sheet Flooring',         0, 'm2',  3.2, 'Vinyl'],
+    ['Vinyl Tiles',                  0, 'm2',  2.9, 'Vinyl'],
+    ['Rubber Flooring',              0, 'm2',  4.5, 'Rubber'],
+    ['Timber Parquet / Strip',       0, 'm2',  8.0, 'Timber'],
+    ['Raised Access Floor Panels',   0, 'm2', 18.0, 'Metal'],
+    ['Raised Access Floor Pedestals',0, 'No.', 0.5, 'Metal'],
+    ['Ceramic / Porcelain Tiles',    0, 'm2', 22.0, 'Hardcore'],
+    ['Screed',                       0, 'm2', 24.0, 'Hardcore'],
   ],
   walls: [
-    ['Plasterboard (single layer)',    0, 'm²',  8.5,  'Plasterboard'],
-    ['Plasterboard (double layer)',    0, 'm²',  17.0, 'Plasterboard'],
-    ['Acoustic / Fire-rated Board',    0, 'm²',  10.0, 'Plasterboard'],
-    ['Timber Stud Partitions',         0, 'm²',  6.0,  'Timber'],
-    ['Metal Stud & Track',             0, 'm²',  4.5,  'Metal'],
-    ['Ceramic / Tile Cladding',        0, 'm²',  22.0, 'Hardcore'],
-    ['Glass Partitions / Screens',     0, 'm²',  14.0, 'Glass'],
-    ['Insulation (batt / slab)',       0, 'm²',  2.0,  'Insulation'],
-    ['Mineral Wool in Partitions',     0, 'm²',  2.5,  'Insulation'],
+    ['Plasterboard (single layer)',   0, 'm2',  8.5, 'Plasterboard'],
+    ['Plasterboard (double layer)',   0, 'm2', 17.0, 'Plasterboard'],
+    ['Acoustic / Fire-rated Board',   0, 'm2', 10.0, 'Plasterboard'],
+    ['Timber Stud Partitions',        0, 'm2',  6.0, 'Timber'],
+    ['Metal Stud & Track',            0, 'm2',  4.5, 'Metal'],
+    ['Ceramic / Tile Cladding',       0, 'm2', 22.0, 'Hardcore'],
+    ['Glass Partitions / Screens',    0, 'm2', 14.0, 'Glass'],
+    ['Insulation (batt / slab)',       0, 'm2',  2.0, 'Insulation'],
+    ['Mineral Wool in Partitions',    0, 'm2',  2.5, 'Insulation'],
   ],
   ceilings: [
-    ['Suspended Ceiling Grid',         0, 'm²',  3.2,  'Metal'],
-    ['Mineral Fibre Ceiling Tiles',    0, 'm²',  4.0,  'Fibre Ceiling Tiles'],
-    ['Plasterboard Ceiling (skim)',    0, 'm²',  9.0,  'Plasterboard'],
-    ['Acoustic Ceiling Tiles',         0, 'm²',  5.5,  'Fibre Ceiling Tiles'],
-    ['Lighting Troffers / Panels',     0, 'No.', 2.5,  'Metal'],
+    ['Suspended Ceiling Grid',        0, 'm2',  3.2, 'Metal'],
+    ['Mineral Fibre Ceiling Tiles',   0, 'm2',  4.0, 'Fibre Ceiling Tiles'],
+    ['Plasterboard Ceiling (skim)',   0, 'm2',  9.0, 'Plasterboard'],
+    ['Acoustic Ceiling Tiles',        0, 'm2',  5.5, 'Fibre Ceiling Tiles'],
+    ['Lighting Troffers / Panels',    0, 'No.', 2.5, 'Metal'],
   ],
   fixtures: [
     ['Flush Doors (inc. frame)',       0, 'No.', 18.0, 'Timber'],
     ['Fire Doors (inc. frame)',        0, 'No.', 28.0, 'Timber'],
     ['Glazed Internal Doors',          0, 'No.', 22.0, 'Glass'],
-    ['Skirting / Architrave',          0, 'm',   0.4,  'Timber'],
-    ['Window Blinds',                  0, 'No.', 2.0,  'Fabric'],
-    ['Curtain Track / Rail',           0, 'm',   0.6,  'Metal'],
-    ['Signage (wall / wayfinding)',    0, 'No.', 1.5,  'Plastic'],
+    ['Skirting / Architrave',          0, 'm',    0.4, 'Timber'],
+    ['Window Blinds',                  0, 'No.',  2.0, 'Fabric'],
+    ['Curtain Track / Rail',           0, 'm',    0.6, 'Metal'],
+    ['Signage (wall / wayfinding)',    0, 'No.',  1.5, 'Plastic'],
   ],
   me: [
-    ['Fluorescent Tubes (linear)',     0, 'No.', 0.25, 'Fluorescent Tubes'],
-    ['LED Panel Lights',               0, 'No.', 1.8,  'Metal'],
-    ['Switch / Socket Faceplates',     0, 'No.', 0.15, 'Plastic'],
-    ['Cable Trays (steel)',            0, 'm',   3.5,  'Metal'],
-    ['Conduit (plastic)',              0, 'm',   0.4,  'Plastic'],
-    ['Fan Coil Units',                 0, 'No.', 35.0, 'Metal'],
-    ['Radiators',                      0, 'No.', 14.0, 'Metal'],
-    ['Sprinkler Heads',                0, 'No.', 0.1,  'Metal'],
-    ['Hydraulic / Oil (litres)',       0, 'l',   0.9,  'Oil / Hydraulic Fluid'],
+    ['Fluorescent Tubes (linear)',    0, 'No.',  0.25, 'Fluorescent Tubes'],
+    ['LED Panel Lights',              0, 'No.',  1.8,  'Metal'],
+    ['Switch / Socket Faceplates',    0, 'No.',  0.15, 'Plastic'],
+    ['Cable Trays (steel)',           0, 'm',    3.5,  'Metal'],
+    ['Conduit (plastic)',             0, 'm',    0.4,  'Plastic'],
+    ['Fan Coil Units',                0, 'No.', 35.0,  'Metal'],
+    ['Radiators',                     0, 'No.', 14.0,  'Metal'],
+    ['Sprinkler Heads',               0, 'No.',  0.1,  'Metal'],
+    ['Hydraulic / Oil (litres)',      0, 'l',    0.9,  'Oil / Hydraulic Fluid'],
   ],
   wc: [
-    ['WC Pans',                        0, 'No.', 22.0, 'Hardcore'],
-    ['Cisterns (ceramic)',             0, 'No.', 8.0,  'Hardcore'],
-    ['Wash Hand Basins',               0, 'No.', 7.0,  'Glass'],
-    ['Shower Trays',                   0, 'No.', 12.0, 'Hardcore'],
-    ['Shower Screens',                 0, 'No.', 8.0,  'Glass'],
-    ['Kitchen Sink Units',             0, 'No.', 18.0, 'Metal'],
-    ['Kitchen Base Units',             0, 'No.', 22.0, 'Timber'],
-    ['Kitchen Wall Units',             0, 'No.', 12.0, 'Timber'],
-    ['Worktops (solid surface)',       0, 'm',   20.0, 'Hardcore'],
+    ['WC Pans',                       0, 'No.', 22.0, 'Hardcore'],
+    ['Cisterns (ceramic)',             0, 'No.',  8.0, 'Hardcore'],
+    ['Wash Hand Basins',              0, 'No.',  7.0, 'Glass'],
+    ['Shower Trays',                  0, 'No.', 12.0, 'Hardcore'],
+    ['Shower Screens',                0, 'No.',  8.0, 'Glass'],
+    ['Kitchen Sink Units',            0, 'No.', 18.0, 'Metal'],
+    ['Kitchen Base Units',            0, 'No.', 22.0, 'Timber'],
+    ['Kitchen Wall Units',            0, 'No.', 12.0, 'Timber'],
+    ['Worktops (solid surface)',      0, 'm',   20.0, 'Hardcore'],
   ],
   furniture: [
-    ['Office Desks',                   0, 'No.', 28.0, 'Timber'],
-    ['Office Chairs (task)',           0, 'No.', 8.0,  'Fabric'],
-    ['Meeting Room Chairs',            0, 'No.', 6.0,  'Fabric'],
-    ['Bookcases / Shelving',           0, 'No.', 20.0, 'Timber'],
-    ['Filing Cabinets (metal)',        0, 'No.', 30.0, 'Metal'],
-    ['Lockers (metal)',                0, 'No.', 22.0, 'Metal'],
-    ['Reception Desk',                 0, 'No.', 80.0, 'Timber'],
-    ['Soft Seating (sofa/armchair)',   0, 'No.', 35.0, 'Fabric'],
+    ['Office Desks',                  0, 'No.', 28.0, 'Timber'],
+    ['Office Chairs (task)',          0, 'No.',  8.0, 'Fabric'],
+    ['Meeting Room Chairs',           0, 'No.',  6.0, 'Fabric'],
+    ['Bookcases / Shelving',          0, 'No.', 20.0, 'Timber'],
+    ['Filing Cabinets (metal)',       0, 'No.', 30.0, 'Metal'],
+    ['Lockers (metal)',               0, 'No.', 22.0, 'Metal'],
+    ['Reception Desk',                0, 'No.', 80.0, 'Timber'],
+    ['Soft Seating (sofa/armchair)', 0, 'No.', 35.0, 'Fabric'],
   ]
 };
 
 function buildCalcTables() {
   const sections = [
-    ['calcFlooringBody', 'flooring', 'flooringTotal'],
-    ['calcWallsBody',    'walls',    'wallsTotal'],
-    ['calcCeilingsBody', 'ceilings', 'ceilingsTotal'],
-    ['calcFixturesBody', 'fixtures', 'fixturesTotal'],
-    ['calcMEBody',       'me',       'meTotal'],
-    ['calcWCBody',       'wc',       'wcTotal'],
-    ['calcFurnitureBody','furniture','furnitureTotal'],
+    ['calcFlooringBody', 'flooring',  'flooringTotal'],
+    ['calcWallsBody',    'walls',     'wallsTotal'],
+    ['calcCeilingsBody', 'ceilings',  'ceilingsTotal'],
+    ['calcFixturesBody', 'fixtures',  'fixturesTotal'],
+    ['calcMEBody',       'me',        'meTotal'],
+    ['calcWCBody',       'wc',        'wcTotal'],
+    ['calcFurnitureBody','furniture', 'furnitureTotal'],
   ];
   sections.forEach(([tbodyId, key]) => {
     const tbody = document.getElementById(tbodyId);
@@ -1434,7 +1126,7 @@ function buildCalcTables() {
       tr.innerHTML = `
         <td>${desc}</td>
         <td><input type="number" class="calc-qty" data-section="${key}" data-idx="${idx}" data-unitwt="${unitWt}"
-                   value="${qty}" min="0" step="1" oninput="recalcSection('${key}')"></td>
+          value="${qty}" min="0" step="1" oninput="recalcSection('${key}')"></td>
         <td class="unit">${unit}</td>
         <td class="unit">${unitWt}</td>
         <td class="calc-total-cell" id="calcCell_${key}_${idx}">0</td>
@@ -1449,9 +1141,9 @@ function recalcSection(section) {
   const inputs = document.querySelectorAll(`.calc-qty[data-section="${section}"]`);
   let sectionTotal = 0;
   inputs.forEach(inp => {
-    const qty = parseFloat(inp.value) || 0;
+    const qty    = parseFloat(inp.value) || 0;
     const unitWt = parseFloat(inp.dataset.unitwt) || 0;
-    const total = qty * unitWt;
+    const total  = qty * unitWt;
     sectionTotal += total;
     const cell = document.getElementById(`calcCell_${section}_${inp.dataset.idx}`);
     if (cell) cell.textContent = total.toFixed(1);
@@ -1471,7 +1163,7 @@ function recalcGrandTotal() {
     grand += (parseFloat(inp.value) || 0) * (parseFloat(inp.dataset.unitwt) || 0);
   });
   document.getElementById('grandTotalKg').textContent = grand.toFixed(0) + ' kg';
-  document.getElementById('grandTotalT').textContent = (grand / 1000).toFixed(3) + ' t';
+  document.getElementById('grandTotalT').textContent  = (grand / 1000).toFixed(3) + ' t';
 }
 
 function getCalcMaterialTotals() {
@@ -1484,13 +1176,13 @@ function getCalcMaterialTotals() {
   document.querySelectorAll('.calc-qty').forEach(inp => {
     const qty = parseFloat(inp.value) || 0;
     if (!qty) return;
-    const unitWt = parseFloat(inp.dataset.unitwt) || 0;
+    const unitWt  = parseFloat(inp.dataset.unitwt) || 0;
     const section = inp.dataset.section;
-    const idx = parseInt(inp.dataset.idx);
-    const item = CALC_ITEMS[section][idx];
+    const idx     = parseInt(inp.dataset.idx);
+    const item    = CALC_ITEMS[section][idx];
     if (!item) return;
     const mat = item[4];
-    const wt = qty * unitWt;
+    const wt  = qty * unitWt;
     if (!totals[mat]) totals[mat] = { weight_kg: 0, volume_m3: 0 };
     totals[mat].weight_kg += wt;
     totals[mat].volume_m3 += (wt / (DENSITY[mat] || 1000));
@@ -1512,9 +1204,9 @@ function calcToKWP() {
   let totalWt = keys.reduce((s, k) => s + matTotals[k].weight_kg, 0);
   keys.sort((a, b) => matTotals[b].weight_kg - matTotals[a].weight_kg);
   keys.forEach(mat => {
-    const d = matTotals[mat];
+    const d    = matTotals[mat];
     const wt_t = d.weight_kg / 1000;
-    const pct = totalWt > 0 ? (d.weight_kg / totalWt * 100) : 0;
+    const pct  = totalWt > 0 ? (d.weight_kg / totalWt * 100) : 0;
     addMaterialRow({ name:mat, ewc:EWC[mat]||'', vol:d.volume_m3.toFixed(2), wt:wt_t.toFixed(3), pct:pct.toFixed(1) });
   });
   document.getElementById('projectWeightField').value = (totalWt / 1000).toFixed(3);
@@ -1523,11 +1215,11 @@ function calcToKWP() {
 
 async function importCalculatorExcel(input) {
   if (!input.files || !input.files[0]) return;
-  showToast('Importing from Excel…');
+  showToast('Importing from Excel...');
   const fd = new FormData();
   fd.append('calculator_file', input.files[0]);
   try {
-    const resp = await fetch('/parse-calculator', { method: 'POST', body: fd });
+    const resp   = await fetch('/parse-calculator', { method: 'POST', body: fd });
     const result = await resp.json();
     if (result.error) { showToast('Import error: ' + result.error, 'error'); return; }
     document.getElementById('kwpBody').innerHTML = '';
@@ -1542,107 +1234,266 @@ async function importCalculatorExcel(input) {
   }
 }
 
-// ── KWP materials table ────────────────────────────────────
+// ── KWP Materials Table (indexed mat_N_* fields) ─────────────
 function addMaterialRow(data = {}) {
   const tbody = document.getElementById('kwpBody');
+  const n  = tbody.querySelectorAll('tr').length + 1;
   const tr = document.createElement('tr');
   tr.innerHTML = `
-    <td><input type="text" name="material_name" value="${data.name||''}" placeholder="e.g. Carpet"></td>
-    <td><input type="text" name="ewc_code" value="${data.ewc||''}" placeholder="17 01 01"></td>
-    <td><input type="number" name="volume_m3" value="${data.vol||''}" step="0.01" placeholder="0.00"></td>
-    <td><input type="number" name="weight_tonnes" value="${data.wt||''}" step="0.001" placeholder="0.000" oninput="autoCalcPct()"></td>
-    <td><input type="number" name="pct_weight" value="${data.pct||''}" step="0.1" placeholder="auto"></td>
-    <td><input type="text" name="carbon_factor" value="${data.cf||''}" placeholder="0.000"></td>
-    <td><input type="number" name="embodied_carbon" value="${data.ec||''}" step="0.1" placeholder="0.0"></td>
-    <td><input type="number" name="reuse_pct" value="${data.reuse||''}" step="1" min="0" max="100" placeholder="0"></td>
-    <td><input type="number" name="recycling_pct" value="${data.recycle||''}" step="1" min="0" max="100" placeholder="0"></td>
-    <td><input type="number" name="landfill_pct" value="${data.landfill||''}" step="1" min="0" max="100" placeholder="0"></td>
-    <td><button type="button" class="btn-delete-row" onclick="this.closest('tr').remove();autoCalcPct();">✕</button></td>
+    <td><input type="text" class="mat-name" name="mat_${n}_name" value="${data.name||''}"
+      placeholder="e.g. Carpet" list="kwpMaterialNames" oninput="ewcAutoFill(this)"></td>
+    <td><input type="text" class="mat-ewc" name="mat_${n}_ewc" value="${data.ewc||''}" placeholder="17 01 01"></td>
+    <td><input type="number" class="mat-vol" name="mat_${n}_vol" value="${data.vol||''}" step="0.01" placeholder="0.00"></td>
+    <td><input type="number" class="mat-weigh" name="mat_${n}_weigh" value="${data.wt||''}" step="0.001"
+      placeholder="0.000" oninput="autoCalcPct()"></td>
+    <td><input type="number" class="mat-weighp" name="mat_${n}_weighp" value="${data.pct||''}" step="0.1" placeholder="auto"></td>
+    <td><input type="text" class="mat-ecf" name="mat_${n}_ecf" value="${data.cf||''}" placeholder="0.000"
+      oninput="autoCalcCarbon(this)"></td>
+    <td><input type="number" class="mat-carb" name="mat_${n}_carb" value="${data.ec||''}" step="0.1" placeholder="auto"></td>
+    <td><input type="number" class="mat-reuse" name="mat_${n}_reuse" value="${data.reuse||''}" step="1" min="0" max="100" placeholder="0"></td>
+    <td><button type="button" class="btn-delete-row" onclick="removeKwpRow(this)">✕</button></td>
   `;
   tbody.appendChild(tr);
 }
+
+function removeKwpRow(btn) {
+  btn.closest('tr').remove();
+  reNumberKwpRows();
+  autoCalcPct();
+}
+
+function reNumberKwpRows() {
+  document.querySelectorAll('#kwpBody tr').forEach((tr, i) => {
+    const n = i + 1;
+    tr.querySelector('.mat-name').name   = `mat_${n}_name`;
+    tr.querySelector('.mat-ewc').name    = `mat_${n}_ewc`;
+    tr.querySelector('.mat-vol').name    = `mat_${n}_vol`;
+    tr.querySelector('.mat-weigh').name  = `mat_${n}_weigh`;
+    tr.querySelector('.mat-weighp').name = `mat_${n}_weighp`;
+    tr.querySelector('.mat-ecf').name    = `mat_${n}_ecf`;
+    tr.querySelector('.mat-carb').name   = `mat_${n}_carb`;
+    tr.querySelector('.mat-reuse').name  = `mat_${n}_reuse`;
+  });
+}
+
 function autoCalcPct() {
   const rows = document.querySelectorAll('#kwpBody tr');
-  let total = 0;
-  rows.forEach(r => { total += parseFloat(r.querySelector('[name="weight_tonnes"]').value) || 0; });
+  let total  = 0;
+  rows.forEach(r => { total += parseFloat(r.querySelector('.mat-weigh')?.value) || 0; });
   if (total > 0) {
     rows.forEach(r => {
-      const w = parseFloat(r.querySelector('[name="weight_tonnes"]').value) || 0;
-      r.querySelector('[name="pct_weight"]').value = (w / total * 100).toFixed(1);
+      const w  = parseFloat(r.querySelector('.mat-weigh')?.value) || 0;
+      const wp = r.querySelector('.mat-weighp');
+      if (wp) wp.value = (w / total * 100).toFixed(1);
     });
     const pf = document.getElementById('projectWeightField');
     if (pf && !pf.value) pf.value = total.toFixed(3);
   }
 }
 
-// ── Reuse items ────────────────────────────────────────────
-function addReuseItem() {
-  const list = document.getElementById('reuseItemList');
-  const idx = reuseCount++;
-  const num = idx + 1;
-  const div = document.createElement('div');
-  div.className = 'reuse-item';
-  div.innerHTML = `
-    <div class="reuse-item-header">
-      <div style="display:flex;align-items:center;gap:10px;">
-        <div class="reuse-item-number">${num}</div>
-        <span style="font-weight:600;color:var(--text);font-size:13.5px;">Material Item ${num}</span>
-      </div>
-      <button type="button" onclick="this.closest('.reuse-item').remove()"
-              style="background:none;border:none;color:var(--muted-2);font-size:18px;cursor:pointer;padding:4px;border-radius:5px;transition:color var(--transition);"
-              onmouseover="this.style.color='var(--danger)'" onmouseout="this.style.color='var(--muted-2)'">✕</button>
-    </div>
-    <div class="form-grid">
-      <div class="form-group">
-        <label>Material Name</label>
-        <input type="text" name="reuse_name" placeholder="e.g. Raised Access Floor Tiles">
-      </div>
-      <div class="form-group">
-        <label>Reuse Potential</label>
-        <select name="reuse_potential">
-          <option value="High">High</option>
-          <option value="Medium" selected>Medium</option>
-          <option value="Low">Low</option>
-        </select>
-      </div>
-      <div class="form-group span-2">
-        <label>Description</label>
-        <textarea name="reuse_description" rows="2" placeholder="Describe the material condition, quantity, and reuse opportunity..."></textarea>
-      </div>
-      <div class="form-group span-2">
-        <label>Risk Factors</label>
-        <textarea name="reuse_risk_factors" rows="2" placeholder="e.g. Potential asbestos contamination; access constraints; market availability..."></textarea>
-      </div>
-    </div>
-  `;
-  list.appendChild(div);
+function autoCalcCarbon(ecfInput) {
+  const tr  = ecfInput.closest('tr');
+  const wEl = tr.querySelector('.mat-weigh');
+  const cEl = tr.querySelector('.mat-carb');
+  const ecf = parseFloat(ecfInput.value) || 0;
+  const wt  = parseFloat(wEl?.value) || 0;
+  if (ecf && wt && cEl && !cEl.value) cEl.value = (ecf * wt).toFixed(2);
 }
 
-// ── AI text generation ─────────────────────────────────────
+// ── EWC Auto-fill ────────────────────────────────────────────
+async function ewcAutoFill(input) {
+  const name  = input.value.trim();
+  const KNOWN = ['Carpet','Timber','Plasterboard','Glass','Metal','Hardcore','Insulation',
+    'Fibre Ceiling Tiles','Plastic','Vinyl','Rubber','Fabric','Fluorescent Tubes','Oil / Hydraulic Fluid'];
+  if (!KNOWN.includes(name)) return;
+  if (!ewcCache[name]) {
+    try {
+      const res = await fetch('/ewc-lookup', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name })
+      });
+      ewcCache[name] = await res.json();
+    } catch (e) { return; }
+  }
+  const d    = ewcCache[name];
+  const tr   = input.closest('tr');
+  const ewcEl = tr.querySelector('.mat-ewc');
+  if (ewcEl && !ewcEl.value && d.ewc) {
+    ewcEl.value = d.ewc;
+    ewcEl.classList.add('autofilled');
+    setTimeout(() => ewcEl.classList.remove('autofilled'), 1500);
+  }
+}
+
+// ── Material Details Sync (Step 6) ───────────────────────────
+function syncMaterialDetails() {
+  const rows   = document.querySelectorAll('#kwpBody tr');
+  const list   = document.getElementById('reuseItemList');
+
+  // Preserve already-entered data before wiping
+  const existing = {};
+  list.querySelectorAll('.reuse-item[data-mat-idx]').forEach(div => {
+    const n = div.dataset.matIdx;
+    existing[n] = {
+      desc:      div.querySelector(`[name="mat_${n}_desc"]`)?.value      || '',
+      waste_rec: div.querySelector(`[name="mat_${n}_waste_rec"]`)?.value || '',
+      potential: div.querySelector(`[name="mat_${n}_potential"]`)?.value || 'Medium',
+      risks:     div.querySelector(`[name="mat_${n}_risks"]`)?.value     || '',
+    };
+  });
+
+  list.innerHTML = '';
+  let added = 0;
+
+  rows.forEach((tr, i) => {
+    const n    = i + 1;
+    const name = tr.querySelector('.mat-name')?.value.trim() || '';
+    if (!name) return;
+    added++;
+    const prev = existing[n] || {};
+
+    const div = document.createElement('div');
+    div.className      = 'reuse-item';
+    div.dataset.matIdx = n;
+    div.innerHTML = `
+      <div class="reuse-item-header">
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div class="reuse-item-number">${n}</div>
+          <span style="font-weight:600;color:var(--text);font-size:13.5px;">${name}</span>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Reuse Potential</label>
+          <select name="mat_${n}_potential">
+            <option value="High"   ${prev.potential==='High'  ?'selected':''}>High</option>
+            <option value="Medium" ${(!prev.potential||prev.potential==='Medium')?'selected':''}>Medium</option>
+            <option value="Low"    ${prev.potential==='Low'   ?'selected':''}>Low</option>
+          </select>
+        </div>
+        <div class="form-group span-2">
+          <label>Description</label>
+          <div class="ai-text-wrap">
+            <textarea name="mat_${n}_desc" rows="2"
+              placeholder="Describe the material condition and reuse opportunity...">${prev.desc||''}</textarea>
+            <button type="button" class="ai-btn-inline"
+              onclick="aiGenMatField(${n},'description',this)">✨ AI</button>
+          </div>
+        </div>
+        <div class="form-group span-2">
+          <label>Waste Management Recommendations</label>
+          <div class="ai-text-wrap">
+            <textarea name="mat_${n}_waste_rec" rows="2"
+              placeholder="Recommended disposal, recycling, or reuse route...">${prev.waste_rec||''}</textarea>
+            <button type="button" class="ai-btn-inline"
+              onclick="aiGenMatField(${n},'waste_rec',this)">✨ AI</button>
+          </div>
+        </div>
+        <div class="form-group span-2">
+          <label>Risk Factors</label>
+          <div class="ai-text-wrap">
+            <textarea name="mat_${n}_risks" rows="2"
+              placeholder="e.g. Contamination; access constraints; market availability...">${prev.risks||''}</textarea>
+            <button type="button" class="ai-btn-inline"
+              onclick="aiGenMatField(${n},'risks',this)">✨ AI</button>
+          </div>
+        </div>
+      </div>
+      <div class="section-divider" style="margin:16px 0 12px;">Photos</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Photo 1</label>
+          <div class="upload-zone" id="matZone${n}_1">
+            <input type="file" name="mat_${n}_photo_1" accept="image/*"
+              onchange="handlePhotoPreview(this,'matZone${n}_1','matThumb${n}_1')">
+            <span class="uz-icon">📷</span>
+            <span class="uz-label">Upload photo 1</span>
+            <div class="uz-hint">Material condition / reuse image</div>
+            <img id="matThumb${n}_1" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Photo 2</label>
+          <div class="upload-zone" id="matZone${n}_2">
+            <input type="file" name="mat_${n}_photo_2" accept="image/*"
+              onchange="handlePhotoPreview(this,'matZone${n}_2','matThumb${n}_2')">
+            <span class="uz-icon">📷</span>
+            <span class="uz-label">Upload photo 2</span>
+            <div class="uz-hint">Additional material image</div>
+            <img id="matThumb${n}_2" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+    if (!prev.desc && !prev.waste_rec) autoFillMatDefaults(n, name);
+  });
+
+  if (!added) {
+    list.innerHTML = '<p style="color:var(--muted-2);font-size:13px;padding:8px 0;">No materials in Step 5 yet — go back and add KWP materials first.</p>';
+  }
+}
+
+async function autoFillMatDefaults(n, name) {
+  const d = ewcCache[name] || await fetch('/ewc-lookup', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name })
+  }).then(r => r.json()).catch(() => null);
+  if (!d) return;
+  if (!ewcCache[name]) ewcCache[name] = d;
+  const descEl = document.querySelector(`[name="mat_${n}_desc"]`);
+  const wrEl   = document.querySelector(`[name="mat_${n}_waste_rec"]`);
+  const rkEl   = document.querySelector(`[name="mat_${n}_risks"]`);
+  const potEl  = document.querySelector(`[name="mat_${n}_potential"]`);
+  if (descEl && !descEl.value && d.description) descEl.value = d.description;
+  if (wrEl   && !wrEl.value   && d.waste_rec)   wrEl.value   = d.waste_rec;
+  if (rkEl   && !rkEl.value   && d.risks)       rkEl.value   = d.risks;
+  if (potEl  && d.potential)                    potEl.value  = d.potential;
+}
+
+async function aiGenMatField(n, field, btn) {
+  let name = '';
+  document.querySelectorAll('#kwpBody tr').forEach((tr, i) => {
+    if (i + 1 === n) name = tr.querySelector('.mat-name')?.value.trim() || '';
+  });
+  if (!name) { showToast('Material name not found', 'error'); return; }
+  if (btn) { btn.disabled = true; btn.textContent = '⏳...'; }
+  try {
+    const resp   = await fetch('/generate-material-text', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ material_name: name, field })
+    });
+    const result = await resp.json();
+    if (result.text) {
+      const fieldKey = field === 'description' ? 'desc' : field;
+      const el = document.querySelector(`[name="mat_${n}_${fieldKey}"]`);
+      if (el) { el.value = result.text; showToast('Generated!', 'success'); }
+    } else { showToast(result.error || 'Failed', 'error'); }
+  } catch (e) { showToast('Error: ' + e.message, 'error'); }
+  finally { if (btn) { btn.disabled = false; btn.textContent = '✨ AI'; } }
+}
+
+// ── AI text generation — report sections ────────────────────
 async function generateAIText(section, targetId) {
   const btnMap = { executive_summary: 'aiExec', conclusion: 'aiConclusion' };
-  const btn = document.getElementById(btnMap[section]);
+  const btn      = document.getElementById(btnMap[section]);
   const textarea = document.getElementById(targetId);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing...'; }
   const fd = new FormData(document.getElementById('auditForm'));
   const reportData = {
-    job_address: fd.get('job_address') || '',
-    client_name: fd.get('client_name') || '',
-    kwp_materials: Array.from(document.querySelectorAll('[name="material_name"]')).map(i => ({ name: i.value })).filter(m => m.name),
+    job_address:   fd.get('job_address')  || '',
+    client_name:   fd.get('client_name')  || '',
+    kwp_materials: Array.from(document.querySelectorAll('.mat-name'))
+      .map(i => ({ name: i.value })).filter(m => m.name),
   };
   try {
-    const resp = await fetch('/generate-ai-text', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+    const resp   = await fetch('/generate-ai-text', {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ section, report_data: reportData }),
     });
     const result = await resp.json();
-    if (result.error) {
-      showToast('AI Error: ' + result.error, 'error');
-    } else {
-      textarea.value = result.text;
-      showToast('Text generated!', 'success');
-    }
+    if (result.error) { showToast('AI Error: ' + result.error, 'error'); }
+    else { textarea.value = result.text; showToast('Text generated!', 'success'); }
   } catch (err) {
     showToast('Network error: ' + err.message, 'error');
   } finally {
@@ -1650,52 +1501,41 @@ async function generateAIText(section, targetId) {
   }
 }
 
-// ── Summary ────────────────────────────────────────────────
+// ── Summary ──────────────────────────────────────────────────
 function buildSummary() {
-  const fd = new FormData(document.getElementById('auditForm'));
-  const kwpNames = Array.from(document.querySelectorAll('[name="material_name"]')).map(i => i.value).filter(Boolean);
-  const reuseItems = Array.from(document.querySelectorAll('[name="reuse_name"]')).map(i => i.value).filter(Boolean);
-  const specCount = [1,2,3,4,5,6,7].filter(i => {
+  const fd         = new FormData(document.getElementById('auditForm'));
+  const kwpNames   = Array.from(document.querySelectorAll('.mat-name')).map(i => i.value).filter(Boolean);
+  const detailCount = document.querySelectorAll('#reuseItemList .reuse-item').length;
+  const specCount  = [1,2,3,4,5,6,7].filter(i => {
     const el = document.querySelector(`[name="spec_photo_${i}"]`);
     return el && el.files && el.files.length > 0;
   }).length;
   const items = [
-    ['Address', fd.get('job_address') || '—'],
-    ['Client', fd.get('client_name') || '—'],
-    ['Report No.', fd.get('report_number') || '—'],
-    ['KWP Materials', `${kwpNames.length}${kwpNames.length ? ' (' + kwpNames.slice(0,3).join(', ') + (kwpNames.length > 3 ? '…' : '') + ')' : ''}`],
-    ['Reuse Items', String(reuseItems.length)],
-    ['Spec Photos', `${specCount} / 7`],
+    ['Address',          fd.get('job_address')  || '—'],
+    ['Client',           fd.get('client_name')  || '—'],
+    ['Report No.',       fd.get('report_number') || '—'],
+    ['KWP Materials',    `${kwpNames.length}${kwpNames.length ? ' (' + kwpNames.slice(0,3).join(', ') + (kwpNames.length > 3 ? '...' : '') + ')' : ''}`],
+    ['Material Details', String(detailCount)],
+    ['Spec Photos',      `${specCount} / 7`],
   ];
   document.getElementById('summaryView').innerHTML = items.map(([l,v]) =>
     `<div class="sg-item"><div class="sg-label">${l}</div><div class="sg-value">${v}</div></div>`
   ).join('');
 }
 
-// ── Form submit ────────────────────────────────────────────
+// ── Form submit ──────────────────────────────────────────────
 document.getElementById('auditForm').addEventListener('submit', async function(e) {
   e.preventDefault();
-  const btn = document.getElementById('generateBtn');
+  const btn  = document.getElementById('generateBtn');
   btn.disabled = true;
   btn.classList.add('loading');
-  showToast('Generating report…');
+  showToast('Generating report...');
 
   const formData = new FormData(this);
 
-  const reuseNames  = Array.from(document.querySelectorAll('[name="reuse_name"]')).map(i => i.value);
-  const reuseDescs  = Array.from(document.querySelectorAll('[name="reuse_description"]')).map(i => i.value);
-  const reusePots   = Array.from(document.querySelectorAll('[name="reuse_potential"]')).map(i => i.value);
-  const reuseRisks  = Array.from(document.querySelectorAll('[name="reuse_risk_factors"]')).map(i => i.value);
-  reuseNames.forEach((name, i) => {
-    const n = i + 1;
-    formData.append(`material_${n}`,             name);
-    formData.append(`material_${n}_description`, reuseDescs[i] || '');
-    formData.append(`material_${n}_potential`,   reusePots[i]  || '');
-    formData.append(`material_${n}_risks`,       reuseRisks[i] || '');
-  });
-
-  const kwpNames = Array.from(document.querySelectorAll('[name="material_name"]')).map(i => i.value).filter(Boolean);
-  if (kwpNames.length) formData.append('key_waste_products', kwpNames.join(', '));
+  // Auto-set key_waste_products from material names (mat_N_* already in formData)
+  const kwpNames = Array.from(document.querySelectorAll('.mat-name')).map(i => i.value).filter(Boolean);
+  if (kwpNames.length) formData.set('key_waste_products', kwpNames.join(', '));
 
   try {
     const response = await fetch('/generate-canva-report', { method: 'POST', body: formData });
@@ -1708,7 +1548,7 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
     const blob = await response.blob();
     const url  = URL.createObjectURL(blob);
     const a    = document.createElement('a');
-    a.href = url;
+    a.href     = url;
     const disposition = response.headers.get('Content-Disposition');
     let filename = 'audit.pptx';
     if (disposition) {
@@ -1716,9 +1556,7 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
       if (match && match[1]) filename = match[1].replace(/['"]/g, '');
     }
     a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
     URL.revokeObjectURL(url);
     showToast('Report downloaded!', 'success');
   } catch (err) {
@@ -1729,7 +1567,7 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
   }
 });
 
-// ── Toast ──────────────────────────────────────────────────
+// ── Toast ────────────────────────────────────────────────────
 function showToast(msg, type = '') {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1737,7 +1575,7 @@ function showToast(msg, type = '') {
   setTimeout(() => t.className = '', 3500);
 }
 
-// ── Init ───────────────────────────────────────────────────
+// ── Init ─────────────────────────────────────────────────────
 buildCalcTables();
 </script>
 </body>
