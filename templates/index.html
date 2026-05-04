@@ -935,7 +935,7 @@ body {
     <div class="generate-section">
       <h3>Ready to Generate</h3>
       <p>All data collected — click below to build your PPTX report</p>
-      <button type="submit" class="btn-generate" id="generateBtn">
+      <button type="button" class="btn-generate" id="generateBtn" onclick="generateReport()">
         <span class="btn-text">⬇ Generate PPTX Report</span>
         <div class="spinner"></div>
       </button>
@@ -1523,15 +1523,14 @@ function buildSummary() {
   ).join('');
 }
 
-// ── Form submit ──────────────────────────────────────────────
-document.getElementById('auditForm').addEventListener('submit', async function(e) {
-  e.preventDefault();
-  const btn  = document.getElementById('generateBtn');
+// ── Generate report ──────────────────────────────────────────
+async function generateReport() {
+  const btn = document.getElementById('generateBtn');
   btn.disabled = true;
   btn.classList.add('loading');
   showToast('Generating report...');
 
-  const formData = new FormData(this);
+  const formData = new FormData(document.getElementById('auditForm'));
 
   // Auto-set key_waste_products from material names (mat_N_* already in formData)
   const kwpNames = Array.from(document.querySelectorAll('.mat-name')).map(i => i.value).filter(Boolean);
@@ -1565,7 +1564,7 @@ document.getElementById('auditForm').addEventListener('submit', async function(e
     btn.disabled = false;
     btn.classList.remove('loading');
   }
-});
+}
 
 // ── Toast ────────────────────────────────────────────────────
 function showToast(msg, type = '') {
