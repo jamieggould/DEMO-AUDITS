@@ -710,11 +710,20 @@ def _replace_image_placeholders(prs, image_data):
 # ─────────────────────────────────────────────────────────────
 
 def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
-    """Add a PIE chart: colours + legend only, no slice text labels."""
+    """Add a PIE chart: colours + legend with percentages, no slice text labels."""
     visible = [m for m in mats if float(m.get(value_key) or 0) > 0] or mats
+    values  = [float(m.get(value_key) or 0) for m in visible]
+    total   = sum(values) or 1  # avoid div-by-zero
+
+    # Build legend labels as "Material Name (X.X%)" so percentages appear in the key
+    labels = [
+        f"{m.get('name', '')} ({v / total * 100:.1f}%)"
+        for m, v in zip(visible, values)
+    ]
+
     cd = ChartData()
-    cd.categories = [m.get('name', '') for m in visible]
-    cd.add_series('', [float(m.get(value_key) or 0) for m in visible])
+    cd.categories = labels
+    cd.add_series('', values)
 
     gf    = slide.shapes.add_chart(XL_CHART_TYPE.PIE, left, top, width, height, cd)
     chart = gf.chart
