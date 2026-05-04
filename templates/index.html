@@ -588,10 +588,10 @@ body {
             <div class="form-group">
               <label>Profile Photo</label>
               <div class="upload-zone" id="prepPhotoZone">
-                <input type="file" name="prepared_by_photo" accept="image/*" onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
+                <input type="file" name="prepared_by_photo" onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
                 <span class="uz-icon">📷</span>
                 <span class="uz-label">Upload photo</span>
-                <div class="uz-hint">JPG or PNG, square crop recommended</div>
+                <div class="uz-hint">Any image format accepted</div>
                 <img id="prepThumb" class="preview-thumb" style="display:none;">
               </div>
             </div>
@@ -615,10 +615,10 @@ body {
             <div class="form-group">
               <label>Profile Photo</label>
               <div class="upload-zone" id="authPhotoZone">
-                <input type="file" name="authorised_by_photo" accept="image/*" onchange="handlePhotoPreview(this,'authPhotoZone','authThumb')">
+                <input type="file" name="authorised_by_photo" onchange="handlePhotoPreview(this,'authPhotoZone','authThumb')">
                 <span class="uz-icon">📷</span>
                 <span class="uz-label">Upload photo</span>
-                <div class="uz-hint">JPG or PNG, square crop recommended</div>
+                <div class="uz-hint">Any image format accepted</div>
                 <img id="authThumb" class="preview-thumb" style="display:none;">
               </div>
             </div>
@@ -645,10 +645,10 @@ body {
       <div class="form-group" style="max-width:380px;">
         <label>Building Photo (Cover Page)</label>
         <div class="upload-zone" id="buildingPhotoZone">
-          <input type="file" name="building_photo" accept="image/*" onchange="handlePhotoPreview(this,'buildingPhotoZone','buildingThumb')">
+          <input type="file" name="building_photo" onchange="handlePhotoPreview(this,'buildingPhotoZone','buildingThumb')">
           <span class="uz-icon">🏢</span>
           <span class="uz-label">Upload building photo</span>
-          <div class="uz-hint">Appears on the executive summary slide</div>
+          <div class="uz-hint">Any image format accepted</div>
           <img id="buildingThumb" class="preview-thumb" style="display:none;max-width:200px;">
         </div>
       </div>
@@ -659,49 +659,49 @@ body {
       <div class="spec-grid">
         <div class="spec-card"><label>Spec Photo 1</label>
           <div class="upload-zone" id="specZone1">
-            <input type="file" name="spec_photo_1" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone1','specThumb1','specLabel1')">
+            <input type="file" name="spec_photo_1" onchange="handleSpecPreview(this,'specZone1','specThumb1','specLabel1')">
             <span class="uz-icon">📄</span><span class="uz-label" id="specLabel1">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb1" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 2</label>
           <div class="upload-zone" id="specZone2">
-            <input type="file" name="spec_photo_2" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone2','specThumb2','specLabel2')">
+            <input type="file" name="spec_photo_2" onchange="handleSpecPreview(this,'specZone2','specThumb2','specLabel2')">
             <span class="uz-icon">📄</span><span class="uz-label" id="specLabel2">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb2" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 3</label>
           <div class="upload-zone" id="specZone3">
-            <input type="file" name="spec_photo_3" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone3','specThumb3','specLabel3')">
+            <input type="file" name="spec_photo_3" onchange="handleSpecPreview(this,'specZone3','specThumb3','specLabel3')">
             <span class="uz-icon">📄</span><span class="uz-label" id="specLabel3">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb3" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 4</label>
           <div class="upload-zone" id="specZone4">
-            <input type="file" name="spec_photo_4" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone4','specThumb4','specLabel4')">
+            <input type="file" name="spec_photo_4" onchange="handleSpecPreview(this,'specZone4','specThumb4','specLabel4')">
             <span class="uz-icon">📄</span><span class="uz-label" id="specLabel4">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb4" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 5</label>
           <div class="upload-zone" id="specZone5">
-            <input type="file" name="spec_photo_5" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone5','specThumb5','specLabel5')">
+            <input type="file" name="spec_photo_5" onchange="handleSpecPreview(this,'specZone5','specThumb5','specLabel5')">
             <span class="uz-icon">📄</span><span class="uz-label" id="specLabel5">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb5" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 6</label>
           <div class="upload-zone" id="specZone6">
-            <input type="file" name="spec_photo_6" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone6','specThumb6','specLabel6')">
+            <input type="file" name="spec_photo_6" onchange="handleSpecPreview(this,'specZone6','specThumb6','specLabel6')">
             <span class="uz-icon">📄</span><span class="uz-label" id="specLabel6">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb6" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 7</label>
           <div class="upload-zone" id="specZone7">
-            <input type="file" name="spec_photo_7" accept="image/*,.pdf" onchange="handleSpecPreview(this,'specZone7','specThumb7','specLabel7')">
+            <input type="file" name="spec_photo_7" onchange="handleSpecPreview(this,'specZone7','specThumb7','specLabel7')">
             <span class="uz-icon">📄</span><span class="uz-label" id="specLabel7">Upload spec image</span><div class="uz-hint">Full-slide</div>
             <img id="specThumb7" class="preview-thumb" style="display:none;">
           </div>
@@ -1404,22 +1404,22 @@ function syncMaterialDetails() {
         <div class="form-group">
           <label>Photo 1</label>
           <div class="upload-zone" id="matZone${n}_1">
-            <input type="file" name="mat_${n}_photo_1" accept="image/*"
+            <input type="file" name="mat_${n}_photo_1"
               onchange="handlePhotoPreview(this,'matZone${n}_1','matThumb${n}_1')">
             <span class="uz-icon">📷</span>
             <span class="uz-label">Upload photo 1</span>
-            <div class="uz-hint">Material condition / reuse image</div>
+            <div class="uz-hint">Any image format accepted</div>
             <img id="matThumb${n}_1" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="form-group">
           <label>Photo 2</label>
           <div class="upload-zone" id="matZone${n}_2">
-            <input type="file" name="mat_${n}_photo_2" accept="image/*"
+            <input type="file" name="mat_${n}_photo_2"
               onchange="handlePhotoPreview(this,'matZone${n}_2','matThumb${n}_2')">
             <span class="uz-icon">📷</span>
             <span class="uz-label">Upload photo 2</span>
-            <div class="uz-hint">Additional material image</div>
+            <div class="uz-hint">Any image format accepted</div>
             <img id="matThumb${n}_2" class="preview-thumb" style="display:none;">
           </div>
         </div>
