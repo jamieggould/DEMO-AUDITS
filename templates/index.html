@@ -914,11 +914,24 @@ body {
         </div>
         <div class="form-group" style="margin-top:18px;">
           <label>Information Provided</label>
-          <textarea name="information_provided" rows="4" placeholder="List the documents and information provided — e.g. 'Architectural drawings (Rev A), Structural report, Previous asbestos survey (2019)'"></textarea>
+          <div class="ai-text-wrap">
+            <textarea name="information_provided" id="infoProvidedText" rows="4" placeholder="List the documents and information provided — e.g. 'Architectural drawings (Rev A), Structural report, Previous asbestos survey (2019)'"></textarea>
+            <button type="button" class="ai-btn-inline" onclick="generateAIText('information_provided','infoProvidedText')" id="aiInfoProvided">✨ AI Write</button>
+          </div>
         </div>
         <div class="form-group">
           <label>Circular Economy Commitments</label>
-          <textarea name="circular_economy_commitments" rows="4" placeholder="Describe the circular economy commitments — e.g. 'Minimum 95% diversion from landfill; maximise reuse of structural steel'"></textarea>
+          <div class="ai-text-wrap">
+            <textarea name="circular_economy_commitments" id="circEconText" rows="4" placeholder="Describe the circular economy commitments — e.g. 'Minimum 95% diversion from landfill; maximise reuse of structural steel'"></textarea>
+            <button type="button" class="ai-btn-inline" onclick="generateAIText('circular_economy','circEconText')" id="aiCircEcon">✨ AI Write</button>
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Aims for Resource Efficiency (SWMP)</label>
+          <div class="ai-text-wrap">
+            <textarea name="aims_resource_efficiency" id="aimsResText" rows="3" placeholder="e.g. 'diverting at least 95% of waste from landfill, maximising material reuse on and off site, and tracking actual vs forecast arisings'"></textarea>
+            <button type="button" class="ai-btn-inline" onclick="generateAIText('aims_resource_efficiency','aimsResText')" id="aiAimsRes">✨ AI Write</button>
+          </div>
         </div>
       </div>
     </div>
@@ -1475,7 +1488,13 @@ async function aiGenMatField(n, field, btn) {
 
 // ── AI text generation — report sections ────────────────────
 async function generateAIText(section, targetId) {
-  const btnMap = { executive_summary: 'aiExec', conclusion: 'aiConclusion' };
+  const btnMap = {
+    executive_summary:       'aiExec',
+    conclusion:              'aiConclusion',
+    information_provided:    'aiInfoProvided',
+    circular_economy:        'aiCircEcon',
+    aims_resource_efficiency:'aiAimsRes',
+  };
   const btn      = document.getElementById(btnMap[section]);
   const textarea = document.getElementById(targetId);
   if (btn) { btn.disabled = true; btn.textContent = '⏳ Writing...'; }
