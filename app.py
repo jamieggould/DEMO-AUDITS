@@ -13,6 +13,11 @@ from pptx import Presentation
 from pptx.util import Inches
 from pptx.chart.data import ChartData
 from pptx.enum.chart import XL_CHART_TYPE
+try:
+    from PIL import Image as _PILImage
+    _PIL_AVAILABLE = True
+except ImportError:
+    _PIL_AVAILABLE = False
 
 load_dotenv()
 
@@ -347,6 +352,29 @@ def _replace_in_shape(shape, replacements):
 # Supports multiple photos per placeholder key (e.g. MAT_N_PHOTOS)
 # ─────────────────────────────────────────────────────────────
 
+def _normalise_image(img_bytes):
+    """
+    Convert any image format (HEIC, WEBP, TIFF, BMP, etc.) to PNG bytes
+    so that python-pptx / Pillow can always insert it without raising
+    'unsupported file type'.  Falls back to the original bytes if PIL
+    is unavailable or the conversion itself fails.
+    """
+    if not _PIL_AVAILABLE:
+        return img_bytes
+    try:
+        with _PILImage.open(io.BytesIO(img_bytes)) as img:
+            # Convert palette / CMYK / RGBA → RGB for JPEG compat; keep PNG
+            if img.mode not in ('RGB', 'RGBA', 'L'):
+                img = img.convert('RGB')
+            out = io.BytesIO()
+            img.save(out, format='PNG')
+            out.seek(0)
+            return out.read()
+    except Exception:
+        # Unknown format or corrupt file — pass through and let pptx decide
+        return img_bytes
+
+
 def _replace_image_placeholders(prs, image_data):
     """
     image_data = { 'KEY': bytes }                  — single image
@@ -381,7 +409,7 @@ def _replace_image_placeholders(prs, image_data):
         for shape in to_remove:
             shape._element.getparent().remove(shape._element)
         for left, top, w, h, img_bytes in to_add:
-            slide.shapes.add_picture(io.BytesIO(img_bytes), left, top, w, h)
+            slide.shapes.add_picture(io.BytesIO(_normalise_image(img_bytes)), left, top, w, h)
 
 # ─────────────────────────────────────────────────────────────
 # PPTX — KWP PIE CHART REPLACEMENT
