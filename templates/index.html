@@ -1271,6 +1271,8 @@ function addMaterialRow(data = {}) {
     <td><button type="button" class="btn-delete-row" onclick="removeKwpRow(this)">✕</button></td>
   `;
   tbody.appendChild(tr);
+  // Auto-fill ECF (and carbon) for known material names added programmatically
+  if (data.name) ewcAutoFill(tr.querySelector('.mat-name'));
 }
 
 function removeKwpRow(btn) {
