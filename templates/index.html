@@ -173,6 +173,7 @@ body {
 .span-4 { grid-column: span 4; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
 .form-group label { font-size: 11px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px; }
+.field-hint { font-size: 10px; font-weight: 400; text-transform: none; letter-spacing: 0; color: var(--muted); opacity: 0.7; display: block; margin-top: 3px; line-height: 1.4; }
 .form-group input, .form-group select, .form-group textarea {
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
@@ -884,14 +885,6 @@ body {
       <p>Enter text manually or use AI to generate key sections</p>
     </div>
     <div class="panel-body">
-      <div class="section-divider">Executive Summary</div>
-      <div class="ai-text-wrap">
-        <div class="form-group">
-          <label>Executive Summary</label>
-          <textarea name="executive_summary" id="execSummaryText" rows="6" placeholder="Write or generate the executive summary..."></textarea>
-        </div>
-        <button type="button" class="ai-btn-inline" onclick="generateAIText('executive_summary','execSummaryText')" id="aiExec">✨ AI Write</button>
-      </div>
       <div class="section-divider">Key Figures</div>
       <div class="form-grid cols-3">
         <div class="form-group">
@@ -903,31 +896,24 @@ body {
           <input type="text" name="benchmark_resource_efficiency" placeholder="e.g. GLA WLC Benchmark">
         </div>
       </div>
-      <div class="section-divider">Additional Sections</div>
+      <div class="section-divider">Report Text</div>
       <div class="form-grid full">
-        <div class="ai-text-wrap">
-          <div class="form-group">
-            <label>Conclusion &amp; Recommendations</label>
-            <textarea name="conclusion_text" id="conclusionText" rows="5" placeholder="Write or generate the conclusion..."></textarea>
-          </div>
-          <button type="button" class="ai-btn-inline" onclick="generateAIText('conclusion','conclusionText')" id="aiConclusion">✨ AI Write</button>
-        </div>
-        <div class="form-group" style="margin-top:18px;">
-          <label>Information Provided</label>
+        <div class="form-group">
+          <label>Information Provided <span class="field-hint">(Appears in the report introduction — list all documents and information given to the auditor prior to and during the site visit, e.g. drawings, surveys, floor area schedules)</span></label>
           <div class="ai-text-wrap">
-            <textarea name="information_provided" id="infoProvidedText" rows="4" placeholder="List the documents and information provided — e.g. 'Architectural drawings (Rev A), Structural report, Previous asbestos survey (2019)'"></textarea>
+            <textarea name="information_provided" id="infoProvidedText" rows="4" placeholder="e.g. 'Architectural drawings (Rev A), Structural report, Asbestos R&amp;D survey (2024), Floor area schedule, Site visit photographs'"></textarea>
             <button type="button" class="ai-btn-inline" onclick="generateAIText('information_provided','infoProvidedText')" id="aiInfoProvided">✨ AI Write</button>
           </div>
         </div>
         <div class="form-group">
-          <label>Circular Economy Commitments</label>
+          <label>Circular Economy Commitments <span class="field-hint">(Appears in the Circular Economy section — describe the project team's commitments to reuse, recycling and landfill diversion targets in line with the London Plan and GLA guidance)</span></label>
           <div class="ai-text-wrap">
-            <textarea name="circular_economy_commitments" id="circEconText" rows="4" placeholder="Describe the circular economy commitments — e.g. 'Minimum 95% diversion from landfill; maximise reuse of structural steel'"></textarea>
+            <textarea name="circular_economy_commitments" id="circEconText" rows="4" placeholder="e.g. 'We are committed to diverting a minimum of 95% of waste from landfill, achieving at least 20% reuse by volume, and tracking all material arisings via a Site Waste Management Plan.'"></textarea>
             <button type="button" class="ai-btn-inline" onclick="generateAIText('circular_economy','circEconText')" id="aiCircEcon">✨ AI Write</button>
           </div>
         </div>
         <div class="form-group">
-          <label>Aims for Resource Efficiency (SWMP)</label>
+          <label>Aims for Resource Efficiency <span class="field-hint">(Appears in the Site Waste Management Plan section — briefly state the resource efficiency targets for this project)</span></label>
           <div class="ai-text-wrap">
             <textarea name="aims_resource_efficiency" id="aimsResText" rows="3" placeholder="e.g. 'diverting at least 95% of waste from landfill, maximising material reuse on and off site, and tracking actual vs forecast arisings'"></textarea>
             <button type="button" class="ai-btn-inline" onclick="generateAIText('aims_resource_efficiency','aimsResText')" id="aiAimsRes">✨ AI Write</button>
@@ -1489,8 +1475,6 @@ async function aiGenMatField(n, field, btn) {
 // ── AI text generation — report sections ────────────────────
 async function generateAIText(section, targetId) {
   const btnMap = {
-    executive_summary:       'aiExec',
-    conclusion:              'aiConclusion',
     information_provided:    'aiInfoProvided',
     circular_economy:        'aiCircEcon',
     aims_resource_efficiency:'aiAimsRes',
