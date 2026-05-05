@@ -727,42 +727,94 @@ def _replace_image_placeholders(prs, image_data):
             slide.shapes.add_picture(io.BytesIO(_normalise_image(img_bytes)), left, top, w, h)
 
 # ─────────────────────────────────────────────────────────────
-# PPTX — KWP PIE CHART REPLACEMENT
-# Legend only — no category/percentage text labels on slices
+# PPTX — KWP DONUT CHART REPLACEMENT
+# Outside labels "Name (X.X%)" — small slices (<4.5%) unlabelled
 # ─────────────────────────────────────────────────────────────
 
+_LABEL_MIN_PCT = 4.5   # slices smaller than this get no label
+
+def _configure_donut_labels(chart, pcts):
+    """
+    Write the <c:dLbls> XML block directly onto the plot element so that:
+      - labels show the category name (which carries "Name (X.X%)")
+      - labels are positioned outside the slice
+      - slices below _LABEL_MIN_PCT have their label deleted
+      - font is 7pt Calibri, dark-grey, no bold
+    """
+    from lxml import etree
+    from pptx.oxml.ns import qn
+
+    plot_el = chart.plots[0]._element
+
+    # Remove any existing dLbls so we start clean
+    for old in plot_el.findall(qn('c:dLbls')):
+        plot_el.remove(old)
+
+    dLbls = etree.SubElement(plot_el, qn('c:dLbls'))
+
+    # Delete individual labels for slices below the threshold
+    for i, pct in enumerate(pcts):
+        if pct < _LABEL_MIN_PCT:
+            dLbl = etree.SubElement(dLbls, qn('c:dLbl'))
+            etree.SubElement(dLbl, qn('c:idx')).set('val', str(i))
+            etree.SubElement(dLbl, qn('c:delete')).set('val', '1')
+
+    # Position: outside end (triggers leader lines automatically)
+    etree.SubElement(dLbls, qn('c:dLblPos')).set('val', 'outEnd')
+
+    # Show category name only (value already encoded in category string)
+    for tag, val in [
+        ('c:showLegendKey', '0'),
+        ('c:showVal',       '0'),
+        ('c:showCatName',   '1'),
+        ('c:showSerName',   '0'),
+        ('c:showPercent',   '0'),
+    ]:
+        etree.SubElement(dLbls, qn(tag)).set('val', val)
+
+    # Font: 7pt Calibri, dark grey (#404040), not bold
+    txPr = etree.SubElement(dLbls, qn('c:txPr'))
+    etree.SubElement(txPr, qn('a:bodyPr'))
+    etree.SubElement(txPr, qn('a:lstStyle'))
+    p    = etree.SubElement(txPr, qn('a:p'))
+    pPr  = etree.SubElement(p,    qn('a:pPr'))
+    defR = etree.SubElement(pPr,  qn('a:defRPr'))
+    defR.set('sz', '700')
+    defR.set('b',  '0')
+    sf = etree.SubElement(defR, qn('a:solidFill'))
+    etree.SubElement(sf, qn('a:srgbClr')).set('val', '404040')
+    etree.SubElement(defR, qn('a:latin')).set('typeface', 'Calibri')
+
+
 def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
-    """Add a PIE chart: colours + legend with percentages, no slice text labels."""
+    """
+    Donut chart: outside labels "Name (X.X%)" per slice.
+    Slices below _LABEL_MIN_PCT get no label to keep the chart clean.
+    No legend — labels carry all needed information.
+    """
     visible = [m for m in mats if float(m.get(value_key) or 0) > 0] or mats
     values  = [float(m.get(value_key) or 0) for m in visible]
-    total   = sum(values) or 1  # avoid div-by-zero
+    total   = sum(values) or 1
+    pcts    = [v / total * 100 for v in values]
 
-    # Build legend labels as "Material Name (X.X%)" so percentages appear in the key
+    # Category string carries the visible label; blanked for tiny slices
     labels = [
-        f"{m.get('name', '')} ({v / total * 100:.1f}%)"
-        for m, v in zip(visible, values)
+        f"{m.get('name', '')} ({pct:.1f}%)" if pct >= _LABEL_MIN_PCT else ''
+        for m, pct in zip(visible, pcts)
     ]
 
     cd = ChartData()
     cd.categories = labels
     cd.add_series('', values)
 
-    gf    = slide.shapes.add_chart(XL_CHART_TYPE.PIE, left, top, width, height, cd)
+    gf    = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, left, top, width, height, cd)
     chart = gf.chart
 
-    # No text labels on slices — colours only
-    plot = chart.plots[0]
-    plot.has_data_labels = False
+    # No legend — labels are on the chart
+    chart.has_legend = False
 
-    # Legend — right side, font matching slide body text
-    chart.has_legend = True
-    chart.legend.include_in_layout = False
-    try:
-        chart.legend.font.size = Pt(9)
-        chart.legend.font.bold = False
-        chart.legend.font.name = 'Calibri'
-    except Exception:
-        pass
+    # Apply outside data-label formatting via XML
+    _configure_donut_labels(chart, pcts)
 
 def _replace_kwp_chart_placeholders(prs, kwp_materials):
     if not kwp_materials:
