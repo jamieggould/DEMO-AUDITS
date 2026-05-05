@@ -731,15 +731,15 @@ def _replace_image_placeholders(prs, image_data):
 # Outside labels "Name (X.X%)" — small slices (<4.5%) unlabelled
 # ─────────────────────────────────────────────────────────────
 
-_LABEL_MIN_PCT = 4.5   # slices smaller than this get no label
+_LABEL_MIN_PCT = 2.5   # only skip slices too tiny to label cleanly
 
 def _configure_donut_labels(chart, pcts):
     """
     Write the <c:dLbls> XML block directly onto the plot element so that:
-      - labels show the category name (which carries "Name (X.X%)")
-      - labels are positioned outside the slice
+      - labels show the category name (two-line: name then percentage)
+      - labels are positioned outside the slice with leader lines
       - slices below _LABEL_MIN_PCT have their label deleted
-      - font is 7pt Calibri, dark-grey, no bold
+      - font is 8pt Calibri, same dark body-text colour, no bold
     """
     from lxml import etree
     from pptx.oxml.ns import qn
@@ -762,7 +762,7 @@ def _configure_donut_labels(chart, pcts):
     # Position: outside end (triggers leader lines automatically)
     etree.SubElement(dLbls, qn('c:dLblPos')).set('val', 'outEnd')
 
-    # Show category name only (value already encoded in category string)
+    # Show category name only (two-line value is encoded in the category string)
     for tag, val in [
         ('c:showLegendKey', '0'),
         ('c:showVal',       '0'),
@@ -772,14 +772,15 @@ def _configure_donut_labels(chart, pcts):
     ]:
         etree.SubElement(dLbls, qn(tag)).set('val', val)
 
-    # Font: 7pt Calibri, dark grey (#404040), not bold
-    txPr = etree.SubElement(dLbls, qn('c:txPr'))
-    etree.SubElement(txPr, qn('a:bodyPr'))
+    # Font: 8pt Calibri, dark body-text colour (#404040), not bold, word-wrap on
+    txPr   = etree.SubElement(dLbls, qn('c:txPr'))
+    bodyPr = etree.SubElement(txPr, qn('a:bodyPr'))
+    bodyPr.set('wrap', 'square')   # allow label text to wrap
     etree.SubElement(txPr, qn('a:lstStyle'))
     p    = etree.SubElement(txPr, qn('a:p'))
     pPr  = etree.SubElement(p,    qn('a:pPr'))
     defR = etree.SubElement(pPr,  qn('a:defRPr'))
-    defR.set('sz', '700')
+    defR.set('sz', '800')          # 8pt — readable but compact
     defR.set('b',  '0')
     sf = etree.SubElement(defR, qn('a:solidFill'))
     etree.SubElement(sf, qn('a:srgbClr')).set('val', '404040')
@@ -788,7 +789,7 @@ def _configure_donut_labels(chart, pcts):
 
 def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
     """
-    Donut chart: outside labels "Name (X.X%)" per slice.
+    Donut chart: two-line outside labels (name / percentage) per slice.
     Slices below _LABEL_MIN_PCT get no label to keep the chart clean.
     No legend — labels carry all needed information.
     """
@@ -797,9 +798,10 @@ def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
     total   = sum(values) or 1
     pcts    = [v / total * 100 for v in values]
 
-    # Category string carries the visible label; blanked for tiny slices
+    # Two-line label: name on first line, percentage on second
+    # Tiny slices get an empty string so no label box appears
     labels = [
-        f"{m.get('name', '')} ({pct:.1f}%)" if pct >= _LABEL_MIN_PCT else ''
+        f"{m.get('name', '')}\n{pct:.1f}%" if pct >= _LABEL_MIN_PCT else ''
         for m, pct in zip(visible, pcts)
     ]
 
