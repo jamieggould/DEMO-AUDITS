@@ -401,10 +401,13 @@ def health():
 # OPENAI TEXT GENERATION
 # ─────────────────────────────────────────────────────────────
 
-def openai_generate(prompt, fallback=""):
-    """Generate text via OpenAI. Returns fallback on any failure."""
+def openai_generate(prompt):
+    """
+    Generate text via OpenAI.
+    Returns (text, None) on success, or (None, error_string) on failure.
+    """
     if not OPENAI_API_KEY:
-        return fallback
+        return None, "OPENAI_API_KEY is not set in the environment."
     try:
         from openai import OpenAI
         client = OpenAI(api_key=OPENAI_API_KEY)
@@ -412,10 +415,12 @@ def openai_generate(prompt, fallback=""):
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}]
         )
-        return response.choices[0].message.content.strip()
-    except Exception:
+        return response.choices[0].message.content.strip(), None
+    except ImportError:
+        return None, "The 'openai' Python package is not installed. Add it to requirements.txt."
+    except Exception as e:
         traceback.print_exc()
-        return fallback
+        return None, str(e)
 
 @app.route("/generate-ai-text", methods=["POST"])
 def generate_ai_text():
@@ -495,9 +500,9 @@ def generate_ai_text():
     if section not in prompts:
         return jsonify({"error": "Unknown section"}), 400
 
-    text = openai_generate(prompts[section])
-    if not text:
-        return jsonify({"error": "AI generation failed. Check OPENAI_API_KEY is set."}), 500
+    text, err = openai_generate(prompts[section])
+    if err:
+        return jsonify({"error": err}), 500
     return jsonify({"text": text})
 
 @app.route("/generate-material-text", methods=["POST"])
@@ -531,7 +536,9 @@ def generate_material_text():
         ),
     }
     prompt = prompts.get(field, prompts["description"])
-    text = openai_generate(prompt, fallback=f"See survey findings for {mat_name}.")
+    text, err = openai_generate(prompt)
+    if err:
+        return jsonify({"error": err}), 500
     return jsonify({"text": text})
 
 # ─────────────────────────────────────────────────────────────
