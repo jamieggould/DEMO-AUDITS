@@ -32,6 +32,7 @@ PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-7.pptx")
 # ─────────────────────────────────────────────────────────────
 MATERIAL_DEFAULTS = {
     'Carpet': {
+        'ecf':          3.40,
         'description':  (
             'Carpet tiles and broadloom carpet removed during strip-out operations. '
             'Condition varies by area of use and age, with tiles in lower-traffic zones '
@@ -55,6 +56,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '20 03 01',
     },
     'Timber': {
+        'ecf':          0.46,
         'description':  (
             'Structural and non-structural timber elements including studwork, boarding, door '
             'frames, skirtings, and secondary timber framing. Timber quality varies across the '
@@ -80,6 +82,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 02 01',
     },
     'Plasterboard': {
+        'ecf':          0.39,
         'description':  (
             'Gypsum plasterboard lining, partitions and ceiling boards including standard, '
             'moisture-resistant and fire-rated grades. Boards are typically fixed with screws '
@@ -105,6 +108,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 08 02',
     },
     'Glass': {
+        'ecf':          0.91,
         'description':  (
             'Glazing units, frameless partition screens, mirrors, curtain walling infill panels '
             'and internally glazed door panels removed during strip-out. Units vary from single '
@@ -129,6 +133,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 02 02',
     },
     'Metal': {
+        'ecf':          1.37,
         'description':  (
             'Structural and non-structural metal including raised access floor systems, '
             'suspended ceiling grid, metal stud framing, pipework, ductwork, cable trays, '
@@ -154,6 +159,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 04 05',
     },
     'Hardcore': {
+        'ecf':          0.13,
         'description':  (
             'Inert masonry, concrete, floor screeds, ceramic and porcelain tiles, and brick '
             'materials arising from internal demolition and strip-out works. Volumes will be '
@@ -178,6 +184,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 01 01',
     },
     'Insulation': {
+        'ecf':          1.28,
         'description':  (
             'Thermal and acoustic insulation materials including mineral wool batts and slabs, '
             'rigid foam boards (EPS, XPS, PIR/PUR), pipe insulation lagging and cavity fill. '
@@ -203,6 +210,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 06 04',
     },
     'Fibre Ceiling Tiles': {
+        'ecf':          0.94,
         'description':  (
             'Suspended mineral fibre, acoustic and glass fibre ceiling tiles from suspended '
             'grid systems, typically 600x600mm and 600x1200mm format. Tiles are acoustically '
@@ -227,6 +235,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 06 05',
     },
     'Plastic': {
+        'ecf':          2.00,
         'description':  (
             'Mixed plastic components including conduit, cable management trunking, switch '
             'and socket faceplates, signage, pipe fittings, and miscellaneous plastic fittings '
@@ -252,6 +261,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '17 02 03',
     },
     'Vinyl': {
+        'ecf':          2.20,
         'description':  (
             'Vinyl sheet flooring and luxury vinyl tiles (LVT) removed during strip-out, '
             'including both loose-lay and fully adhered installations. Sheet vinyl is typically '
@@ -276,6 +286,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '20 01 39',
     },
     'Rubber': {
+        'ecf':          2.10,
         'description':  (
             'Rubber flooring, anti-vibration isolation mounts, door seals, gaskets and '
             'acoustic isolation pads removed during strip-out. Rubber flooring is typically '
@@ -301,6 +312,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '16 01 03',
     },
     'Fabric': {
+        'ecf':          5.50,
         'description':  (
             'Textile materials including window blinds and tracks, curtains and rails, '
             'upholstered furniture fabric, acoustic wall panels and pin boards. Fabric waste '
@@ -326,6 +338,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '20 01 10',
     },
     'Fluorescent Tubes': {
+        'ecf':          1.50,
         'description':  (
             'Linear fluorescent lamps (T5, T8, T12 formats), compact fluorescent lamps (CFLs) '
             'and associated control gear removed during de-fit. Fluorescent lamps contain '
@@ -353,6 +366,7 @@ MATERIAL_DEFAULTS = {
         'ewc':          '20 01 21',
     },
     'Oil / Hydraulic Fluid': {
+        'ecf':          0.45,
         'description':  (
             'Hydraulic oils and lubricants from mechanical plant, lift hydraulic systems, '
             'compressors, generators and building services equipment. Waste oil is classified '
@@ -552,6 +566,7 @@ def ewc_lookup():
     defaults = MATERIAL_DEFAULTS.get(name, {})
     return jsonify({
         "ewc":         ewc,
+        "ecf":         defaults.get("ecf", ""),
         "description": defaults.get("description", ""),
         "waste_rec":   defaults.get("waste_rec", ""),
         "risks":       defaults.get("risks", ""),
