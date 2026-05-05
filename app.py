@@ -632,6 +632,14 @@ def parse_calculator():
 # PPTX — TEXT REPLACEMENT (handles text boxes AND table cells)
 # ─────────────────────────────────────────────────────────────
 
+def _sanitise(val):
+    """
+    Convert a replacement value to a clean string for PPTX XML.
+    Strips carriage-return characters that PPTX encodes as _x000D_ in the output.
+    """
+    s = str(val) if val is not None else ''
+    return s.replace('\r\n', '\n').replace('\r', '')
+
 def _replace_in_paragraph(para, replacements):
     """
     Merge all runs in a paragraph, replace {{KEY}} tokens, write back.
@@ -642,7 +650,7 @@ def _replace_in_paragraph(para, replacements):
     full = ''.join(r.text for r in para.runs)
     new  = full
     for key, val in replacements.items():
-        new = new.replace(f'{{{{{key}}}}}', str(val) if val is not None else '')
+        new = new.replace(f'{{{{{key}}}}}', _sanitise(val))
     if new != full:
         para.runs[0].text = new
         for r in para.runs[1:]:
@@ -670,11 +678,24 @@ def _replace_in_shape(shape, replacements):
 
 def _normalise_image(img_bytes):
     """
-    Convert any image format (HEIC, WEBP, TIFF, BMP, etc.) to PNG bytes
-    so that python-pptx / Pillow can always insert it without raising
-    'unsupported file type'. Falls back to the original bytes if PIL
-    is unavailable or the conversion fails.
+    Convert any uploaded file to PNG bytes for python-pptx.
+    Handles: PDF (first page rendered via PyMuPDF), HEIC, WEBP, TIFF, BMP,
+    and any other format Pillow can read. Falls back to the original bytes
+    if all conversions fail.
     """
+    # ── PDF: render first page to PNG via PyMuPDF ─────────────
+    if img_bytes[:4] == b'%PDF':
+        try:
+            import fitz  # PyMuPDF
+            doc  = fitz.open(stream=img_bytes, filetype='pdf')
+            page = doc[0]
+            # 2× zoom gives ~150 dpi — good quality without huge file size
+            pix  = page.get_pixmap(matrix=fitz.Matrix(2, 2))
+            return pix.tobytes('png')
+        except Exception:
+            pass  # fall through to Pillow attempt
+
+    # ── All other formats: normalise to PNG via Pillow ─────────
     if not _PIL_AVAILABLE:
         return img_bytes
     try:
@@ -750,7 +771,19 @@ def _configure_donut_labels(chart, pcts):
     for old in plot_el.findall(qn('c:dLbls')):
         plot_el.remove(old)
 
-    dLbls = etree.SubElement(plot_el, qn('c:dLbls'))
+    # OOXML schema order for doughnutChart:
+    #   varyColors?, ser*, dLbls?, firstSliceAng?, holeSize?, extLst?
+    # dLbls MUST be inserted before firstSliceAng/holeSize — appending at
+    # the end breaks schema order and silently corrupts the chart.
+    children  = list(plot_el)
+    insert_at = len(children)  # fallback: end
+    for i, child in enumerate(children):
+        if child.tag in (qn('c:firstSliceAng'), qn('c:holeSize'), qn('c:extLst')):
+            insert_at = i
+            break
+
+    dLbls = etree.Element(qn('c:dLbls'))
+    plot_el.insert(insert_at, dLbls)
 
     # Delete individual labels for slices below the threshold
     for i, pct in enumerate(pcts):
@@ -812,10 +845,19 @@ def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
     gf    = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, left, top, width, height, cd)
     chart = gf.chart
 
-    # No legend — labels are on the chart
-    chart.has_legend = False
+    # Legend on the right — colour swatches + "Name\nX.X%" entries
+    try:
+        chart.has_legend = True
+        chart.legend.include_in_layout = False
+        from pptx.enum.chart import XL_LEGEND_POSITION
+        chart.legend.position = XL_LEGEND_POSITION.RIGHT
+        chart.legend.font.size = Pt(8)
+        chart.legend.font.bold = False
+        chart.legend.font.name = 'Calibri'
+    except Exception:
+        pass
 
-    # Apply outside data-label formatting via XML
+    # Outside slice labels (two-line: name / percentage)
     _configure_donut_labels(chart, pcts)
 
 def _replace_kwp_chart_placeholders(prs, kwp_materials):
