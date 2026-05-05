@@ -5,9 +5,10 @@ Template: Savills-7.pptx
 import os
 import io
 import re
+import base64
 import traceback
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file, Response
 from dotenv import load_dotenv
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -26,6 +27,30 @@ app.secret_key = os.environ.get("SECRET_KEY", "lawmens-audit-2024")
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
 PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-7.pptx")
+APP_PASSWORD       = os.environ.get("APP_PASSWORD", "Lawmens123")
+
+# ─────────────────────────────────────────────────────────────
+# HTTP BASIC AUTH — password-protect every route except /health
+# ─────────────────────────────────────────────────────────────
+
+@app.before_request
+def _require_password():
+    if request.path == '/health':
+        return  # let uptime monitors through unauthenticated
+    auth = request.headers.get('Authorization', '')
+    if auth.startswith('Basic '):
+        try:
+            credentials = base64.b64decode(auth[6:]).decode('utf-8')
+            _user, password = credentials.split(':', 1)
+            if password == APP_PASSWORD:
+                return  # ✓ authenticated
+        except Exception:
+            pass
+    return Response(
+        'Access restricted. Please enter your credentials.',
+        401,
+        {'WWW-Authenticate': 'Basic realm="Lawmens Audit Generator"'},
+    )
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
