@@ -750,19 +750,7 @@ def _configure_donut_labels(chart, pcts):
     for old in plot_el.findall(qn('c:dLbls')):
         plot_el.remove(old)
 
-    # OOXML schema order for doughnutChart:
-    #   varyColors?, ser*, dLbls?, firstSliceAng?, holeSize?, extLst?
-    # dLbls MUST be inserted before firstSliceAng/holeSize — appending at
-    # the end breaks schema order and silently corrupts the chart.
-    children  = list(plot_el)
-    insert_at = len(children)  # fallback: end
-    for i, child in enumerate(children):
-        if child.tag in (qn('c:firstSliceAng'), qn('c:holeSize'), qn('c:extLst')):
-            insert_at = i
-            break
-
-    dLbls = etree.Element(qn('c:dLbls'))
-    plot_el.insert(insert_at, dLbls)
+    dLbls = etree.SubElement(plot_el, qn('c:dLbls'))
 
     # Delete individual labels for slices below the threshold
     for i, pct in enumerate(pcts):
@@ -824,19 +812,10 @@ def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
     gf    = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, left, top, width, height, cd)
     chart = gf.chart
 
-    # Legend on the right — colour swatches + "Name\nX.X%" entries
-    try:
-        chart.has_legend = True
-        chart.legend.include_in_layout = False
-        from pptx.enum.chart import XL_LEGEND_POSITION
-        chart.legend.position = XL_LEGEND_POSITION.RIGHT
-        chart.legend.font.size = Pt(8)
-        chart.legend.font.bold = False
-        chart.legend.font.name = 'Calibri'
-    except Exception:
-        pass
+    # No legend — labels are on the chart
+    chart.has_legend = False
 
-    # Outside slice labels (two-line: name / percentage)
+    # Apply outside data-label formatting via XML
     _configure_donut_labels(chart, pcts)
 
 def _replace_kwp_chart_placeholders(prs, kwp_materials):
