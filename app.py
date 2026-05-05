@@ -843,17 +843,47 @@ def _trim_empty_material_slides(prs, mat_count):
         prs.part.drop_rel(rId)
         del xml_slides[slide_idx]
 
+# Matches {{SPEC_1}} … {{SPEC_7}}
+_SPEC_PLACEHOLDER_RE = re.compile(r'\{\{SPEC_(\d+)\}\}')
+
+def _spec_indices_in_text(text):
+    """Return set of SPEC slot numbers found in a text string."""
+    return {int(m.group(1)) for m in _SPEC_PLACEHOLDER_RE.finditer(text)}
+
+def _trim_unused_spec_slides(prs, provided_spec_indices):
+    """
+    Delete spec-image slides whose {{SPEC_N}} slot was not provided.
+    provided_spec_indices: set of ints, e.g. {1, 2, 3} if 3 specs were uploaded.
+    A slide is removed when ALL its SPEC_N references are outside the provided set.
+    """
+    from pptx.oxml.ns import qn as _qn
+    slides_to_remove = []
+    for slide_idx, slide in enumerate(prs.slides):
+        text    = _slide_full_text(slide)
+        indices = _spec_indices_in_text(text)
+        # Only remove if the slide exists solely to show missing spec images
+        if indices and all(idx not in provided_spec_indices for idx in indices):
+            slides_to_remove.append(slide_idx)
+
+    xml_slides = prs.slides._sldIdLst
+    for slide_idx in sorted(slides_to_remove, reverse=True):
+        rId = xml_slides[slide_idx].get(_qn('r:id'))
+        prs.part.drop_rel(rId)
+        del xml_slides[slide_idx]
+
 # ─────────────────────────────────────────────────────────────
 # FILL TEMPLATE
 # ─────────────────────────────────────────────────────────────
 
-def fill_pptx_template(replacements, image_data=None, kwp_materials=None):
+def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provided_spec_indices=None):
     prs       = Presentation(PPTX_TEMPLATE_PATH)
     mat_count = len(kwp_materials) if kwp_materials else 0
     # Trim unused rows/slides BEFORE replacement (placeholders must be intact)
     if mat_count < 30:
         _trim_material_table_rows(prs, mat_count)
         _trim_empty_material_slides(prs, mat_count)
+    if provided_spec_indices is not None and len(provided_spec_indices) < 7:
+        _trim_unused_spec_slides(prs, provided_spec_indices)
     for slide in prs.slides:
         for shape in slide.shapes:
             _replace_in_shape(shape, replacements)
@@ -1101,6 +1131,12 @@ def generate_canva_report():
     replacements = build_replacements(data, mat_list)
     image_data   = _collect_image_data(files, len(mat_list))
 
+    # Determine which spec slots have an image so unused spec slides can be dropped
+    provided_spec_indices = {
+        i for i in range(1, 8)
+        if files.get(f'spec_photo_{i}') and files.get(f'spec_photo_{i}').filename
+    }
+
     kwp_mats = [{
         'name':       m['name'],
         'weight_t':   float(m['weigh']  or 0),
@@ -1109,7 +1145,7 @@ def generate_canva_report():
     } for m in mat_list]
 
     try:
-        output = fill_pptx_template(replacements, image_data, kwp_mats)
+        output = fill_pptx_template(replacements, image_data, kwp_mats, provided_spec_indices)
     except FileNotFoundError:
         return jsonify({"error": (
             f"Template '{PPTX_TEMPLATE_PATH}' not found. "
