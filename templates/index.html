@@ -362,6 +362,19 @@ body {
   background: rgba(0,195,124,.08) !important;
   transition: all 0.4s;
 }
+.carbon-total-box {
+  background: rgba(0,195,124,.08);
+  border: 1px solid rgba(0,195,124,.3);
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--accent);
+  letter-spacing: 0.3px;
+  min-height: 36px;
+  display: flex;
+  align-items: center;
+}
 /* ───────────────────────────────────────────── BUTTONS ───────────────────────────────────────────── */
 .btn {
   display: inline-flex; align-items: center; gap: 8px;
@@ -842,6 +855,11 @@ body {
           <input type="text" name="project_weight" id="projectWeightField" placeholder="Auto-calculated or override">
         </div>
         <div class="form-group">
+          <label>Total Embodied Carbon</label>
+          <div class="carbon-total-box" id="carbonTotalDisplay">—</div>
+          <div class="field-hint">Auto-calculated from weight × carbon factor (ICE v3.0 defaults)</div>
+        </div>
+        <div class="form-group">
           <label>Landfill Diversion Target (%)</label>
           <input type="text" name="landfill_target_percent" placeholder="e.g. 95" value="95">
         </div>
@@ -1244,7 +1262,7 @@ function addMaterialRow(data = {}) {
     <td><input type="text" class="mat-ewc" name="mat_${n}_ewc" value="${data.ewc||''}" placeholder="17 01 01"></td>
     <td><input type="number" class="mat-vol" name="mat_${n}_vol" value="${data.vol||''}" step="0.01" placeholder="0.00"></td>
     <td><input type="number" class="mat-weigh" name="mat_${n}_weigh" value="${data.wt||''}" step="0.001"
-      placeholder="0.000" oninput="autoCalcPct()"></td>
+      placeholder="0.000" oninput="autoCalcPct(); autoCalcCarbonOnWeight(this)"></td>
     <td><input type="number" class="mat-weighp" name="mat_${n}_weighp" value="${data.pct||''}" step="0.1" placeholder="auto"></td>
     <td><input type="text" class="mat-ecf" name="mat_${n}_ecf" value="${data.cf||''}" placeholder="0.000"
       oninput="autoCalcCarbon(this)"></td>
@@ -1259,6 +1277,7 @@ function removeKwpRow(btn) {
   btn.closest('tr').remove();
   reNumberKwpRows();
   autoCalcPct();
+  updateCarbonTotal();
 }
 
 function reNumberKwpRows() {
@@ -1296,7 +1315,27 @@ function autoCalcCarbon(ecfInput) {
   const cEl = tr.querySelector('.mat-carb');
   const ecf = parseFloat(ecfInput.value) || 0;
   const wt  = parseFloat(wEl?.value) || 0;
-  if (ecf && wt && cEl && !cEl.value) cEl.value = (ecf * wt).toFixed(2);
+  if (cEl) cEl.value = (ecf && wt) ? (ecf * wt).toFixed(3) : '';
+  updateCarbonTotal();
+}
+
+function autoCalcCarbonOnWeight(weightInput) {
+  const tr    = weightInput.closest('tr');
+  const ecfEl = tr.querySelector('.mat-ecf');
+  const cEl   = tr.querySelector('.mat-carb');
+  const ecf   = parseFloat(ecfEl?.value) || 0;
+  const wt    = parseFloat(weightInput.value) || 0;
+  if (cEl) cEl.value = (ecf && wt) ? (ecf * wt).toFixed(3) : '';
+  updateCarbonTotal();
+}
+
+function updateCarbonTotal() {
+  let total = 0;
+  document.querySelectorAll('#kwpBody tr').forEach(tr => {
+    total += parseFloat(tr.querySelector('.mat-carb')?.value) || 0;
+  });
+  const el = document.getElementById('carbonTotalDisplay');
+  if (el) el.textContent = total > 0 ? total.toFixed(3) + ' tCO₂e' : '—';
 }
 
 // ── EWC Auto-fill ────────────────────────────────────────────
@@ -1314,13 +1353,21 @@ async function ewcAutoFill(input) {
       ewcCache[name] = await res.json();
     } catch (e) { return; }
   }
-  const d    = ewcCache[name];
-  const tr   = input.closest('tr');
+  const d     = ewcCache[name];
+  const tr    = input.closest('tr');
   const ewcEl = tr.querySelector('.mat-ewc');
+  const ecfEl = tr.querySelector('.mat-ecf');
   if (ewcEl && !ewcEl.value && d.ewc) {
     ewcEl.value = d.ewc;
     ewcEl.classList.add('autofilled');
     setTimeout(() => ewcEl.classList.remove('autofilled'), 1500);
+  }
+  if (ecfEl && d.ecf) {
+    ecfEl.value = d.ecf;
+    ecfEl.classList.add('autofilled');
+    setTimeout(() => ecfEl.classList.remove('autofilled'), 1500);
+    // Trigger carbon recalc now that ECF is set
+    autoCalcCarbon(ecfEl);
   }
 }
 
