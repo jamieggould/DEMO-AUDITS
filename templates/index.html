@@ -362,6 +362,17 @@ body {
   background: rgba(0,195,124,.08) !important;
   transition: all 0.4s;
 }
+.pdf-badge {
+  margin: 8px auto 0;
+  display: inline-block;
+  background: rgba(0,195,124,.12);
+  border: 1px solid rgba(0,195,124,.3);
+  border-radius: 6px;
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
 .carbon-total-box {
   background: rgba(0,195,124,.08);
   border: 1px solid rgba(0,195,124,.3);
@@ -674,49 +685,49 @@ body {
         <div class="spec-card"><label>Spec Photo 1</label>
           <div class="upload-zone" id="specZone1">
             <input type="file" name="spec_photo_1" onchange="handleSpecPreview(this,'specZone1','specThumb1','specLabel1')">
-            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel1">Upload spec image</span><div class="uz-hint">Full-slide</div>
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel1">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
             <img id="specThumb1" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 2</label>
           <div class="upload-zone" id="specZone2">
             <input type="file" name="spec_photo_2" onchange="handleSpecPreview(this,'specZone2','specThumb2','specLabel2')">
-            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel2">Upload spec image</span><div class="uz-hint">Full-slide</div>
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel2">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
             <img id="specThumb2" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 3</label>
           <div class="upload-zone" id="specZone3">
             <input type="file" name="spec_photo_3" onchange="handleSpecPreview(this,'specZone3','specThumb3','specLabel3')">
-            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel3">Upload spec image</span><div class="uz-hint">Full-slide</div>
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel3">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
             <img id="specThumb3" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 4</label>
           <div class="upload-zone" id="specZone4">
             <input type="file" name="spec_photo_4" onchange="handleSpecPreview(this,'specZone4','specThumb4','specLabel4')">
-            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel4">Upload spec image</span><div class="uz-hint">Full-slide</div>
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel4">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
             <img id="specThumb4" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 5</label>
           <div class="upload-zone" id="specZone5">
             <input type="file" name="spec_photo_5" onchange="handleSpecPreview(this,'specZone5','specThumb5','specLabel5')">
-            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel5">Upload spec image</span><div class="uz-hint">Full-slide</div>
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel5">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
             <img id="specThumb5" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 6</label>
           <div class="upload-zone" id="specZone6">
             <input type="file" name="spec_photo_6" onchange="handleSpecPreview(this,'specZone6','specThumb6','specLabel6')">
-            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel6">Upload spec image</span><div class="uz-hint">Full-slide</div>
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel6">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
             <img id="specThumb6" class="preview-thumb" style="display:none;">
           </div>
         </div>
         <div class="spec-card"><label>Spec Photo 7</label>
           <div class="upload-zone" id="specZone7">
             <input type="file" name="spec_photo_7" onchange="handleSpecPreview(this,'specZone7','specThumb7','specLabel7')">
-            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel7">Upload spec image</span><div class="uz-hint">Full-slide</div>
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel7">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
             <img id="specThumb7" class="preview-thumb" style="display:none;">
           </div>
         </div>
@@ -1046,6 +1057,14 @@ function handleSpecPreview(input, zoneId, thumbId, labelId) {
       const reader = new FileReader();
       reader.onload = e => { thumb.src = e.target.result; thumb.style.display = 'block'; };
       reader.readAsDataURL(f);
+    } else if (f.type === 'application/pdf' || f.name.toLowerCase().endsWith('.pdf')) {
+      thumb.style.display = 'none';
+      if (!zone.querySelector('.pdf-badge')) {
+        const badge = document.createElement('div');
+        badge.className = 'pdf-badge';
+        badge.textContent = '📄 PDF ready';
+        zone.appendChild(badge);
+      }
     }
   }
 }
