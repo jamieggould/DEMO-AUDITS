@@ -812,10 +812,19 @@ def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
     gf    = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, left, top, width, height, cd)
     chart = gf.chart
 
-    # No legend — labels are on the chart
-    chart.has_legend = False
+    # Legend on the right — colours + "Name\nX.X%" entries
+    chart.has_legend = True
+    chart.legend.include_in_layout = False
+    try:
+        from pptx.enum.chart import XL_LEGEND_POSITION
+        chart.legend.position = XL_LEGEND_POSITION.RIGHT
+        chart.legend.font.size = Pt(8)
+        chart.legend.font.bold = False
+        chart.legend.font.name = 'Calibri'
+    except Exception:
+        pass
 
-    # Apply outside data-label formatting via XML
+    # Outside slice labels (two-line: name / percentage)
     _configure_donut_labels(chart, pcts)
 
 def _replace_kwp_chart_placeholders(prs, kwp_materials):
