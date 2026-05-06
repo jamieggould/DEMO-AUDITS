@@ -856,10 +856,11 @@ def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
     total   = sum(values) or 1
     pcts    = [v / total * 100 for v in values]
 
-    # Two-line label: name on first line, percentage on second
-    # Tiny slices get an empty string so no label box appears
+    # Single-line label: "Name (X.X%)" — \n in ChartData categories corrupts
+    # the embedded xlsx workbook, so keep labels flat.
+    # Tiny slices get an empty string so no label box appears.
     labels = [
-        f"{m.get('name', '')}\n{pct:.1f}%" if pct >= _LABEL_MIN_PCT else ''
+        f"{m.get('name', '')} ({pct:.1f}%)" if pct >= _LABEL_MIN_PCT else ''
         for m, pct in zip(visible, pcts)
     ]
 
