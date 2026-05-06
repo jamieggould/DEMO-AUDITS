@@ -1070,78 +1070,129 @@ function handleSpecPreview(input, zoneId, thumbId, labelId) {
 }
 
 // ── Calculator data ──────────────────────────────────────────
+// CALC_ITEMS format: [description, unit, [[material, unit_wt_kg, unit_vol_m3], ...]]
+// Multi-material items list each component separately — all sourced from Pre Demo Audit Calculator.xlsx
 const CALC_ITEMS = {
   flooring: [
-    ['Carpet Tiles (standard)',     0, 'm2',  3.5, 'Carpet'],
-    ['Carpet (broadloom)',           0, 'm2',  2.8, 'Carpet'],
-    ['Vinyl Sheet Flooring',         0, 'm2',  3.2, 'Vinyl'],
-    ['Vinyl Tiles',                  0, 'm2',  2.9, 'Vinyl'],
-    ['Rubber Flooring',              0, 'm2',  4.5, 'Rubber'],
-    ['Timber Parquet / Strip',       0, 'm2',  8.0, 'Timber'],
-    ['Raised Access Floor Panels',   0, 'm2', 18.0, 'Metal'],
-    ['Raised Access Floor Pedestals',0, 'No.', 0.5, 'Metal'],
-    ['Ceramic / Porcelain Tiles',    0, 'm2', 22.0, 'Hardcore'],
-    ['Screed',                       0, 'm2', 24.0, 'Hardcore'],
+    ['Carpet Tiles',                      'm2',           [['Carpet',3.25,0.007]]],
+    ['Broadloom Carpet',                  'm2',           [['Carpet',5,0.012]]],
+    ['Carpet Underlay',                   'm2',           [['Rubber',1.5,0.002],['Fabric',2,0.007]]],
+    ['Sheet Vinyl',                       'm2',           [['Vinyl',5.5,0.003]]],
+    ['Vinyl / Bolon Tiles',               'm2',           [['Vinyl',6,0.003]]],
+    ['Hardboard / Ply Underlay',          'm2',           [['Timber',3.5,0.003]]],
+    ['Laminate Flooring',                 'm2',           [['Timber',9.5,0.012]]],
+    ['Timber Flooring',                   'm2',           [['Timber',13,0.012]]],
+    ['Timber Parquet Flooring',           'm2',           [['Timber',16,0.022]]],
+    ['Ceramic Floor Tiles',               'm2',           [['Hardcore',42,0.01]]],
+    ['Marble Floor Tiles',                'm2',           [['Hardcore',50,0.02]]],
+    ['Gym Matting',                       'm2',           [['Rubber',23,0.03]]],
+    ['Screed',                            'm2',           [['Hardcore',170,0.1]]],
+    ['Anti Static / Comms Room RAF',      'm2',           [['Vinyl',6,0.003],['Metal',10,0.004],['Timber',32,0.018]]],
+    ['Timber Sheet RAF (Timber Peds)',    'm2',           [['Timber',16.5,0.025]]],
+    ['Timber Tile RAF (Timber Peds)',     'm2',           [['Timber',35,0.03]]],
+    ['Timber Tile RAF (Metal Peds)',      'm2',           [['Timber',30.5,0.025],['Metal',10,0.005]]],
   ],
   walls: [
-    ['Plasterboard (single layer)',   0, 'm2',  8.5, 'Plasterboard'],
-    ['Plasterboard (double layer)',   0, 'm2', 17.0, 'Plasterboard'],
-    ['Acoustic / Fire-rated Board',   0, 'm2', 10.0, 'Plasterboard'],
-    ['Timber Stud Partitions',        0, 'm2',  6.0, 'Timber'],
-    ['Metal Stud & Track',            0, 'm2',  4.5, 'Metal'],
-    ['Ceramic / Tile Cladding',       0, 'm2', 22.0, 'Hardcore'],
-    ['Glass Partitions / Screens',    0, 'm2', 14.0, 'Glass'],
-    ['Insulation (batt / slab)',       0, 'm2',  2.0, 'Insulation'],
-    ['Mineral Wool in Partitions',    0, 'm2',  2.5, 'Insulation'],
+    ['Single Skinned Plasterboard',       'lm',           [['Plasterboard',15.97,0.025],['Metal',5.37,0.00345],['Insulation',1.1,0.05]]],
+    ['Double Skinned Plasterboard',       'lm',           [['Plasterboard',31.94,0.05],['Metal',5.87,0.00355],['Insulation',1.1,0.05]]],
+    ['Triple Skinned Plasterboard',       'lm',           [['Plasterboard',47.91,0.075],['Metal',6.37,0.00365],['Insulation',1.1,0.01]]],
+    ['Single Glazed Partitions',          'lm',           [['Glass',28.57,0.01],['Metal',9.28,0.005]]],
+    ['Double Glazed Partitions',          'lm',           [['Glass',145,0.02],['Metal',11.28,0.0052]]],
+    ['Metal Partitions',                  'lm',           [['Metal',19.92,0.00665],['Insulation',1.1,0.005]]],
+    ['Timber Partitions',                 'lm',           [['Timber',20.09,0.036],['Insulation',3.87,0.005]]],
+    ['White Rock Partitions',             'lm',           [['Plastic',11.23,0.006],['Metal',13.35,0.005],['Insulation',5.87,0.15]]],
+    ['Timber Folding / Moveable Wall',    'lm',           [['Metal',21.75,0.008],['Timber',33.33,0.05]]],
+    ['Plasterboard Folding / Moveable Wall','lm',         [['Plasterboard',47.91,0.075],['Metal',21.75,0.08]]],
+    ['Blockwork (100mm)',                  'm2',           [['Hardcore',195,0.1]]],
+    ['Blockwork (140mm)',                  'm2',           [['Hardcore',268,0.14]]],
+    ['Double Skinned Blockwork',           'm2',           [['Hardcore',390,0.28]]],
+    ['Triple Skinned Blockwork',           'm2',           [['Hardcore',585,0.42]]],
+    ['Brickwork (110mm / Half Brick)',     'm2',           [['Hardcore',170,0.11]]],
+    ['Brickwork (220mm / 1 Brick)',        'm2',           [['Hardcore',340,0.22]]],
+    ['Brickwork (330mm / 1.5 Brick)',      'm2',           [['Hardcore',510,0.33]]],
+    ['Timber Single Door and Frame',       'No.',          [['Timber',35,0.07]]],
+    ['Glass Single Door',                  'No.',          [['Glass',49.5,0.01]]],
+    ['Metal Door and Frame',               'No.',          [['Metal',75,0.085]]],
+    ['Timber Leaf & Half Doors',           'No.',          [['Timber',52.5,0.07]]],
+    ['Glass Leaf & Half Doors',            'No.',          [['Glass',74.5,0.01]]],
+    ['Metal Leaf & Half Doors',            'No.',          [['Metal',112.5,0.085]]],
+    ['Timber Double Doors',                'No.',          [['Timber',70,0.07]]],
+    ['Glass Double Doors',                 'No.',          [['Glass',99,0.01]]],
+    ['Metal Double Doors',                 'No.',          [['Metal',150,0.085]]],
+    ['White Rock Cladding',                'm2',           [['Plastic',2.17,0.003]]],
+    ['Timber Wall Cladding / Boxing',      'm2',           [['Timber',7.25,0.012]]],
+    ['SS Plasterboard Wall Cladding',      'm2',           [['Plasterboard',7.99,0.0125],['Metal',4.27,0.005]]],
+    ['DS Plasterboard Wall Cladding',      'm2',           [['Plasterboard',7.99,0.025],['Metal',3.81,0.005]]],
+    ['Glass Wall Cladding',                'm2',           [['Glass',12.5,0.005]]],
+    ['Ceramic Wall Tiles',                 'm2',           [['Hardcore',15,0.0065]]],
+    ['Marble Wall Cladding / Tiles',       'm2',           [['Hardcore',28,0.02]]],
+    ['Stone Wall Cladding',                'm2',           [['Hardcore',30,0.025]]],
   ],
   ceilings: [
-    ['Suspended Ceiling Grid',        0, 'm2',  3.2, 'Metal'],
-    ['Mineral Fibre Ceiling Tiles',   0, 'm2',  4.0, 'Fibre Ceiling Tiles'],
-    ['Plasterboard Ceiling (skim)',   0, 'm2',  9.0, 'Plasterboard'],
-    ['Acoustic Ceiling Tiles',        0, 'm2',  5.5, 'Fibre Ceiling Tiles'],
-    ['Lighting Troffers / Panels',    0, 'No.', 2.5, 'Metal'],
+    ['Fibre Suspended Ceiling & Grid',    'm2',           [['Fibre Ceiling Tiles',6,0.015],['Metal',1,0.00032]]],
+    ['Metal Suspended Ceiling & Grid',    'm2',           [['Metal',5,0.000525],['Insulation',0.2,0.007]]],
+    ['Fluorescent Tubes (ceiling)',       'm2',           [['Fluorescent Tubes',0.266,0.002]]],
+    ['Fire Barrier / Void Insulation',    'm2',           [['Insulation',1.4,0.1]]],
+    ['Plaster Suspended Ceiling & Grid',  'm2',           [['Plasterboard',9.5,0.018],['Metal',1,0.00032]]],
+    ['SS Plasterboard MF Ceiling',        'm2',           [['Plasterboard',7.99,0.0125],['Metal',5.37,0.00075]]],
+    ['DS Plasterboard MF Ceiling',        'm2',           [['Plasterboard',15.98,0.025],['Metal',5.87,0.005]]],
+    ['TS Plasterboard MF Ceiling',        'm2',           [['Plasterboard',23.97,0.0375],['Metal',6.37,0.00075]]],
+    ['Timber Ceilings',                   'm2',           [['Timber',12.12,0.012]]],
+    ['Lathe & Plaster Ceilings',          'm2',           [['Hardcore',30,0.03],['Timber',6.5,0.0015]]],
+    ['EML / Metal Lathe & Plaster',       'm2',           [['Metal',5.25,0.005],['Hardcore',26.5,0.03]]],
+    ['Stretched Fabric / Barisol',        'm2',           [['Fabric',2,0.0025],['Metal',2,0.00075]]],
   ],
   fixtures: [
-    ['Flush Doors (inc. frame)',       0, 'No.', 18.0, 'Timber'],
-    ['Fire Doors (inc. frame)',        0, 'No.', 28.0, 'Timber'],
-    ['Glazed Internal Doors',          0, 'No.', 22.0, 'Glass'],
-    ['Skirting / Architrave',          0, 'm',    0.4, 'Timber'],
-    ['Window Blinds',                  0, 'No.',  2.0, 'Fabric'],
-    ['Curtain Track / Rail',           0, 'm',    0.6, 'Metal'],
-    ['Signage (wall / wayfinding)',    0, 'No.',  1.5, 'Plastic'],
-  ],
-  me: [
-    ['Fluorescent Tubes (linear)',    0, 'No.',  0.25, 'Fluorescent Tubes'],
-    ['LED Panel Lights',              0, 'No.',  1.8,  'Metal'],
-    ['Switch / Socket Faceplates',    0, 'No.',  0.15, 'Plastic'],
-    ['Cable Trays (steel)',           0, 'm',    3.5,  'Metal'],
-    ['Conduit (plastic)',             0, 'm',    0.4,  'Plastic'],
-    ['Fan Coil Units',                0, 'No.', 35.0,  'Metal'],
-    ['Radiators',                     0, 'No.', 14.0,  'Metal'],
-    ['Sprinkler Heads',               0, 'No.',  0.1,  'Metal'],
-    ['Hydraulic / Oil (litres)',      0, 'l',    0.9,  'Oil / Hydraulic Fluid'],
+    ['Timber Teapoint / Kitchen Units',   'lm',           [['Timber',22.5,0.2]]],
+    ['Timber Worktops',                   'lm',           [['Timber',45,0.04]]],
+    ['Stone Worktop',                     'lm',           [['Hardcore',74.5,0.04]]],
+    ['Stainless Steel Kitchen Units',     'lm',           [['Metal',25,0.175]]],
+    ['Timber Storagewall / Lockers',      'lm',           [['Timber',75,0.29],['Metal',2.5,0.005]]],
+    ['Metal Storagewall / Lockers',       'lm',           [['Metal',60,0.15]]],
+    ['Metal Window Blinds',               'lm',           [['Metal',3,0.003]]],
+    ['Fabric Window Blinds',              'lm',           [['Metal',0.5,0.003],['Fabric',1,0.0015]]],
+    ['Booth Seating',                     'lm',           [['Timber',25,0.225],['Fabric',20,0.15]]],
   ],
   wc: [
-    ['WC Pans',                       0, 'No.', 22.0, 'Hardcore'],
-    ['Cisterns (ceramic)',             0, 'No.',  8.0, 'Hardcore'],
-    ['Wash Hand Basins',              0, 'No.',  7.0, 'Glass'],
-    ['Shower Trays',                  0, 'No.', 12.0, 'Hardcore'],
-    ['Shower Screens',                0, 'No.',  8.0, 'Glass'],
-    ['Kitchen Sink Units',            0, 'No.', 18.0, 'Metal'],
-    ['Kitchen Base Units',            0, 'No.', 22.0, 'Timber'],
-    ['Kitchen Wall Units',            0, 'No.', 12.0, 'Timber'],
-    ['Worktops (solid surface)',      0, 'm',   20.0, 'Hardcore'],
+    ['Toilet',                            'No.',          [['Hardcore',19,0.12],['Plastic',1,0.0055]]],
+    ['Wash Hand Basin',                   'No.',          [['Hardcore',15,0.08]]],
+    ['Urinal',                            'No.',          [['Hardcore',15,0.08]]],
+    ['Butler / Cleaners Sink',            'No.',          [['Hardcore',21,0.12]]],
+    ['Plastic Shower Tray',               'No.',          [['Plastic',14,0.125]]],
+    ['Plastic Shower Screen',             'No.',          [['Plastic',16,0.01],['Metal',2,0.005]]],
+    ['Glass Shower Screen',               'No.',          [['Glass',23,0.01],['Metal',2,0.005]]],
+    ['Timber Cubicle',                    'No.',          [['Timber',68,0.207]]],
+    ['Timber Vanity Unit',                'No.',          [['Timber',30,0.15]]],
+    ['Marble Vanity Unit',                'No.',          [['Hardcore',65,0.15],['Timber',3.5,0.08]]],
+    ['Mirrors',                           'm2',           [['Glass',15,0.006]]],
+  ],
+  me: [
+    ['M&E to Ceiling Void',               'm2',           [['Metal',10,0.0225]]],
+    ['Power & Data to Floor Void',        'm2',           [['Metal',2.5,0.00375]]],
+    ['Metal Power & Data Trunking',       'lm',           [['Metal',4,0.015]]],
+    ['Radiators / Pipework',              'lm',           [['Metal',15,0.1]]],
+    ['Plastic Power & Data Trunking',     'lm',           [['Metal',4,0.015],['Plastic',1,0.005]]],
+    ['Plant / Enclosures (Busy)',          'm2',           [['Metal',85,0.65],['Plastic',7.5,0.005]]],
+    ['Plant / Enclosures (Medium)',        'm2',           [['Metal',55,0.5],['Plastic',5,0.003]]],
+    ['Plant / Enclosures (Light)',         'm2',           [['Metal',40,0.4],['Plastic',3.5,0.0025]]],
+    ['Oil Tank',                          'Litres',       [['Metal',0.5,0.00075],['Oil / Hydraulic Fluid',1,0.001]]],
+    ['Hydraulic Lift',                    'No. of Floors',[['Metal',200,1],['Plastic',15,0.0001],['Oil / Hydraulic Fluid',350,0.35]]],
+    ['Counterweight Lift',                'No. of Floors',[['Metal',250,1],['Plastic',15,0.0001]]],
   ],
   furniture: [
-    ['Office Desks',                  0, 'No.', 28.0, 'Timber'],
-    ['Office Chairs (task)',          0, 'No.',  8.0, 'Fabric'],
-    ['Meeting Room Chairs',           0, 'No.',  6.0, 'Fabric'],
-    ['Bookcases / Shelving',          0, 'No.', 20.0, 'Timber'],
-    ['Filing Cabinets (metal)',       0, 'No.', 30.0, 'Metal'],
-    ['Lockers (metal)',               0, 'No.', 22.0, 'Metal'],
-    ['Reception Desk',                0, 'No.', 80.0, 'Timber'],
-    ['Soft Seating (sofa/armchair)', 0, 'No.', 35.0, 'Fabric'],
-  ]
+    ['Desk / Table',                      'No.',          [['Timber',27.5,0.29],['Metal',5,0.005]]],
+    ['Chair',                             'No.',          [['Fabric',4,0.068],['Metal',14,0.01]]],
+    ['Metal Pedestal',                    'No.',          [['Metal',15,0.075]]],
+    ['Timber Pedestal',                   'No.',          [['Metal',15,0.0875]]],
+    ['Privacy Screen',                    'No.',          [['Fabric',4,0.068],['Metal',14,0.01]]],
+    ['Large Timber Cupboard',             'No.',          [['Timber',60,0.29]]],
+    ['Small Timber Cupboard',             'No.',          [['Timber',28,0.15]]],
+    ['Large Metal Cupboard',              'No.',          [['Metal',55,0.27]]],
+    ['Small Metal Cupboard',              'No.',          [['Metal',22,0.135]]],
+    ['Sofa Chair',                        'No.',          [['Fabric',6,0.6],['Timber',23,0.8]]],
+    ['2 Seater Sofa',                     'No.',          [['Fabric',10,1],['Timber',35,1.4]]],
+    ['3 Seater Sofa',                     'No.',          [['Fabric',15,1.2],['Timber',40,1.8]]],
+  ],
 };
 
 function buildCalcTables() {
@@ -1157,17 +1208,23 @@ function buildCalcTables() {
   sections.forEach(([tbodyId, key]) => {
     const tbody = document.getElementById(tbodyId);
     CALC_ITEMS[key].forEach((item, idx) => {
-      const [desc, qty, unit, unitWt, mat] = item;
+      const [desc, unit, comps] = item;
+      // Sum all component weights for display; store components as JSON on the input
+      const totalUnitWt = comps.reduce((s, c) => s + c[1], 0);
+      const mats = [...new Set(comps.map(c => c[0]))].join(', ');
       const tr = document.createElement('tr');
       tr.innerHTML = `
         <td>${desc}</td>
-        <td><input type="number" class="calc-qty" data-section="${key}" data-idx="${idx}" data-unitwt="${unitWt}"
-          value="${qty}" min="0" step="1" oninput="recalcSection('${key}')"></td>
+        <td><input type="number" class="calc-qty" data-section="${key}" data-idx="${idx}"
+          data-unitwt="${totalUnitWt}"
+          value="0" min="0" step="1" oninput="recalcSection('${key}')"></td>
         <td class="unit">${unit}</td>
-        <td class="unit">${unitWt}</td>
+        <td class="unit">${totalUnitWt.toFixed(2)}</td>
         <td class="calc-total-cell" id="calcCell_${key}_${idx}">0</td>
-        <td class="unit" style="font-size:11px;">${mat}</td>
+        <td class="unit" style="font-size:11px;">${mats}</td>
       `;
+      // Store components JSON via setAttribute to avoid quote-escaping issues
+      tr.querySelector('.calc-qty').setAttribute('data-comps', JSON.stringify(comps));
       tbody.appendChild(tr);
     });
   });
@@ -1204,24 +1261,16 @@ function recalcGrandTotal() {
 
 function getCalcMaterialTotals() {
   const totals = {};
-  const DENSITY = {
-    'Carpet':200,'Vinyl':1200,'Rubber':1500,'Timber':600,'Metal':7800,'Hardcore':2200,
-    'Plasterboard':950,'Glass':2500,'Insulation':40,'Fibre Ceiling Tiles':300,
-    'Plastic':950,'Fabric':200,'Fluorescent Tubes':1000,'Oil / Hydraulic Fluid':900,
-  };
   document.querySelectorAll('.calc-qty').forEach(inp => {
     const qty = parseFloat(inp.value) || 0;
     if (!qty) return;
-    const unitWt  = parseFloat(inp.dataset.unitwt) || 0;
-    const section = inp.dataset.section;
-    const idx     = parseInt(inp.dataset.idx);
-    const item    = CALC_ITEMS[section][idx];
-    if (!item) return;
-    const mat = item[4];
-    const wt  = qty * unitWt;
-    if (!totals[mat]) totals[mat] = { weight_kg: 0, volume_m3: 0 };
-    totals[mat].weight_kg += wt;
-    totals[mat].volume_m3 += (wt / (DENSITY[mat] || 1000));
+    let comps;
+    try { comps = JSON.parse(inp.getAttribute('data-comps') || '[]'); } catch(e) { return; }
+    comps.forEach(([mat, wt_kg, vol_m3]) => {
+      if (!totals[mat]) totals[mat] = { weight_kg: 0, volume_m3: 0 };
+      totals[mat].weight_kg += qty * wt_kg;
+      totals[mat].volume_m3 += qty * vol_m3;
+    });
   });
   return totals;
 }
