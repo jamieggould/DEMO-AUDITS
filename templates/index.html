@@ -495,13 +495,115 @@ body {
 </head>
 <body>
 
+<!-- ── LOGIN OVERLAY ─────────────────────────────────────────── -->
+<div id="loginOverlay" style="display:none;position:fixed;inset:0;z-index:9999;background:#0b1f35;align-items:center;justify-content:center;flex-direction:column;">
+  <div style="position:fixed;width:600px;height:600px;border-radius:50%;filter:blur(80px);background:radial-gradient(circle,rgba(0,195,124,.12),transparent 70%);top:-200px;left:-200px;pointer-events:none;animation:_ob1 18s ease-in-out infinite alternate;"></div>
+  <div style="position:fixed;width:500px;height:500px;border-radius:50%;filter:blur(80px);background:radial-gradient(circle,rgba(14,165,233,.10),transparent 70%);bottom:-150px;right:-150px;pointer-events:none;animation:_ob2 22s ease-in-out infinite alternate;"></div>
+  <style>
+    @keyframes _ob1{from{transform:translate(0,0)}to{transform:translate(60px,40px)}}
+    @keyframes _ob2{from{transform:translate(0,0)}to{transform:translate(-50px,-60px)}}
+    @keyframes _lfu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+    @keyframes _shk{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+    #loginCard{animation:_lfu .45s cubic-bezier(.22,1,.36,1) both}
+    #loginPwInp:focus{border-color:#00c37c!important;background:rgba(0,195,124,.06)!important;box-shadow:0 0 0 3px rgba(0,195,124,.12)!important}
+    #loginBtn:hover{filter:brightness(1.08);transform:translateY(-1px)}
+    #loginBtn:active{transform:translateY(0)}
+    .login-shake{animation:_shk .38s ease!important}
+  </style>
+  <div id="loginCard" style="position:relative;z-index:10;width:100%;max-width:420px;margin:24px;background:rgba(17,40,67,.92);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:40px 36px 36px;box-shadow:0 0 0 1px rgba(0,195,124,.06),0 24px 64px rgba(0,0,0,.5);overflow:hidden;">
+    <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00c37c,#0ea5e9);border-radius:20px 20px 0 0;"></div>
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:28px;">
+      <div style="width:44px;height:44px;background:linear-gradient(135deg,#00c37c,#0ea5e9);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(0,195,124,.35);flex-shrink:0;">🏗️</div>
+      <div><div style="color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px;">Lawmens</div><div style="color:#94a3b8;font-size:11.5px;margin-top:2px;">Pre-Demolition Audit Generator</div></div>
+    </div>
+    <div style="height:1px;background:rgba(255,255,255,.08);margin-bottom:28px;"></div>
+    <div style="color:#fff;font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px;">Welcome back</div>
+    <div style="color:#94a3b8;font-size:13px;margin-bottom:28px;">Enter your access code to continue.</div>
+    <div id="loginErr" style="display:none;align-items:center;gap:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:9px;padding:11px 14px;margin-bottom:18px;color:#fca5a5;font-size:13px;font-weight:500;">
+      <span>⚠</span><span>Incorrect access code. Please try again.</span>
+    </div>
+    <div style="color:#c8d9ec;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px;">Access Code</div>
+    <div style="position:relative;margin-bottom:20px;">
+      <span style="position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#64748b;font-size:15px;pointer-events:none;">🔑</span>
+      <input id="loginPwInp" type="password" placeholder="Enter your access code" autocomplete="current-password"
+        style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#fff;font-family:inherit;font-size:14.5px;font-weight:500;padding:13px 44px 13px 42px;outline:none;transition:border-color .15s,background .15s,box-shadow .15s;"
+        onkeydown="if(event.key==='Enter')_loginSubmit()">
+      <button type="button" onclick="_loginTogglePw()" style="position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#64748b;cursor:pointer;padding:2px 4px;font-size:13px;border-radius:4px;">
+        <span id="loginEye">👁</span>
+      </button>
+    </div>
+    <button id="loginBtn" onclick="_loginSubmit()"
+      style="width:100%;background:linear-gradient(135deg,#00c37c,#00b870);border:none;border-radius:10px;color:#fff;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:700;padding:14px 24px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(0,195,124,.35);transition:filter .15s,transform .1s;">
+      Sign In &nbsp;→
+    </button>
+  </div>
+  <div style="margin-top:20px;color:#64748b;font-size:12px;position:relative;z-index:10;"><strong style="color:#94a3b8;">Lawmens Environmental</strong> — Secure access only</div>
+</div>
+<script>
+(function(){
+  function _h(s){var h=0;for(var i=0;i<s.length;i++){h=Math.imul(31,h)+s.charCodeAt(i)|0;}return h>>>0;}
+  var _PH=_h('Lawmens123098');
+  function _authed(){return sessionStorage.getItem('_lwa')==='1';}
+  if(!_authed()){
+    var o=document.getElementById('loginOverlay');
+    o.style.display='flex';
+    setTimeout(function(){document.getElementById('loginPwInp').focus();},80);
+  }
+  window._loginTogglePw=function(){
+    var i=document.getElementById('loginPwInp'),e=document.getElementById('loginEye');
+    i.type=i.type==='password'?'text':'password';
+    e.textContent=i.type==='password'?'👁':'🙈';
+  };
+  window._loginSubmit=function(){
+    var pw=document.getElementById('loginPwInp').value;
+    if(_h(pw)===_PH){
+      sessionStorage.setItem('_lwa','1');
+      var o=document.getElementById('loginOverlay');
+      o.style.transition='opacity .3s';o.style.opacity='0';
+      setTimeout(function(){o.style.display='none';o.style.opacity='';o.style.transition='';},300);
+    } else {
+      document.getElementById('loginErr').style.display='flex';
+      var inp=document.getElementById('loginPwInp');
+      inp.style.borderColor='#ef4444';inp.style.background='rgba(239,68,68,.06)';
+      var c=document.getElementById('loginCard');
+      c.classList.remove('login-shake');void c.offsetWidth;c.classList.add('login-shake');
+      inp.value='';setTimeout(function(){inp.focus();},50);
+    }
+  };
+  window._signOut=function(){
+    sessionStorage.removeItem('_lwa');
+    document.getElementById('loginErr').style.display='none';
+    var inp=document.getElementById('loginPwInp');
+    inp.value='';inp.style.borderColor='';inp.style.background='';
+    var o=document.getElementById('loginOverlay');o.style.display='flex';
+    setTimeout(function(){inp.focus();},80);
+  };
+})();
+</script>
+
 <!-- ── HEADER ──────────────────────────────────────────────── -->
 <header class="app-header">
   <div class="header-left">
     <div class="header-logo">⚒</div>
     <h1>Pre-Demolition Audit <span>/ Generator</span></h1>
   </div>
-  <span class="header-badge">LAWMENS</span>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <span class="header-badge">LAWMENS</span>
+    <button onclick="_signOut()" style="
+      display:flex;align-items:center;gap:6px;
+      background:rgba(255,255,255,0.07);
+      border:1px solid rgba(255,255,255,0.12);
+      border-radius:8px;
+      color:rgba(255,255,255,0.65);
+      font-size:12px;font-weight:500;
+      padding:6px 12px;
+      cursor:pointer;font-family:inherit;
+      transition:background 0.15s,color 0.15s;
+    " onmouseover="this.style.background='rgba(255,255,255,0.12)';this.style.color='#fff'"
+       onmouseout="this.style.background='rgba(255,255,255,0.07)';this.style.color='rgba(255,255,255,0.65)'">
+      <span style="font-size:13px;">⎋</span> Sign out
+    </button>
+  </div>
 </header>
 
 <!-- ── STEP BAR ────────────────────────────────────────────── -->
