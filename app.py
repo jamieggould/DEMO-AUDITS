@@ -7,10 +7,8 @@ import io
 import re
 import traceback
 from datetime import datetime
-from flask import (Flask, render_template_string, request, jsonify,
-                   send_file, send_from_directory, redirect, url_for, session)
+from flask import Flask, request, jsonify, send_file
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from dotenv import load_dotenv
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -21,7 +19,6 @@ try:
 except ImportError:
     _PIL_AVAILABLE = False
 
-# matplotlib — imported at startup so failures surface immediately in logs
 try:
     import matplotlib
     matplotlib.use('Agg')
@@ -34,136 +31,12 @@ except Exception:
 
 load_dotenv()
 
+_BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
 app = Flask(__name__)
-app.secret_key = os.environ.get("SECRET_KEY", "lawmens-audit-2024")
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
 PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-7.pptx")
-APP_PASSWORD       = os.environ.get("APP_PASSWORD", "Lawmens123098")
-
-# ─────────────────────────────────────────────────────────────
-# SESSION-BASED AUTH
-# ─────────────────────────────────────────────────────────────
-
-_PUBLIC_PATHS = {'/login', '/health'}
-
-@app.before_request
-def _require_login():
-    """Redirect unauthenticated requests to the login page."""
-    if request.path in _PUBLIC_PATHS:
-        return
-    if not session.get('authenticated'):
-        return redirect(url_for('login'))
-
-_LOGIN_HTML = """<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sign In — Lawmens Audit Generator</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{height:100%;font-family:'Inter',-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
-body{background:#0b1f35;display:flex;align-items:center;justify-content:center;min-height:100vh;overflow:hidden;position:relative}
-.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
-.orb1{width:600px;height:600px;background:radial-gradient(circle,rgba(0,195,124,.12) 0%,transparent 70%);top:-200px;left:-200px;animation:d1 18s ease-in-out infinite alternate}
-.orb2{width:500px;height:500px;background:radial-gradient(circle,rgba(14,165,233,.10) 0%,transparent 70%);bottom:-150px;right:-150px;animation:d2 22s ease-in-out infinite alternate}
-@keyframes d1{from{transform:translate(0,0)}to{transform:translate(60px,40px)}}
-@keyframes d2{from{transform:translate(0,0)}to{transform:translate(-50px,-60px)}}
-body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:48px 48px;pointer-events:none;z-index:0}
-.wrap{position:relative;z-index:10;width:100%;max-width:420px;padding:24px;animation:fadeUp .5s cubic-bezier(.22,1,.36,1) both}
-@keyframes fadeUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
-.card{background:rgba(17,40,67,.9);backdrop-filter:blur(24px);border:1px solid rgba(255,255,255,.14);border-radius:20px;padding:40px 36px 36px;box-shadow:0 0 0 1px rgba(0,195,124,.06),0 24px 64px rgba(0,0,0,.5);position:relative;overflow:hidden}
-.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#00c37c,#0ea5e9);border-radius:20px 20px 0 0}
-.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:28px}
-.logo-icon{width:44px;height:44px;background:linear-gradient(135deg,#00c37c,#0ea5e9);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 16px rgba(0,195,124,.35)}
-.logo-text h2{color:#fff;font-size:17px;font-weight:700;letter-spacing:-.3px}
-.logo-text p{color:#94a3b8;font-size:11.5px;margin-top:2px}
-.divider{height:1px;background:rgba(255,255,255,.08);margin-bottom:28px}
-.heading h1{color:#fff;font-size:22px;font-weight:700;letter-spacing:-.5px;margin-bottom:6px}
-.subhead{color:#94a3b8;font-size:13px;margin-bottom:28px}
-.err{display:flex;align-items:center;gap:8px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:9px;padding:11px 14px;margin-bottom:18px;color:#fca5a5;font-size:13px;font-weight:500;animation:shake .38s ease}
-@keyframes shake{0%,100%{transform:translateX(0)}20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
-.label{display:block;color:#c8d9ec;font-size:12px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-bottom:8px}
-.inp-wrap{position:relative;margin-bottom:20px}
-.inp-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#64748b;font-size:15px;pointer-events:none}
-.inp{width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.14);border-radius:10px;color:#fff;font-family:inherit;font-size:14.5px;font-weight:500;padding:13px 44px 13px 42px;outline:none;transition:border-color .15s,background .15s,box-shadow .15s}
-.inp::placeholder{color:rgba(148,163,184,.5);font-weight:400}
-.inp:focus{border-color:#00c37c;background:rgba(0,195,124,.06);box-shadow:0 0 0 3px rgba(0,195,124,.12)}
-.inp.err-field{border-color:#ef4444;background:rgba(239,68,68,.06)}
-.toggle{position:absolute;right:14px;top:50%;transform:translateY(-50%);background:none;border:none;color:#64748b;cursor:pointer;padding:2px 4px;font-size:13px;border-radius:4px}
-.toggle:hover{color:#94a3b8}
-.btn{width:100%;background:linear-gradient(135deg,#00c37c,#00b870);border:none;border-radius:10px;color:#fff;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:700;padding:14px 24px;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 4px 20px rgba(0,195,124,.35);transition:filter .15s,transform .1s,box-shadow .15s;position:relative;overflow:hidden}
-.btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.12),transparent);pointer-events:none}
-.btn:hover{filter:brightness(1.08);box-shadow:0 6px 28px rgba(0,195,124,.45);transform:translateY(-1px)}
-.btn:active{transform:translateY(0)}
-.arrow{transition:transform .2s}.btn:hover .arrow{transform:translateX(3px)}
-.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
-.btn.loading .spinner{display:block}.btn.loading .lbl,.btn.loading .arrow{display:none}
-@keyframes spin{to{transform:rotate(360deg)}}
-.footer{text-align:center;margin-top:28px;color:#64748b;font-size:12px}
-.footer strong{color:#94a3b8}
-</style>
-</head>
-<body>
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div class="wrap">
-  <div class="card">
-    <div class="logo-row">
-      <div class="logo-icon">🏗️</div>
-      <div class="logo-text"><h2>Lawmens</h2><p>Pre-Demolition Audit Generator</p></div>
-    </div>
-    <div class="divider"></div>
-    <div class="heading"><h1>Welcome back</h1></div>
-    <p class="subhead">Enter your access code to continue.</p>
-    {% if error %}<div class="err"><span>⚠</span><span>{{ error }}</span></div>{% endif %}
-    <form method="POST" action="/login" id="lf" autocomplete="off">
-      <label class="label" for="pw">Access Code</label>
-      <div class="inp-wrap">
-        <span class="inp-icon">🔑</span>
-        <input type="password" id="pw" name="password"
-               class="inp{% if error %} err-field{% endif %}"
-               placeholder="Enter your access code" autofocus required>
-        <button type="button" class="toggle" onclick="togglePw()"><span id="eye">👁</span></button>
-      </div>
-      <button type="submit" class="btn" id="sb">
-        <div class="spinner"></div>
-        <span class="lbl">Sign In</span>
-        <span class="arrow lbl">→</span>
-      </button>
-    </form>
-  </div>
-  <div class="footer"><strong>Lawmens Environmental</strong> &mdash; Secure access only</div>
-</div>
-<script>
-function togglePw(){var i=document.getElementById('pw'),e=document.getElementById('eye');if(i.type==='password'){i.type='text';e.textContent='🙈';}else{i.type='password';e.textContent='👁';}}
-document.getElementById('lf').addEventListener('submit',function(){document.getElementById('sb').classList.add('loading');});
-</script>
-</body>
-</html>"""
-
-
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    if session.get('authenticated'):
-        return redirect(url_for('index'))
-    error = None
-    if request.method == 'POST':
-        pw = request.form.get('password', '')
-        if pw == APP_PASSWORD:
-            session['authenticated'] = True
-            session.permanent = False
-            return redirect(url_for('index'))
-        error = 'Incorrect access code. Please try again.'
-    return render_template_string(_LOGIN_HTML, error=error)
-
-@app.route('/logout')
-def logout():
-    session.clear()
-    return redirect(url_for('login'))
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
@@ -543,9 +416,8 @@ EWC_CODES = {k: v['ewc'] for k, v in MATERIAL_DEFAULTS.items()}
 
 @app.route("/")
 def index():
-    # serve index.html directly from the app directory —
-    # avoids Flask's template lookup (which requires a templates/ subfolder)
-    return send_from_directory(BASE_DIR, 'index.html')
+    with open(os.path.join(_BASE_DIR, 'index.html'), encoding='utf-8') as f:
+        return f.read(), 200, {'Content-Type': 'text/html; charset=utf-8'}
 
 @app.route("/health")
 def health():
