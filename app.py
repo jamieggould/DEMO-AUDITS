@@ -777,114 +777,61 @@ def _replace_image_placeholders(prs, image_data):
 # Outside labels "Name (X.X%)" — small slices (<4.5%) unlabelled
 # ─────────────────────────────────────────────────────────────
 
-_LABEL_MIN_PCT = 2.5   # only skip slices too tiny to label cleanly
-
-def _configure_donut_labels(chart, pcts):
-    """
-    Write the <c:dLbls> XML block directly onto the plot element so that:
-      - labels show the category name (two-line: name then percentage)
-      - labels are positioned outside the slice with leader lines
-      - slices below _LABEL_MIN_PCT have their label deleted
-      - font is 8pt Calibri, same dark body-text colour, no bold
-    """
-    from lxml import etree
-    from pptx.oxml.ns import qn
-
-    plot_el = chart.plots[0]._element
-
-    # Remove any existing dLbls so we start clean
-    for old in plot_el.findall(qn('c:dLbls')):
-        plot_el.remove(old)
-
-    # OOXML schema order for doughnutChart:
-    #   varyColors?, ser*, dLbls?, firstSliceAng?, holeSize?, extLst?
-    # dLbls MUST be inserted before firstSliceAng/holeSize — appending at
-    # the end breaks schema order and silently corrupts the chart.
-    children  = list(plot_el)
-    insert_at = len(children)  # fallback: end
-    for i, child in enumerate(children):
-        if child.tag in (qn('c:firstSliceAng'), qn('c:holeSize'), qn('c:extLst')):
-            insert_at = i
-            break
-
-    dLbls = etree.Element(qn('c:dLbls'))
-    plot_el.insert(insert_at, dLbls)
-
-    # Delete individual labels for slices below the threshold
-    for i, pct in enumerate(pcts):
-        if pct < _LABEL_MIN_PCT:
-            dLbl = etree.SubElement(dLbls, qn('c:dLbl'))
-            etree.SubElement(dLbl, qn('c:idx')).set('val', str(i))
-            etree.SubElement(dLbl, qn('c:delete')).set('val', '1')
-
-    # Position: outside end (triggers leader lines automatically)
-    etree.SubElement(dLbls, qn('c:dLblPos')).set('val', 'outEnd')
-
-    # Show category name only (two-line value is encoded in the category string)
-    for tag, val in [
-        ('c:showLegendKey', '0'),
-        ('c:showVal',       '0'),
-        ('c:showCatName',   '1'),
-        ('c:showSerName',   '0'),
-        ('c:showPercent',   '0'),
-    ]:
-        etree.SubElement(dLbls, qn(tag)).set('val', val)
-
-    # Font: 8pt Calibri, dark body-text colour (#404040), not bold, word-wrap on
-    txPr   = etree.SubElement(dLbls, qn('c:txPr'))
-    bodyPr = etree.SubElement(txPr, qn('a:bodyPr'))
-    bodyPr.set('wrap', 'square')   # allow label text to wrap
-    etree.SubElement(txPr, qn('a:lstStyle'))
-    p    = etree.SubElement(txPr, qn('a:p'))
-    pPr  = etree.SubElement(p,    qn('a:pPr'))
-    defR = etree.SubElement(pPr,  qn('a:defRPr'))
-    defR.set('sz', '800')          # 8pt — readable but compact
-    defR.set('b',  '0')
-    sf = etree.SubElement(defR, qn('a:solidFill'))
-    etree.SubElement(sf, qn('a:srgbClr')).set('val', '404040')
-    etree.SubElement(defR, qn('a:latin')).set('typeface', 'Calibri')
-
+_LABEL_MIN_PCT = 2.5
 
 def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
     """
-    Donut chart: two-line outside labels (name / percentage) per slice.
-    Slices below _LABEL_MIN_PCT get no label to keep the chart clean.
-    No legend — labels carry all needed information.
+    Donut chart with legend on the right showing colour + "Name (X.X%)".
+    Uses only the standard python-pptx API — no raw XML manipulation —
+    so it works reliably across all python-pptx versions and viewers.
     """
-    visible = [m for m in mats if float(m.get(value_key) or 0) > 0] or mats
-    values  = [float(m.get(value_key) or 0) for m in visible]
-    total   = sum(values) or 1
-    pcts    = [v / total * 100 for v in values]
-
-    # Single-line label: "Name (X.X%)" — \n in ChartData categories corrupts
-    # the embedded xlsx workbook, so keep labels flat.
-    # Tiny slices get an empty string so no label box appears.
-    labels = [
-        f"{m.get('name', '')} ({pct:.1f}%)" if pct >= _LABEL_MIN_PCT else ''
-        for m, pct in zip(visible, pcts)
-    ]
-
-    cd = ChartData()
-    cd.categories = labels
-    cd.add_series('', values)
-
-    gf    = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, left, top, width, height, cd)
-    chart = gf.chart
-
-    # Legend on the right — colour swatches + "Name\nX.X%" entries
     try:
-        chart.has_legend = True
-        chart.legend.include_in_layout = False
         from pptx.enum.chart import XL_LEGEND_POSITION
-        chart.legend.position = XL_LEGEND_POSITION.RIGHT
-        chart.legend.font.size = Pt(8)
-        chart.legend.font.bold = False
-        chart.legend.font.name = 'Calibri'
-    except Exception:
-        pass
 
-    # Outside slice labels (two-line: name / percentage)
-    _configure_donut_labels(chart, pcts)
+        visible = [m for m in mats if float(m.get(value_key) or 0) > 0]
+        # Fall back to equal distribution if all values are zero
+        if not visible:
+            visible = mats
+            values  = [1.0] * len(visible)
+        else:
+            values  = [float(m.get(value_key) or 0) for m in visible]
+
+        total = sum(values) or 1
+        pcts  = [v / total * 100 for v in values]
+
+        # Category labels drive both the legend entries and any auto labels
+        # Format: "Name (X.X%)"  — single-line, no \n (avoids xlsx corruption)
+        labels = [
+            f"{m.get('name', '')} ({pct:.1f}%)"
+            for m, pct in zip(visible, pcts)
+        ]
+
+        cd = ChartData()
+        cd.categories = labels
+        cd.add_series('', values)
+
+        gf    = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, left, top, width, height, cd)
+        chart = gf.chart
+
+        # Legend on the right: colour swatch + "Name (X.X%)"
+        chart.has_legend = True
+        try:
+            chart.legend.include_in_layout = False
+        except Exception:
+            pass
+        try:
+            chart.legend.position = XL_LEGEND_POSITION.RIGHT
+        except Exception:
+            pass
+        try:
+            chart.legend.font.size = Pt(8)
+            chart.legend.font.name = 'Calibri'
+        except Exception:
+            pass
+
+    except Exception:
+        import traceback
+        traceback.print_exc()   # visible in Render logs for diagnosis
 
 def _replace_kwp_chart_placeholders(prs, kwp_materials):
     if not kwp_materials:
