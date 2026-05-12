@@ -5,15 +5,12 @@ Template: Savills-7.pptx
 import os
 import io
 import re
-import base64
 import traceback
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, send_file, Response
+from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for, session
 from dotenv import load_dotenv
 from pptx import Presentation
 from pptx.util import Inches, Pt
-from pptx.chart.data import ChartData
-from pptx.enum.chart import XL_CHART_TYPE
 try:
     from PIL import Image as _PILImage
     _PIL_AVAILABLE = True
@@ -27,30 +24,40 @@ app.secret_key = os.environ.get("SECRET_KEY", "lawmens-audit-2024")
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
 PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-7.pptx")
-APP_PASSWORD       = os.environ.get("APP_PASSWORD", "Lawmens123")
+APP_PASSWORD       = os.environ.get("APP_PASSWORD", "Lawmens123098")
 
 # ─────────────────────────────────────────────────────────────
-# HTTP BASIC AUTH — password-protect every route except /health
+# SESSION-BASED AUTH
 # ─────────────────────────────────────────────────────────────
+
+_PUBLIC_PATHS = {'/login', '/health'}
 
 @app.before_request
-def _require_password():
-    if request.path == '/health':
-        return  # let uptime monitors through unauthenticated
-    auth = request.headers.get('Authorization', '')
-    if auth.startswith('Basic '):
-        try:
-            credentials = base64.b64decode(auth[6:]).decode('utf-8')
-            _user, password = credentials.split(':', 1)
-            if password == APP_PASSWORD:
-                return  # ✓ authenticated
-        except Exception:
-            pass
-    return Response(
-        'Access restricted. Please enter your credentials.',
-        401,
-        {'WWW-Authenticate': 'Basic realm="Lawmens Audit Generator"'},
-    )
+def _require_login():
+    """Redirect unauthenticated requests to the login page."""
+    if request.path in _PUBLIC_PATHS:
+        return
+    if not session.get('authenticated'):
+        return redirect(url_for('login'))
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if session.get('authenticated'):
+        return redirect(url_for('index'))
+    error = None
+    if request.method == 'POST':
+        pw = request.form.get('password', '')
+        if pw == APP_PASSWORD:
+            session['authenticated'] = True
+            session.permanent = False
+            return redirect(url_for('index'))
+        error = 'Incorrect access code. Please try again.'
+    return render_template('login.html', error=error)
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login'))
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
@@ -773,65 +780,93 @@ def _replace_image_placeholders(prs, image_data):
             slide.shapes.add_picture(io.BytesIO(_normalise_image(img_bytes)), left, top, w, h)
 
 # ─────────────────────────────────────────────────────────────
-# PPTX — KWP DONUT CHART REPLACEMENT
-# Outside labels "Name (X.X%)" — small slices (<4.5%) unlabelled
+# PPTX — KWP DONUT CHART  (rendered as PNG via matplotlib)
+# Bypasses the python-pptx chart API entirely — a PNG picture is
+# inserted in place of the placeholder, so it works in every viewer.
 # ─────────────────────────────────────────────────────────────
 
-_LABEL_MIN_PCT = 2.5
+# Brand colour palette — cycles for > 15 materials
+_CHART_COLORS = [
+    '#00c37c', '#0ea5e9', '#f59e0b', '#ef4444', '#8b5cf6',
+    '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
+    '#14b8a6', '#a855f7', '#22c55e', '#3b82f6', '#eab308',
+]
 
-def _add_kwp_pie_chart(slide, left, top, width, height, mats, value_key):
+
+def _make_donut_png(mats, value_key, px_w=900, px_h=520):
     """
-    Donut chart with legend on the right showing colour + "Name (X.X%)".
-    Uses only the standard python-pptx API — no raw XML manipulation —
-    so it works reliably across all python-pptx versions and viewers.
+    Render a donut chart as a PNG (bytes) using matplotlib.
+    Returns PNG bytes, or None on failure.
     """
     try:
-        from pptx.enum.chart import XL_LEGEND_POSITION
+        import matplotlib
+        matplotlib.use('Agg')          # non-interactive backend for servers
+        import matplotlib.pyplot as plt
+        import matplotlib.patches as mpatches
+        import numpy as np
 
+        # ── data ──────────────────────────────────────────────
         visible = [m for m in mats if float(m.get(value_key) or 0) > 0]
-        # Fall back to equal distribution if all values are zero
-        if not visible:
-            visible = mats
+        if not visible:                # fallback: show equal slices
+            visible = mats[:]
             values  = [1.0] * len(visible)
         else:
             values  = [float(m.get(value_key) or 0) for m in visible]
 
         total = sum(values) or 1
         pcts  = [v / total * 100 for v in values]
+        names = [m.get('name', '') for m in visible]
+        colors = (_CHART_COLORS * 4)[:len(values)]   # wrap palette if needed
 
-        # Category labels drive both the legend entries and any auto labels
-        # Format: "Name (X.X%)"  — single-line, no \n (avoids xlsx corruption)
-        labels = [
-            f"{m.get('name', '')} ({pct:.1f}%)"
-            for m, pct in zip(visible, pcts)
+        # ── figure ────────────────────────────────────────────
+        dpi    = 150
+        fig_w  = px_w / dpi
+        fig_h  = px_h / dpi
+        fig, ax = plt.subplots(figsize=(fig_w, fig_h), facecolor='white')
+        ax.set_facecolor('white')
+
+        # ── donut wedges ──────────────────────────────────────
+        wedges, _ = ax.pie(
+            values,
+            colors=colors,
+            wedgeprops=dict(width=0.52, edgecolor='white', linewidth=2.0),
+            startangle=90,
+            counterclock=False,
+        )
+
+        # ── legend (right side) ───────────────────────────────
+        legend_entries = [
+            mpatches.Patch(color=c, label=f'{n}  {p:.1f}%')
+            for c, n, p in zip(colors, names, pcts)
         ]
+        leg = ax.legend(
+            handles=legend_entries,
+            loc='center left',
+            bbox_to_anchor=(1.01, 0.5),
+            fontsize=max(6, 8 - max(0, len(values) - 8)),   # shrink for many items
+            frameon=False,
+            handlelength=1.2,
+            handleheight=1.0,
+            borderpad=0.6,
+            labelspacing=0.55,
+        )
+        for text in leg.get_texts():
+            text.set_color('#334155')
+            text.set_fontfamily('DejaVu Sans')
 
-        cd = ChartData()
-        cd.categories = labels
-        cd.add_series('', values)
+        plt.tight_layout(pad=0.5)
 
-        gf    = slide.shapes.add_chart(XL_CHART_TYPE.DOUGHNUT, left, top, width, height, cd)
-        chart = gf.chart
-
-        # Legend on the right: colour swatch + "Name (X.X%)"
-        chart.has_legend = True
-        try:
-            chart.legend.include_in_layout = False
-        except Exception:
-            pass
-        try:
-            chart.legend.position = XL_LEGEND_POSITION.RIGHT
-        except Exception:
-            pass
-        try:
-            chart.legend.font.size = Pt(8)
-            chart.legend.font.name = 'Calibri'
-        except Exception:
-            pass
+        buf = io.BytesIO()
+        fig.savefig(buf, format='png', dpi=dpi, bbox_inches='tight',
+                    facecolor='white')
+        plt.close(fig)
+        buf.seek(0)
+        return buf.read()
 
     except Exception:
-        import traceback
-        traceback.print_exc()   # visible in Render logs for diagnosis
+        traceback.print_exc()
+        return None
+
 
 def _replace_kwp_chart_placeholders(prs, kwp_materials):
     if not kwp_materials:
@@ -854,12 +889,18 @@ def _replace_kwp_chart_placeholders(prs, kwp_materials):
             for key, val_col in CHART_MAP.items():
                 if f'{{{{{key}}}}}' in text:
                     to_remove.append(shape)
-                    to_add.append((shape.left, shape.top, shape.width, shape.height, val_col))
+                    to_add.append((
+                        shape.left, shape.top,
+                        shape.width, shape.height,
+                        val_col,
+                    ))
                     break
         for shape in to_remove:
             shape._element.getparent().remove(shape._element)
         for left, top, w, h, val_col in to_add:
-            _add_kwp_pie_chart(slide, left, top, w, h, mats, val_col)
+            png = _make_donut_png(mats, val_col)
+            if png:
+                slide.shapes.add_picture(io.BytesIO(png), left, top, w, h)
 
 # ─────────────────────────────────────────────────────────────
 # PPTX — TRIM UNUSED MATERIAL ROWS & SLIDES
