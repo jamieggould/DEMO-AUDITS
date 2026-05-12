@@ -19,15 +19,8 @@ try:
 except ImportError:
     _PIL_AVAILABLE = False
 
-try:
-    import matplotlib
-    matplotlib.use('Agg')
-    import matplotlib.pyplot as _plt
-    import matplotlib.patches as _mpatches
-    _MPL_OK = True
-except Exception:
-    _MPL_OK = False
-    traceback.print_exc()
+# matplotlib removed — charts are rendered with Pillow (already a dependency)
+# which uses ~5 MB per chart vs ~150 MB for matplotlib, preventing OOM crashes
 
 load_dotenv()
 
@@ -768,27 +761,27 @@ def _replace_image_placeholders(prs, image_data):
 # inserted in place of the placeholder, so it works in every viewer.
 # ─────────────────────────────────────────────────────────────
 
-# Brand colour palette — cycles for > 15 materials
-_CHART_COLORS = [
-    '#00c37c', '#0ea5e9', '#f59e0b', '#ef4444', '#8b5cf6',
-    '#ec4899', '#06b6d4', '#84cc16', '#f97316', '#6366f1',
-    '#14b8a6', '#a855f7', '#22c55e', '#3b82f6', '#eab308',
+# Brand colour palette (RGB tuples) — cycles for > 15 materials
+_CHART_COLORS_RGB = [
+    (0,195,124),(14,165,233),(245,158,11),(239,68,68),(139,92,246),
+    (236,72,153),(6,182,212),(132,204,22),(249,115,22),(99,102,241),
+    (20,184,166),(168,85,247),(34,197,94),(59,130,246),(234,179,8),
 ]
 
 
 def _make_donut_png(mats, value_key):
     """
-    Render a donut chart as a PNG using matplotlib.
-    - ax.set_aspect('equal') guarantees a perfect circle
-    - subplots_adjust reserves right-hand space for the legend
-      without squashing the pie
-    - sans-serif font matches the document body text
+    Render a donut chart as a PNG using only Pillow (~5 MB peak RAM vs
+    ~150 MB for matplotlib).  Draws at 2× resolution then downscales
+    with LANCZOS for smooth, anti-aliased edges.
     Returns PNG bytes, or None on failure.
     """
-    if not _MPL_OK:
-        print("ERROR: matplotlib not available — chart skipped")
+    if not _PIL_AVAILABLE:
         return None
     try:
+        from PIL import Image, ImageDraw, ImageFont
+
+        # ── data ──────────────────────────────────────────────────
         visible = [m for m in mats if float(m.get(value_key) or 0) > 0]
         if not visible:
             visible = mats[:]
@@ -800,55 +793,63 @@ def _make_donut_png(mats, value_key):
         pcts   = [v / total * 100 for v in values]
         names  = [m.get('name', '') for m in visible]
         n      = len(values)
-        colors = (_CHART_COLORS * 4)[:n]
+        colors = (_CHART_COLORS_RGB * 4)[:n]
 
-        dpi   = 150
-        fig_h = 4.4                          # fixed height (inches)
-        fig_w = 7.8                          # wider — right portion is legend
-        fig, ax = _plt.subplots(figsize=(fig_w, fig_h), facecolor='white')
-        ax.set_facecolor('white')
+        # ── canvas (draw at 2× then downscale for antialiasing) ───
+        S     = 2                    # supersampling scale
+        PIE   = 380 * S              # donut diameter in pixels
+        PAD   = 28 * S
+        LEG_W = 270 * S
+        W     = PIE + PAD * 3 + LEG_W
+        H     = PIE + PAD * 2
 
-        wedges, _ = ax.pie(
-            values,
-            colors=colors,
-            wedgeprops=dict(width=0.50, edgecolor='white', linewidth=2.5),
-            startangle=90,
-            counterclock=False,
-        )
-        # Force perfect circle — must come after ax.pie()
-        ax.set_aspect('equal')
+        img  = Image.new('RGB', (W, H), (255, 255, 255))
+        draw = ImageDraw.Draw(img)
 
-        # Font size shrinks slightly if there are many materials
-        fs = max(6.0, 9.0 - max(0, n - 7) * 0.35)
+        # ── donut slices ──────────────────────────────────────────
+        cx, cy = PAD + PIE // 2, PAD + PIE // 2
+        R_out  = PIE // 2 - 2 * S
+        R_in   = int(R_out * 0.50)   # hole = 50 % radius
 
-        legend_entries = [
-            _mpatches.Patch(facecolor=c, edgecolor='none',
-                            label=f'{nm}   {p:.1f}%')
-            for c, nm, p in zip(colors, names, pcts)
-        ]
-        leg = ax.legend(
-            handles=legend_entries,
-            loc='center left',
-            bbox_to_anchor=(1.06, 0.5),
-            fontsize=fs,
-            frameon=False,
-            handlelength=1.1,
-            handleheight=1.0,
-            borderpad=0.0,
-            labelspacing=0.60,
-        )
-        for txt in leg.get_texts():
-            txt.set_color('#1e293b')
-            txt.set_fontfamily('sans-serif')
+        bbox   = [cx - R_out, cy - R_out, cx + R_out, cy + R_out]
+        angle  = -90.0               # start at 12 o'clock
+        for val, col in zip(values, colors):
+            sweep = val / total * 360.0
+            # +0.3° overlap removes hairline gaps between slices
+            draw.pieslice(bbox, start=angle, end=angle + sweep + 0.3,
+                          fill=col, outline=(255, 255, 255))
+            angle += sweep
 
-        # Reserve left 60 % of figure for the circle, right 40 % for legend.
-        # Do NOT use tight_layout / bbox_inches='tight' — they re-scale
-        # the axes and break the aspect='equal' circle.
-        fig.subplots_adjust(left=0.02, right=0.60, top=0.97, bottom=0.03)
+        # white circle punched out to make the donut hole
+        draw.ellipse([cx - R_in, cy - R_in, cx + R_in, cy + R_in],
+                     fill=(255, 255, 255))
+
+        # ── legend ────────────────────────────────────────────────
+        font_sz = max(18, (26 - max(0, n - 8)) * S // 2)
+        try:
+            font = ImageFont.load_default(size=font_sz)
+        except TypeError:           # older Pillow without size param
+            font = ImageFont.load_default()
+
+        lx      = PAD * 2 + PIE
+        row_h   = max(28 * S, (H - PAD * 2) // max(n, 1))
+        ly0     = PAD + (H - PAD * 2 - n * row_h) // 2
+        sw      = 16 * S            # colour swatch size
+
+        for i, (name, pct, col) in enumerate(zip(names, pcts, colors)):
+            ly  = ly0 + i * row_h
+            mid = ly + row_h // 2
+            draw.rectangle([lx, mid - sw // 2,
+                             lx + sw, mid + sw // 2], fill=col)
+            draw.text((lx + sw + 8 * S, mid - font_sz // 2),
+                      f"{name}   {pct:.1f}%",
+                      fill=(30, 41, 59), font=font)
+
+        # ── downscale 2× → smooth edges ───────────────────────────
+        img = img.resize((W // S, H // S), Image.LANCZOS)
 
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', dpi=dpi, facecolor='white')
-        _plt.close(fig)
+        img.save(buf, format='PNG', optimize=True)
         buf.seek(0)
         return buf.read()
 
@@ -1003,7 +1004,7 @@ def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provid
     if mat_count < 30:
         _trim_material_table_rows(prs, mat_count)
         _trim_empty_material_slides(prs, mat_count)
-    if provided_spec_indices is not None and len(provided_spec_indices) < 7:
+    if provided_spec_indices is not None and len(provided_spec_indices) < 12:
         _trim_unused_spec_slides(prs, provided_spec_indices)
     for slide in prs.slides:
         for shape in slide.shapes:
