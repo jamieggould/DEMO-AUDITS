@@ -8,7 +8,9 @@ import re
 import traceback
 from datetime import datetime
 from flask import (Flask, render_template_string, request, jsonify,
-                   send_file, redirect, url_for, session)
+                   send_file, send_from_directory, redirect, url_for, session)
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 from dotenv import load_dotenv
 from pptx import Presentation
 from pptx.util import Inches, Pt
@@ -541,7 +543,9 @@ EWC_CODES = {k: v['ewc'] for k, v in MATERIAL_DEFAULTS.items()}
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    # serve index.html directly from the app directory —
+    # avoids Flask's template lookup (which requires a templates/ subfolder)
+    return send_from_directory(BASE_DIR, 'index.html')
 
 @app.route("/health")
 def health():
