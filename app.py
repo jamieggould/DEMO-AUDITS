@@ -831,10 +831,11 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600):
         draw.ellipse([cx - R_in, cy - R_in, cx + R_in, cy + R_in],
                      fill=(255, 255, 255))
 
-        # ── legend — LiberationSans TrueType, falls back to bitmap ─
-        leg_avail_h = H - PAD * 2
-        row_h       = max(1, leg_avail_h // max(n, 1))
-        font_px     = max(10, min(row_h - 6, H // 22))
+        # ── legend — compact, ~12 px text in the final (downscaled) image
+        # Drawing at 2× so multiply target px by S=2
+        font_px = 24            # → 12 px after LANCZOS downscale
+        row_h   = font_px + 10  # → 17 px row gap — neat but readable
+        sw      = font_px - 6   # → 9 px colour swatch
 
         try:
             font = ImageFont.truetype(_LIBERATION_SANS, font_px)
@@ -844,15 +845,14 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600):
             except TypeError:
                 font = ImageFont.load_default()
 
-        lx   = pie_area + PAD
-        ly0  = cy - (n * row_h) // 2
-        sw   = max(10, font_px - 2)   # swatch height = font height
+        lx  = pie_area + PAD
+        ly0 = cy - (n * row_h) // 2   # vertically centred
 
         for i, (name, pct, col) in enumerate(zip(names, pcts, colors)):
             mid = ly0 + i * row_h + row_h // 2
             draw.rectangle([lx, mid - sw // 2, lx + sw, mid + sw // 2],
                             fill=col)
-            draw.text((lx + sw + max(6, sw // 2), mid - font_px // 2),
+            draw.text((lx + sw + 8, mid - font_px // 2),
                       f"{name}   {pct:.1f}%",
                       fill=(30, 41, 59), font=font)
 
