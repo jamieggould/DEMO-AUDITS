@@ -1,6 +1,6 @@
 """
 Lawmens Pre-Demolition Audit Generator — Flask backend
-Template: Savills-7.pptx
+Template: Savills-8.pptx
 """
 import os
 import io
@@ -36,7 +36,7 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
-PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-7.pptx")
+PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-8.pptx")
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
@@ -710,7 +710,11 @@ def _normalise_image(img_bytes):
     if not _PIL_AVAILABLE:
         return img_bytes
     try:
+        from PIL import ImageOps
         with _PILImage.open(io.BytesIO(img_bytes)) as img:
+            # Apply EXIF orientation so portrait/landscape photos are never
+            # sideways or upside-down in the final presentation
+            img = ImageOps.exif_transpose(img)
             if img.mode not in ('RGB', 'RGBA', 'L'):
                 img = img.convert('RGB')
             out = io.BytesIO()
@@ -772,17 +776,21 @@ _CHART_COLORS = [
 ]
 
 
-def _make_donut_png(mats, value_key, px_w=900, px_h=520):
+def _make_donut_png(mats, value_key):
     """
-    Render a donut chart as a PNG (bytes) using the module-level matplotlib.
-    Returns PNG bytes, or None on failure (error printed to server log).
+    Render a donut chart as a PNG using matplotlib.
+    - ax.set_aspect('equal') guarantees a perfect circle
+    - subplots_adjust reserves right-hand space for the legend
+      without squashing the pie
+    - sans-serif font matches the document body text
+    Returns PNG bytes, or None on failure.
     """
     if not _MPL_OK:
         print("ERROR: matplotlib not available — chart skipped")
         return None
     try:
         visible = [m for m in mats if float(m.get(value_key) or 0) > 0]
-        if not visible:                # fallback: show equal slices
+        if not visible:
             visible = mats[:]
             values  = [1.0] * len(visible)
         else:
@@ -791,41 +799,55 @@ def _make_donut_png(mats, value_key, px_w=900, px_h=520):
         total  = sum(values) or 1
         pcts   = [v / total * 100 for v in values]
         names  = [m.get('name', '') for m in visible]
-        colors = (_CHART_COLORS * 4)[:len(values)]
+        n      = len(values)
+        colors = (_CHART_COLORS * 4)[:n]
 
         dpi   = 150
-        fig, ax = _plt.subplots(figsize=(px_w / dpi, px_h / dpi), facecolor='white')
+        fig_h = 4.4                          # fixed height (inches)
+        fig_w = 7.8                          # wider — right portion is legend
+        fig, ax = _plt.subplots(figsize=(fig_w, fig_h), facecolor='white')
         ax.set_facecolor('white')
 
         wedges, _ = ax.pie(
             values,
             colors=colors,
-            wedgeprops=dict(width=0.52, edgecolor='white', linewidth=2.0),
+            wedgeprops=dict(width=0.50, edgecolor='white', linewidth=2.5),
             startangle=90,
             counterclock=False,
         )
+        # Force perfect circle — must come after ax.pie()
+        ax.set_aspect('equal')
+
+        # Font size shrinks slightly if there are many materials
+        fs = max(6.0, 9.0 - max(0, n - 7) * 0.35)
 
         legend_entries = [
-            _mpatches.Patch(color=c, label=f'{n}  {p:.1f}%')
-            for c, n, p in zip(colors, names, pcts)
+            _mpatches.Patch(facecolor=c, edgecolor='none',
+                            label=f'{nm}   {p:.1f}%')
+            for c, nm, p in zip(colors, names, pcts)
         ]
         leg = ax.legend(
             handles=legend_entries,
             loc='center left',
-            bbox_to_anchor=(1.01, 0.5),
-            fontsize=max(6, 8 - max(0, len(values) - 8)),
+            bbox_to_anchor=(1.06, 0.5),
+            fontsize=fs,
             frameon=False,
-            handlelength=1.2,
+            handlelength=1.1,
             handleheight=1.0,
-            borderpad=0.6,
-            labelspacing=0.55,
+            borderpad=0.0,
+            labelspacing=0.60,
         )
-        for text in leg.get_texts():
-            text.set_color('#334155')
+        for txt in leg.get_texts():
+            txt.set_color('#1e293b')
+            txt.set_fontfamily('sans-serif')
 
-        _plt.tight_layout(pad=0.5)
+        # Reserve left 60 % of figure for the circle, right 40 % for legend.
+        # Do NOT use tight_layout / bbox_inches='tight' — they re-scale
+        # the axes and break the aspect='equal' circle.
+        fig.subplots_adjust(left=0.02, right=0.60, top=0.97, bottom=0.03)
+
         buf = io.BytesIO()
-        fig.savefig(buf, format='png', dpi=dpi, bbox_inches='tight', facecolor='white')
+        fig.savefig(buf, format='png', dpi=dpi, facecolor='white')
         _plt.close(fig)
         buf.seek(0)
         return buf.read()
@@ -1121,7 +1143,7 @@ def build_replacements(data, mat_list):
 def _collect_image_data(files, mat_count):
     """
     Single images:   PREP_PHOTO, AUTH_PHOTO, BUILDING_PHOTO
-    Spec images:     SPEC_1 … SPEC_7
+    Spec images:     SPEC_1 … SPEC_12
     Material photos: MAT_N_PHOTOS → [photo1, photo2] per material
     """
     images = {}
@@ -1135,7 +1157,7 @@ def _collect_image_data(files, mat_count):
         if b:
             images[key] = b
 
-    for i in range(1, 8):
+    for i in range(1, 13):
         b = _read_upload(files.get(f'spec_photo_{i}'))
         if b:
             images[f'SPEC_{i}'] = b
@@ -1232,7 +1254,7 @@ def generate_canva_report():
 
     # Determine which spec slots have an image so unused spec slides can be dropped
     provided_spec_indices = {
-        i for i in range(1, 8)
+        i for i in range(1, 13)
         if files.get(f'spec_photo_{i}') and files.get(f'spec_photo_{i}').filename
     }
 
@@ -1248,7 +1270,7 @@ def generate_canva_report():
     except FileNotFoundError:
         return jsonify({"error": (
             f"Template '{PPTX_TEMPLATE_PATH}' not found. "
-            "Ensure Savills-7.pptx is committed to your repository root."
+            "Ensure Savills-8.pptx is committed to your repository root."
         )}), 500
     except Exception as e:
         traceback.print_exc()
