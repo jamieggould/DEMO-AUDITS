@@ -833,6 +833,41 @@ body {
             <img id="specThumb7" class="preview-thumb" style="display:none;">
           </div>
         </div>
+        <div class="spec-card"><label>Spec Photo 8</label>
+          <div class="upload-zone" id="specZone8">
+            <input type="file" name="spec_photo_8" onchange="handleSpecPreview(this,'specZone8','specThumb8','specLabel8')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel8">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
+            <img id="specThumb8" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card"><label>Spec Photo 9</label>
+          <div class="upload-zone" id="specZone9">
+            <input type="file" name="spec_photo_9" onchange="handleSpecPreview(this,'specZone9','specThumb9','specLabel9')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel9">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
+            <img id="specThumb9" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card"><label>Spec Photo 10</label>
+          <div class="upload-zone" id="specZone10">
+            <input type="file" name="spec_photo_10" onchange="handleSpecPreview(this,'specZone10','specThumb10','specLabel10')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel10">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
+            <img id="specThumb10" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card"><label>Spec Photo 11</label>
+          <div class="upload-zone" id="specZone11">
+            <input type="file" name="spec_photo_11" onchange="handleSpecPreview(this,'specZone11','specThumb11','specLabel11')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel11">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
+            <img id="specThumb11" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
+        <div class="spec-card"><label>Spec Photo 12</label>
+          <div class="upload-zone" id="specZone12">
+            <input type="file" name="spec_photo_12" onchange="handleSpecPreview(this,'specZone12','specThumb12','specLabel12')">
+            <span class="uz-icon">📄</span><span class="uz-label" id="specLabel12">Upload spec image or PDF</span><div class="uz-hint">Full-slide — images &amp; PDFs accepted</div>
+            <img id="specThumb12" class="preview-thumb" style="display:none;">
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -1728,8 +1763,8 @@ function buildSummary() {
   const fd         = new FormData(document.getElementById('auditForm'));
   const kwpNames   = Array.from(document.querySelectorAll('.mat-name')).map(i => i.value).filter(Boolean);
   const detailCount = document.querySelectorAll('#reuseItemList .reuse-item').length;
-  const specCount  = [1,2,3,4,5,6,7].filter(i => {
-    const el = document.querySelector(`[name="spec_photo_${i}"]`);
+  const specCount  = [1,2,3,4,5,6,7,8,9,10,11,12].filter(i => {
+    const el = document.querySelector(`[name="spec_photo_${i}"]`); // slots 1-12
     return el && el.files && el.files.length > 0;
   }).length;
   const items = [
@@ -1738,7 +1773,7 @@ function buildSummary() {
     ['Report No.',       fd.get('report_number') || '—'],
     ['KWP Materials',    `${kwpNames.length}${kwpNames.length ? ' (' + kwpNames.slice(0,3).join(', ') + (kwpNames.length > 3 ? '...' : '') + ')' : ''}`],
     ['Material Details', String(detailCount)],
-    ['Spec Photos',      `${specCount} / 7`],
+    ['Spec Photos',      `${specCount} / 12`],
   ];
   document.getElementById('summaryView').innerHTML = items.map(([l,v]) =>
     `<div class="sg-item"><div class="sg-label">${l}</div><div class="sg-value">${v}</div></div>`
