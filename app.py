@@ -769,12 +769,16 @@ _CHART_COLORS_RGB = [
 ]
 
 
-def _make_donut_png(mats, value_key):
+_LIBERATION_SANS = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+
+
+def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600):
     """
-    Render a donut chart as a PNG using only Pillow (~5 MB peak RAM vs
-    ~150 MB for matplotlib).  Draws at 2× resolution then downscales
-    with LANCZOS for smooth, anti-aliased edges.
-    Returns PNG bytes, or None on failure.
+    Render a donut chart as a PNG using only Pillow.
+    out_w_px / out_h_px: the exact pixel size the PNG will be displayed at
+    in the PPTX — passing the shape dimensions prevents any stretching.
+    Draws at 2× then downscales with LANCZOS for smooth edges.
+    Uses LiberationSans (≡ Arial/Calibri) for the legend.
     """
     if not _PIL_AVAILABLE:
         return None
@@ -795,58 +799,65 @@ def _make_donut_png(mats, value_key):
         n      = len(values)
         colors = (_CHART_COLORS_RGB * 4)[:n]
 
-        # ── canvas (draw at 2× then downscale for antialiasing) ───
-        S     = 2                    # supersampling scale
-        PIE   = 380 * S              # donut diameter in pixels
-        PAD   = 28 * S
-        LEG_W = 270 * S
-        W     = PIE + PAD * 3 + LEG_W
-        H     = PIE + PAD * 2
+        # ── canvas — draw at 2× target size, then downscale ───────
+        S  = 2
+        W  = out_w_px * S
+        H  = out_h_px * S
 
         img  = Image.new('RGB', (W, H), (255, 255, 255))
         draw = ImageDraw.Draw(img)
 
-        # ── donut slices ──────────────────────────────────────────
-        cx, cy = PAD + PIE // 2, PAD + PIE // 2
-        R_out  = PIE // 2 - 2 * S
-        R_in   = int(R_out * 0.50)   # hole = 50 % radius
+        # ── layout: left 52% = donut, right 48% = legend ──────────
+        PAD       = max(16, H // 28) * S // S   # small margin
+        pie_area  = int(W * 0.52)               # width allocated to donut
+        pie_size  = H - PAD * 2                 # diameter = full height minus padding
+        # Force square so pieslice draws a true circle
+        pie_size  = min(pie_size, pie_area - PAD)
 
-        bbox   = [cx - R_out, cy - R_out, cx + R_out, cy + R_out]
-        angle  = -90.0               # start at 12 o'clock
+        cx = PAD + pie_size // 2
+        cy = H // 2
+        R_out = pie_size // 2 - 2
+        R_in  = int(R_out * 0.50)
+
+        bbox  = [cx - R_out, cy - R_out, cx + R_out, cy + R_out]
+        angle = -90.0
         for val, col in zip(values, colors):
             sweep = val / total * 360.0
-            # +0.3° overlap removes hairline gaps between slices
             draw.pieslice(bbox, start=angle, end=angle + sweep + 0.3,
                           fill=col, outline=(255, 255, 255))
             angle += sweep
 
-        # white circle punched out to make the donut hole
+        # donut hole
         draw.ellipse([cx - R_in, cy - R_in, cx + R_in, cy + R_in],
                      fill=(255, 255, 255))
 
-        # ── legend ────────────────────────────────────────────────
-        font_sz = max(18, (26 - max(0, n - 8)) * S // 2)
-        try:
-            font = ImageFont.load_default(size=font_sz)
-        except TypeError:           # older Pillow without size param
-            font = ImageFont.load_default()
+        # ── legend — LiberationSans TrueType, falls back to bitmap ─
+        leg_avail_h = H - PAD * 2
+        row_h       = max(1, leg_avail_h // max(n, 1))
+        font_px     = max(10, min(row_h - 6, H // 22))
 
-        lx      = PAD * 2 + PIE
-        row_h   = max(28 * S, (H - PAD * 2) // max(n, 1))
-        ly0     = PAD + (H - PAD * 2 - n * row_h) // 2
-        sw      = 16 * S            # colour swatch size
+        try:
+            font = ImageFont.truetype(_LIBERATION_SANS, font_px)
+        except Exception:
+            try:
+                font = ImageFont.load_default(size=font_px)
+            except TypeError:
+                font = ImageFont.load_default()
+
+        lx   = pie_area + PAD
+        ly0  = cy - (n * row_h) // 2
+        sw   = max(10, font_px - 2)   # swatch height = font height
 
         for i, (name, pct, col) in enumerate(zip(names, pcts, colors)):
-            ly  = ly0 + i * row_h
-            mid = ly + row_h // 2
-            draw.rectangle([lx, mid - sw // 2,
-                             lx + sw, mid + sw // 2], fill=col)
-            draw.text((lx + sw + 8 * S, mid - font_sz // 2),
+            mid = ly0 + i * row_h + row_h // 2
+            draw.rectangle([lx, mid - sw // 2, lx + sw, mid + sw // 2],
+                            fill=col)
+            draw.text((lx + sw + max(6, sw // 2), mid - font_px // 2),
                       f"{name}   {pct:.1f}%",
                       fill=(30, 41, 59), font=font)
 
-        # ── downscale 2× → smooth edges ───────────────────────────
-        img = img.resize((W // S, H // S), Image.LANCZOS)
+        # ── downscale to exact output size ────────────────────────
+        img = img.resize((out_w_px, out_h_px), Image.LANCZOS)
 
         buf = io.BytesIO()
         img.save(buf, format='PNG', optimize=True)
@@ -888,7 +899,13 @@ def _replace_kwp_chart_placeholders(prs, kwp_materials):
         for shape in to_remove:
             shape._element.getparent().remove(shape._element)
         for left, top, w, h, val_col in to_add:
-            png = _make_donut_png(mats, val_col)
+            # Convert EMUs → pixels at 96 dpi so the PNG matches the
+            # placeholder exactly — no stretching of the donut circle.
+            EMU_PER_INCH = 914400
+            DPI          = 96
+            px_w = max(100, round(w / EMU_PER_INCH * DPI))
+            px_h = max(80,  round(h / EMU_PER_INCH * DPI))
+            png  = _make_donut_png(mats, val_col, px_w, px_h)
             if png:
                 slide.shapes.add_picture(io.BytesIO(png), left, top, w, h)
 
