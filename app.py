@@ -7,7 +7,7 @@ import io
 import re
 import traceback
 from datetime import datetime
-from flask import Flask, request, jsonify, send_file
+from flask import Flask, render_template, request, jsonify, send_file
 
 from dotenv import load_dotenv
 from pptx import Presentation
@@ -416,8 +416,7 @@ EWC_CODES = {k: v['ewc'] for k, v in MATERIAL_DEFAULTS.items()}
 
 @app.route("/")
 def index():
-    with open(os.path.join(_BASE_DIR, 'index.html'), encoding='utf-8') as f:
-        return f.read(), 200, {'Content-Type': 'text/html; charset=utf-8'}
+    return render_template("index.html")
 
 @app.route("/health")
 def health():
