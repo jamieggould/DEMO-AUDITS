@@ -705,13 +705,19 @@ def _normalise_image(img_bytes):
     try:
         from PIL import ImageOps
         with _PILImage.open(io.BytesIO(img_bytes)) as img:
-            # Apply EXIF orientation so portrait/landscape photos are never
-            # sideways or upside-down in the final presentation
+            # Fix EXIF rotation (phones embed orientation tag)
             img = ImageOps.exif_transpose(img)
+            # Cap to 1600 px on the longest side — phone photos can be 4 K+
+            # which multiplies memory 10× unnecessarily for a PPTX slide.
+            # thumbnail() is in-place and preserves aspect ratio.
+            _MAX = 1600
+            if img.width > _MAX or img.height > _MAX:
+                _rs = getattr(_PILImage, 'Resampling', _PILImage).LANCZOS
+                img.thumbnail((_MAX, _MAX), _rs)
             if img.mode not in ('RGB', 'RGBA', 'L'):
                 img = img.convert('RGB')
             out = io.BytesIO()
-            img.save(out, format='PNG')
+            img.save(out, format='JPEG', quality=88, optimize=True)
             out.seek(0)
             return out.read()
     except Exception:
@@ -1057,7 +1063,10 @@ def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provid
     # Trim unused rows/slides BEFORE replacement (placeholders must be intact)
     if mat_count < 30:
         _trim_material_table_rows(prs, mat_count)
-        _trim_empty_table_slides(prs)          # remove slides left with only a header row
+        try:
+            _trim_empty_table_slides(prs)      # remove slides left with only a header row
+        except Exception:
+            traceback.print_exc()              # log but never block generation
         _trim_empty_material_slides(prs, mat_count)
     if provided_spec_indices is not None and len(provided_spec_indices) < 12:
         _trim_unused_spec_slides(prs, provided_spec_indices)
