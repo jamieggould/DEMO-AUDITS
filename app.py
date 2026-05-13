@@ -772,7 +772,7 @@ _CHART_COLORS_RGB = [
 _LIBERATION_SANS = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
 
 
-def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600):
+def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
     """
     Render a donut chart as a PNG using only Pillow.
     out_w_px / out_h_px: the exact pixel size the PNG will be displayed at
@@ -848,13 +848,18 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600):
         lx  = pie_area + PAD
         ly0 = cy - (n * row_h) // 2   # vertically centred
 
-        for i, (name, pct, col) in enumerate(zip(names, pcts, colors)):
+        for i, (name, val, pct, col) in enumerate(zip(names, values, pcts, colors)):
             mid = ly0 + i * row_h + row_h // 2
             draw.rectangle([lx, mid - sw // 2, lx + sw, mid + sw // 2],
                             fill=col)
+            if unit == '%':
+                lbl = f"{name}   {pct:.1f}%"
+            elif unit == 'm\u00b3':
+                lbl = f"{name}   {val:.2f} m\u00b3"
+            else:                             # tonnes
+                lbl = f"{name}   {val:.3f} {unit}"
             draw.text((lx + sw + 8, mid - font_px // 2),
-                      f"{name}   {pct:.1f}%",
-                      fill=(30, 41, 59), font=font)
+                      lbl, fill=(30, 41, 59), font=font)
 
         # ── downscale to exact output size ────────────────────────
         _resample = getattr(Image, 'Resampling', Image).LANCZOS
@@ -877,10 +882,11 @@ def _replace_kwp_chart_placeholders(prs, kwp_materials):
     if not mats:
         return
 
+    # value_key, legend unit
     CHART_MAP = {
-        'KWP_OF_TOTAL_WEIGHT': 'weight_pct',
-        'KWP_BY_VOL':          'volume_m3',
-        'KWP_BY_TON':          'weight_t',
+        'KWP_OF_TOTAL_WEIGHT': ('weight_pct', '%'),
+        'KWP_BY_VOL':          ('volume_m3',  'm\u00b3'),
+        'KWP_BY_TON':          ('weight_t',   't'),
     }
     for slide in prs.slides:
         to_remove, to_add = [], []
@@ -888,25 +894,23 @@ def _replace_kwp_chart_placeholders(prs, kwp_materials):
             if not shape.has_text_frame:
                 continue
             text = shape.text_frame.text.strip()
-            for key, val_col in CHART_MAP.items():
+            for key, (val_col, unit) in CHART_MAP.items():
                 if f'{{{{{key}}}}}' in text:
                     to_remove.append(shape)
                     to_add.append((
                         shape.left, shape.top,
                         shape.width, shape.height,
-                        val_col,
+                        val_col, unit,
                     ))
                     break
         for shape in to_remove:
             shape._element.getparent().remove(shape._element)
-        for left, top, w, h, val_col in to_add:
-            # Convert EMUs → pixels at 96 dpi so the PNG matches the
-            # placeholder exactly — no stretching of the donut circle.
+        for left, top, w, h, val_col, unit in to_add:
             EMU_PER_INCH = 914400
             DPI          = 96
             px_w = max(100, round(w / EMU_PER_INCH * DPI))
             px_h = max(80,  round(h / EMU_PER_INCH * DPI))
-            png  = _make_donut_png(mats, val_col, px_w, px_h)
+            png  = _make_donut_png(mats, val_col, px_w, px_h, unit)
             if png:
                 slide.shapes.add_picture(io.BytesIO(png), left, top, w, h)
 
@@ -967,6 +971,38 @@ def _trim_material_table_rows(prs, mat_count):
                 tr = table.rows[row_idx]._tr
                 tr.getparent().remove(tr)
 
+def _trim_empty_table_slides(prs):
+    """
+    Remove slides whose material-data tables have been fully emptied —
+    i.e. only the header row remains after _trim_material_table_rows.
+    Identified by: table has exactly 1 row AND that row contains none of
+    the {{MATERIAL_N}} placeholder tokens (it's a pure header row) AND
+    the header text contains typical KWP table column keywords.
+    """
+    from pptx.oxml.ns import qn as _qn
+    slides_to_remove = []
+    for slide_idx, slide in enumerate(prs.slides):
+        for shape in slide.shapes:
+            if not shape.has_table:
+                continue
+            table = shape.table
+            if len(table.rows) != 1:
+                continue
+            header_text = _row_full_text(table.rows[0]).lower()
+            # No material placeholders in the single remaining row = it's a header
+            if _mat_indices_in_text(_row_full_text(table.rows[0])):
+                continue
+            # Confirm it's a KWP/material table by checking for expected column words
+            if any(kw in header_text for kw in ['ewc', 'volume', 'weight', 'carbon', 'material']):
+                slides_to_remove.append(slide_idx)
+                break  # only flag each slide once
+
+    xml_slides = prs.slides._sldIdLst
+    for slide_idx in sorted(set(slides_to_remove), reverse=True):
+        rId = xml_slides[slide_idx].get(_qn('r:id'))
+        prs.part.drop_rel(rId)
+        del xml_slides[slide_idx]
+
 def _trim_empty_material_slides(prs, mat_count):
     """Delete slides whose only material references are for index > mat_count."""
     from pptx.oxml.ns import qn as _qn
@@ -1021,6 +1057,7 @@ def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provid
     # Trim unused rows/slides BEFORE replacement (placeholders must be intact)
     if mat_count < 30:
         _trim_material_table_rows(prs, mat_count)
+        _trim_empty_table_slides(prs)          # remove slides left with only a header row
         _trim_empty_material_slides(prs, mat_count)
     if provided_spec_indices is not None and len(provided_spec_indices) < 12:
         _trim_unused_spec_slides(prs, provided_spec_indices)
