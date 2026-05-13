@@ -857,7 +857,8 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600):
                       fill=(30, 41, 59), font=font)
 
         # ── downscale to exact output size ────────────────────────
-        img = img.resize((out_w_px, out_h_px), Image.LANCZOS)
+        _resample = getattr(Image, 'Resampling', Image).LANCZOS
+        img = img.resize((out_w_px, out_h_px), _resample)
 
         buf = io.BytesIO()
         img.save(buf, format='PNG', optimize=True)
@@ -1252,56 +1253,59 @@ def _build_mat_list(data):
 
 @app.route("/generate-canva-report", methods=["POST"])
 def generate_canva_report():
-    data  = request.form.to_dict(flat=False)
-    files = request.files
-
-    mat_list, total_wt = _build_mat_list(data)
-
-    # Auto-build KEY_WASTE_PRODUCTS if not manually set
-    kwp_text = _first(data, 'key_waste_products')
-    if not kwp_text and mat_list:
-        kwp_text = ', '.join(m['name'] for m in mat_list)
-
-    if kwp_text:
-        data['key_waste_products'] = [kwp_text]
-    if total_wt and not _first(data, 'project_weight'):
-        data['project_weight'] = [f"{total_wt:.2f} tonnes"]
-
-    replacements = build_replacements(data, mat_list)
-    image_data   = _collect_image_data(files, len(mat_list))
-
-    # Determine which spec slots have an image so unused spec slides can be dropped
-    provided_spec_indices = {
-        i for i in range(1, 13)
-        if files.get(f'spec_photo_{i}') and files.get(f'spec_photo_{i}').filename
-    }
-
-    kwp_mats = [{
-        'name':       m['name'],
-        'weight_t':   float(m['weigh']  or 0),
-        'weight_pct': float(m['weighp'] or 0),
-        'volume_m3':  float(m['vol']    or 0),
-    } for m in mat_list]
-
+    # Wrap the ENTIRE route in try/except so any failure returns JSON
+    # (not Flask's default HTML 500 page, which the frontend can't parse)
     try:
+        data  = request.form.to_dict(flat=False)
+        files = request.files
+
+        mat_list, total_wt = _build_mat_list(data)
+
+        # Auto-build KEY_WASTE_PRODUCTS if not manually set
+        kwp_text = _first(data, 'key_waste_products')
+        if not kwp_text and mat_list:
+            kwp_text = ', '.join(m['name'] for m in mat_list)
+
+        if kwp_text:
+            data['key_waste_products'] = [kwp_text]
+        if total_wt and not _first(data, 'project_weight'):
+            data['project_weight'] = [f"{total_wt:.2f} tonnes"]
+
+        replacements = build_replacements(data, mat_list)
+        image_data   = _collect_image_data(files, len(mat_list))
+
+        provided_spec_indices = {
+            i for i in range(1, 13)
+            if files.get(f'spec_photo_{i}') and files.get(f'spec_photo_{i}').filename
+        }
+
+        kwp_mats = [{
+            'name':       m['name'],
+            'weight_t':   float(m['weigh']  or 0),
+            'weight_pct': float(m['weighp'] or 0),
+            'volume_m3':  float(m['vol']    or 0),
+        } for m in mat_list]
+
+        if PPTX_TEMPLATE_PATH and not os.path.exists(PPTX_TEMPLATE_PATH):
+            return jsonify({"error": (
+                f"Template '{PPTX_TEMPLATE_PATH}' not found. "
+                "Ensure Savills-8.pptx is committed to your repository root."
+            )}), 500
+
         output = fill_pptx_template(replacements, image_data, kwp_mats, provided_spec_indices)
-    except FileNotFoundError:
-        return jsonify({"error": (
-            f"Template '{PPTX_TEMPLATE_PATH}' not found. "
-            "Ensure Savills-8.pptx is committed to your repository root."
-        )}), 500
+
+        addr     = _first(data, 'job_address').replace(' ', '_')[:40]
+        filename = f"Audit_{addr}.pptx"
+        return send_file(
+            output,
+            mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
+            as_attachment=True,
+            download_name=filename,
+        )
+
     except Exception as e:
         traceback.print_exc()
-        return jsonify({"error": f"Failed to generate report: {str(e)}"}), 500
-
-    addr     = _first(data, 'job_address').replace(' ', '_')[:40]
-    filename = f"Audit_{addr}.pptx"
-    return send_file(
-        output,
-        mimetype="application/vnd.openxmlformats-officedocument.presentationml.presentation",
-        as_attachment=True,
-        download_name=filename,
-    )
+        return jsonify({"error": str(e)}), 500
 
 # ─────────────────────────────────────────────────────────────
 
