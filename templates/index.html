@@ -1796,8 +1796,11 @@ async function generateReport() {
   try {
     const response = await fetch('/generate-canva-report', { method: 'POST', body: formData });
     if (!response.ok) {
-      let errMsg = 'Generation failed';
-      try { const err = await response.json(); errMsg = err.error || errMsg; } catch (_) {}
+      let errMsg = `Generation failed (HTTP ${response.status})`;
+      try {
+        const txt = await response.text();
+        try { errMsg = JSON.parse(txt).error || errMsg; } catch (_) { errMsg = txt.slice(0,200) || errMsg; }
+      } catch (_) {}
       showToast('Error: ' + errMsg, 'error');
       return;
     }
