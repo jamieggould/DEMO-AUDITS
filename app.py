@@ -29,7 +29,7 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
-PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-8.pptx")
+PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-3-7e4f43e1.pptx")
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
@@ -529,10 +529,12 @@ def generate_material_text():
     data     = request.get_json()
     mat_name = data.get("material_name", "")
     field    = data.get("field", "description")
+    job_addr = data.get("job_address", "the project site")
 
-    # Use defaults if available
-    if mat_name in MATERIAL_DEFAULTS and field in MATERIAL_DEFAULTS[mat_name]:
-        return jsonify({"text": MATERIAL_DEFAULTS[mat_name][field]})
+    # Use defaults only for description and risks — waste_rec uses AI with location for tipping sites
+    if field in ("description", "risks") and mat_name in MATERIAL_DEFAULTS and field in MATERIAL_DEFAULTS[mat_name]:
+        key_map = {"description": "description", "risks": "risks"}
+        return jsonify({"text": MATERIAL_DEFAULTS[mat_name].get(key_map[field], "")})
 
     # Fall back to AI
     prompts = {
@@ -542,10 +544,18 @@ def generate_material_text():
             f"approach, and what factors affect its reuse or recycling potential."
         ),
         "waste_rec": (
-            f"Write 3–4 detailed sentences with waste management recommendations for {mat_name} "
-            f"in a commercial demolition or strip-out project. Include preferred reuse routes, "
-            f"specific recycling options and relevant industry schemes or contractors. "
-            f"Reference the waste hierarchy."
+            f"Write 3–4 detailed, specific waste management recommendations for {mat_name} "
+            f"from a commercial demolition or strip-out project at or near {job_addr}. "
+            f"Your response MUST include: (1) the preferred reuse route for this material; "
+            f"(2) the most appropriate recycling or disposal contractor or scheme; "
+            f"(3) a named local tip, household waste recycling centre (HWRC), licensed "
+            f"waste transfer station, or commercial recycling facility geographically close to "
+            f"{job_addr} that accepts this material — use your knowledge of the area to name "
+            f"a real, plausible local facility (e.g. a council HWRC, licensed skip hire or "
+            f"waste management company operating near that postcode or area); "
+            f"(4) any relevant industry take-back schemes. "
+            f"Write in professional, formal language suitable for a planning report. "
+            f"Do not use bullet points. Keep to 4 sentences."
         ),
         "risks": (
             f"Write 3–4 detailed sentences describing the key risk factors and constraints for "
@@ -1102,11 +1112,13 @@ def _read_upload(fs):
 # Maps every {{PLACEHOLDER}} in Savills-7.pptx to a form value
 # ─────────────────────────────────────────────────────────────
 
-def build_replacements(data, mat_list):
+def build_replacements(data, mat_list, overall_circularity_score=''):
     """
     mat_list: list of dicts (one per material, index 0 = material 1) with keys:
-      name, ewc, vol, weigh, weighp, ecf, carb, reuse,
+      name, ewc, vol, weigh, weighp, ecf, carb,
+      recycling_pct, reuse_pct, cs_pct, cs, landfill_pct,
       waste_rec, desc, potential, risks
+    overall_circularity_score: pre-calculated OCS string
     """
     def g(k, d=''):
         return _first(data, k, d)
@@ -1120,63 +1132,79 @@ def build_replacements(data, mat_list):
     r['REPORT_NUMBER']   = g('report_number')
 
     # ── Team ──────────────────────────────────────────────────
-    r['PREPARED_BY']        = g('prepared_by')
-    r['PREPARED_BY_ROLE']   = g('prepared_by_role')
-    r['PREPARED_DATE']      = g('prepared_date')
-    r['AUTHORISED_BY']      = g('authorised_by')
-    r['AUTHORISED_BY_ROLE'] = g('authorised_by_role')
-    r['AUTHORISED_DATE']    = g('authorised_date')
+    r['PREPARED_BY']                  = g('prepared_by')
+    r['PREPARED_BY_ROLE']             = g('prepared_by_role')
+    r['PREPARED_DATE']                = g('prepared_date')
+    r['PREPARED_BY_MEMBERSHIPS']      = g('prepared_by_memberships')
+    r['PREPARED_BY_YEARS_EXPERIENCE'] = g('prepared_by_years_experience')
+    r['AUTHORISED_BY']                = g('authorised_by')
+    r['AUTHORISED_BY_ROLE']           = g('authorised_by_role')
+    r['AUTHORISED_DATE']              = g('authorised_date')
 
     # ── Report narrative ──────────────────────────────────────
     r['CIRCULAR_ECONOMY_COMMITMENTS']      = g('circular_economy_commitments')
     r['BENCHMARK_FOR_RESOURCE_EFFICIENCY'] = g('benchmark_resource_efficiency')
     r['AIMS_RESOURCE_EFFICIENCY']          = g('aims_resource_efficiency')
-    r['INFORMATION_PROVIDED']              = g('information_provided')
+    r['INITIAL_INFORMATION_PROVIDED']      = g('initial_information_provided')
     r['KEY_WASTE_PRODUCTS']                = g('key_waste_products')
     r['PROJECT_WEIGHT']                    = g('project_weight')
     r['OVERALL_REUSE_PERCENT']             = g('overall_reuse_percent')
     r['LANDFILL_TARGET_PERCENT']           = g('landfill_target_percent', '95')
     r['RECYCLE_TARGET_PERCENT']            = g('recycle_target_percent',  '80')
+    r['OVERALL_CIRCULARITY_SCORE']         = overall_circularity_score
 
     # ── Materials 1–30 ────────────────────────────────────────
-    # Template uses three different EWC naming patterns:
-    #   Slide 27 (rows 1-10):  MATERIAL_EWC_N
-    #   Slides 28-29 (11-30):  MATERIAL_N_EWC
-    #   Detail slides (31-45): MAT_N_EWC
-    # We populate all three variants for every material.
+    # Template EWC naming patterns:
+    #   Slide 33 (rows 1-10):  MATERIAL_EWC_N
+    #   Slides 34-35 (11-30):  MATERIAL_N_EWC
+    #   Detail/rec slides:     MAT_N_EWC
+    # All three variants populated for every material.
     for i, m in enumerate(mat_list[:30], start=1):
         n = str(i)
 
-        name    = m.get('name',     '')
-        ewc     = m.get('ewc',      '')
-        vol     = m.get('vol',      '')
-        weigh   = m.get('weigh',    '')
-        weighp  = m.get('weighp',   '')
-        ecf     = m.get('ecf',      '')
-        carb    = m.get('carb',     '')
-        reuse   = m.get('reuse',    '')
-        waste_r = m.get('waste_rec','')
-        desc    = m.get('desc',     '')
-        pot     = m.get('potential','Medium')
-        risks   = m.get('risks',    '')
+        name         = m.get('name',         '')
+        ewc          = m.get('ewc',           '')
+        vol          = m.get('vol',           '')
+        weigh        = m.get('weigh',         '')
+        weighp       = m.get('weighp',        '')
+        ecf          = m.get('ecf',           '')
+        carb         = m.get('carb',          '')
+        recycling_p  = m.get('recycling_pct', '')
+        reuse_p      = m.get('reuse_pct',     '')
+        cs_pct       = m.get('cs_pct',        '')
+        cs           = m.get('cs',            '')
+        landfill_p   = m.get('landfill_pct',  '')
+        waste_r      = m.get('waste_rec',     '')
+        desc         = m.get('desc',          '')
+        pot          = m.get('potential',     'Medium')
+        risks        = m.get('risks',         '')
 
-        # Material name (template also has 'MATERIAL 10' with space)
+        # Material name (template also has 'MATERIAL 10' / 'MATERIAL 16' / 'MATERIAL 26' with space)
         r[f'MATERIAL_{n}'] = name
-        if i == 10:
-            r['MATERIAL 10'] = name
+        if i == 10: r['MATERIAL 10'] = name
+        if i == 16: r['MATERIAL 16'] = name
+        if i == 26: r['MATERIAL 26'] = name
 
         # EWC — three naming patterns covering all slides
-        r[f'MATERIAL_EWC_{n}'] = ewc   # slide 27 style (rows 1-10)
-        r[f'MATERIAL_{n}_EWC'] = ewc   # slides 28-29 style (rows 11-30)
+        r[f'MATERIAL_EWC_{n}'] = ewc   # slide 33 style (rows 1-10)
+        r[f'MATERIAL_{n}_EWC'] = ewc   # slides 34-35 style (rows 11-30)
         r[f'MAT_{n}_EWC']      = ewc   # detail slide style
 
-        # Numeric data
+        # Numeric data — main table
         r[f'MAT_{n}_VOL']    = vol
         r[f'MAT_{n}_WEIGH']  = weigh
         r[f'MAT_{n}_WEIGHP'] = weighp
         r[f'MAT_{n}_ECF']    = ecf
         r[f'MAT_{n}_CARB']   = carb
-        r[f'MAT_{n}_REUSE']  = reuse
+
+        # Circularity columns (Savills-3 template)
+        r[f'MAT_{n}_CS%']        = f"{cs_pct}%" if cs_pct else ''
+        r[f'MAT_{n}_CS']         = cs
+        r[f'MAT_{n}_LANDFILL%']  = f"{landfill_p}%" if landfill_p else ''
+
+        # Recommendation slide columns
+        r[f'MAT_{n}_RECYCLE']    = f"{recycling_p}%" if recycling_p else ''
+        r[f'MAT_{n}_REUSE']      = f"{reuse_p}%"    if reuse_p    else ''
 
         # Text content
         r[f'MAT_{n}_WASTE_RECOMMENDATIONS'] = waste_r
@@ -1185,19 +1213,21 @@ def build_replacements(data, mat_list):
         r[f'MATERIAL_{n}_RISKS']            = risks
 
     # Blank out unfilled material slots so no {{PLACEHOLDER}} leaks through
+    _blank_keys = [
+        'MATERIAL_{n}', 'MATERIAL_EWC_{n}', 'MATERIAL_{n}_EWC', 'MAT_{n}_EWC',
+        'MAT_{n}_VOL', 'MAT_{n}_WEIGH', 'MAT_{n}_WEIGHP', 'MAT_{n}_ECF', 'MAT_{n}_CARB',
+        'MAT_{n}_CS%', 'MAT_{n}_CS', 'MAT_{n}_LANDFILL%',
+        'MAT_{n}_RECYCLE', 'MAT_{n}_REUSE',
+        'MAT_{n}_WASTE_RECOMMENDATIONS',
+        'MATERIAL_{n}_DESCRIPTION', 'MATERIAL_{n}_POTENTIAL', 'MATERIAL_{n}_RISKS',
+    ]
     for i in range(len(mat_list) + 1, 31):
         n = str(i)
-        for key in [
-            f'MATERIAL_{n}',
-            f'MATERIAL_EWC_{n}', f'MATERIAL_{n}_EWC', f'MAT_{n}_EWC',
-            f'MAT_{n}_VOL', f'MAT_{n}_WEIGH', f'MAT_{n}_WEIGHP',
-            f'MAT_{n}_ECF', f'MAT_{n}_CARB', f'MAT_{n}_REUSE',
-            f'MAT_{n}_WASTE_RECOMMENDATIONS',
-            f'MATERIAL_{n}_DESCRIPTION', f'MATERIAL_{n}_POTENTIAL', f'MATERIAL_{n}_RISKS',
-        ]:
-            r[key] = ''
-        if i == 10:
-            r['MATERIAL 10'] = ''
+        for key_tmpl in _blank_keys:
+            r[key_tmpl.replace('{n}', n)] = ''
+        if i == 10: r['MATERIAL 10'] = ''
+        if i == 16: r['MATERIAL 16'] = ''
+        if i == 26: r['MATERIAL 26'] = ''
 
     return r
 
@@ -1246,7 +1276,7 @@ def _build_mat_list(data):
     """
     Read mat_N_* fields from form data into a list of dicts.
     Skips entries where name is blank.
-    Auto-calculates carbon and weight% if missing.
+    Auto-calculates carbon, weight%, and all circularity fields.
     Supports up to 30 materials.
     """
     mat_list = []
@@ -1275,23 +1305,54 @@ def _build_mat_list(data):
         if not weighp and total_wt:
             weighp = str(round(wt / total_wt * 100, 1))
 
+        # Circularity inputs from form
+        recycling_pct = float(_first(data, f'mat_{n}_recycling_pct', '0') or 0)
+        reuse_pct     = float(_first(data, f'mat_{n}_reuse_pct',     '0') or 0)
+
+        # Circularity Scenario % = % that can be reused or recycled (diversion from landfill)
+        cs_pct = min(recycling_pct + reuse_pct, 100.0)
+
+        # Circularity Score = mass (t) × ECF × (CS% / 100)
+        cs_score = round(wt * ecf * (cs_pct / 100.0), 4) if (wt and ecf) else 0.0
+
+        # Diversion from Landfill % = same as CS%
+        landfill_pct = cs_pct
+
         defaults = MATERIAL_DEFAULTS.get(name, {})
         mat_list.append({
-            'name':      name,
-            'ewc':       _first(data, f'mat_{n}_ewc')       or defaults.get('ewc', ''),
-            'vol':       _first(data, f'mat_{n}_vol',   ''),
-            'weigh':     str(wt) if wt else '',
-            'weighp':    weighp,
-            'ecf':       _first(data, f'mat_{n}_ecf',   ''),
-            'carb':      carb or '',
-            'reuse':     _first(data, f'mat_{n}_reuse',  ''),
-            'waste_rec': _first(data, f'mat_{n}_waste_rec') or defaults.get('waste_rec', ''),
-            'desc':      _first(data, f'mat_{n}_desc')      or defaults.get('description', ''),
-            'potential': _first(data, f'mat_{n}_potential') or defaults.get('potential', 'Medium'),
-            'risks':     _first(data, f'mat_{n}_risks')     or defaults.get('risks', ''),
+            'name':          name,
+            'ewc':           _first(data, f'mat_{n}_ewc')       or defaults.get('ewc', ''),
+            'vol':           _first(data, f'mat_{n}_vol',   ''),
+            'weigh':         str(wt) if wt else '',
+            'weighp':        weighp,
+            'ecf':           _first(data, f'mat_{n}_ecf',   ''),
+            'carb':          carb or '',
+            'recycling_pct': str(round(recycling_pct, 1)) if recycling_pct else '',
+            'reuse_pct':     str(round(reuse_pct,     1)) if reuse_pct     else '',
+            'cs_pct':        str(round(cs_pct,         1)) if cs_pct       else '',
+            'cs':            str(cs_score)                 if cs_score      else '',
+            'landfill_pct':  str(round(landfill_pct,  1)) if landfill_pct  else '',
+            'waste_rec':     _first(data, f'mat_{n}_waste_rec') or defaults.get('waste_rec', ''),
+            'desc':          _first(data, f'mat_{n}_desc')      or defaults.get('description', ''),
+            'potential':     _first(data, f'mat_{n}_potential') or defaults.get('potential', 'Medium'),
+            'risks':         _first(data, f'mat_{n}_risks')     or defaults.get('risks', ''),
         })
 
-    return mat_list, total_wt
+    # Compute Overall Circularity Score = Σ(mass×ECF×cs%/100) / Σ(mass×ECF) × 100
+    total_weighted_ecf = sum(
+        float(m['weigh'] or 0) * float(m['ecf'] or 0)
+        for m in mat_list
+    )
+    total_cs_score = sum(
+        float(m['cs'] or 0)
+        for m in mat_list
+    )
+    if total_weighted_ecf > 0:
+        overall_cs = round(total_cs_score / total_weighted_ecf * 100, 1)
+    else:
+        overall_cs = 0.0
+
+    return mat_list, total_wt, overall_cs
 
 # ─────────────────────────────────────────────────────────────
 # MAIN REPORT GENERATION ROUTE
@@ -1305,7 +1366,7 @@ def generate_canva_report():
         data  = request.form.to_dict(flat=False)
         files = request.files
 
-        mat_list, total_wt = _build_mat_list(data)
+        mat_list, total_wt, overall_cs = _build_mat_list(data)
 
         # Auto-build KEY_WASTE_PRODUCTS if not manually set
         kwp_text = _first(data, 'key_waste_products')
@@ -1317,7 +1378,8 @@ def generate_canva_report():
         if total_wt and not _first(data, 'project_weight'):
             data['project_weight'] = [f"{total_wt:.2f} tonnes"]
 
-        replacements = build_replacements(data, mat_list)
+        overall_cs_str = f"{overall_cs}%" if overall_cs else ''
+        replacements   = build_replacements(data, mat_list, overall_cs_str)
         image_data   = _collect_image_data(files, len(mat_list))
 
         provided_spec_indices = {
@@ -1335,7 +1397,7 @@ def generate_canva_report():
         if PPTX_TEMPLATE_PATH and not os.path.exists(PPTX_TEMPLATE_PATH):
             return jsonify({"error": (
                 f"Template '{PPTX_TEMPLATE_PATH}' not found. "
-                "Ensure Savills-8.pptx is committed to your repository root."
+                "Ensure Savills-3-7e4f43e1.pptx is committed to your repository root."
             )}), 500
 
         output = fill_pptx_template(replacements, image_data, kwp_mats, provided_spec_indices)
