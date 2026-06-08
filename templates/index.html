@@ -713,6 +713,14 @@ body {
               <input type="text" name="prepared_date" placeholder="e.g. 15 January 2025">
             </div>
             <div class="form-group">
+              <label>Professional Memberships <span class="field-hint">(e.g. MCIWM, MRICS)</span></label>
+              <input type="text" name="prepared_by_memberships" placeholder="e.g. MCIWM, MRICS">
+            </div>
+            <div class="form-group">
+              <label>Years of Experience</label>
+              <input type="text" name="prepared_by_years_experience" placeholder="e.g. 12 years">
+            </div>
+            <div class="form-group">
               <label>Profile Photo</label>
               <div class="upload-zone" id="prepPhotoZone">
                 <input type="file" name="prepared_by_photo" onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
@@ -982,14 +990,18 @@ body {
         <table class="material-table" id="kwpTable">
           <thead>
             <tr>
-              <th style="width:150px;">Material Name</th>
-              <th style="width:90px;">EWC Code</th>
-              <th style="width:80px;">Vol (m³)</th>
-              <th style="width:85px;">Weight (t)</th>
-              <th style="width:60px;">% Wt</th>
-              <th style="width:80px;">Carbon Factor</th>
-              <th style="width:90px;">Carbon (tCO₂e)</th>
-              <th style="width:60px;">% Reuse</th>
+              <th style="width:140px;">Material Name</th>
+              <th style="width:85px;">EWC Code</th>
+              <th style="width:75px;">Vol (m³)</th>
+              <th style="width:80px;">Weight (t)</th>
+              <th style="width:55px;">% Wt</th>
+              <th style="width:75px;">Carbon Factor</th>
+              <th style="width:85px;">Carbon (tCO₂e)</th>
+              <th style="width:75px;">Recycling %</th>
+              <th style="width:70px;">Reuse %</th>
+              <th style="width:65px;" title="Circularity Scenario % = Recycling % + Reuse %">CS% ⓘ</th>
+              <th style="width:75px;" title="Circularity Score = Weight × ECF × CS%">CS ⓘ</th>
+              <th style="width:75px;" title="Diversion from Landfill % = CS%">Landfill% ⓘ</th>
               <th style="width:32px;"></th>
             </tr>
           </thead>
@@ -1006,6 +1018,11 @@ body {
           <label>Total Embodied Carbon</label>
           <div class="carbon-total-box" id="carbonTotalDisplay">—</div>
           <div class="field-hint">Auto-calculated from weight × carbon factor (ICE v3.0 defaults)</div>
+        </div>
+        <div class="form-group">
+          <label>Overall Circularity Score <span class="field-hint">Σ(Mass×ECF×CS%) / Σ(Mass×ECF)</span></label>
+          <div class="carbon-total-box" id="overallCircularityDisplay">—</div>
+          <div class="field-hint">Auto-calculated from circularity inputs above</div>
         </div>
         <div class="form-group">
           <label>Landfill Diversion Target (%)</label>
@@ -1065,11 +1082,8 @@ body {
       <div class="section-divider">Report Text</div>
       <div class="form-grid full">
         <div class="form-group">
-          <label>Information Provided <span class="field-hint">(Appears in the report introduction — list all documents and information given to the auditor prior to and during the site visit, e.g. drawings, surveys, floor area schedules)</span></label>
-          <div class="ai-text-wrap">
-            <textarea name="information_provided" id="infoProvidedText" rows="4" placeholder="e.g. 'Architectural drawings (Rev A), Structural report, Asbestos R&amp;D survey (2024), Floor area schedule, Site visit photographs'"></textarea>
-            <button type="button" class="ai-btn-inline" onclick="generateAIText('information_provided','infoProvidedText')" id="aiInfoProvided">✨ AI Write</button>
-          </div>
+          <label>Initial Information Provided <span class="field-hint">(Manual input only — list all documents and information provided to the auditor prior to and during the site visit, e.g. drawings, surveys, floor area schedules)</span></label>
+          <textarea name="initial_information_provided" id="infoProvidedText" rows="4" placeholder="e.g. Architectural drawings (Rev A), Structural report, Asbestos R&amp;D survey (2024), Floor area schedule, Site visit photographs"></textarea>
         </div>
         <div class="form-group">
           <label>Circular Economy Commitments <span class="field-hint">(Appears in the Circular Economy section — describe the project team's commitments to reuse, recycling and landfill diversion targets in line with the London Plan and GLA guidance)</span></label>
@@ -1472,7 +1486,13 @@ function addMaterialRow(data = {}) {
     <td><input type="text" class="mat-ecf" name="mat_${n}_ecf" value="${data.cf||''}" placeholder="0.000"
       oninput="autoCalcCarbon(this)"></td>
     <td><input type="number" class="mat-carb" name="mat_${n}_carb" value="${data.ec||''}" step="0.1" placeholder="auto"></td>
-    <td><input type="number" class="mat-reuse" name="mat_${n}_reuse" value="${data.reuse||''}" step="1" min="0" max="100" placeholder="0"></td>
+    <td><input type="number" class="mat-recycling-pct" name="mat_${n}_recycling_pct" value="${data.recycling_pct||''}"
+      step="1" min="0" max="100" placeholder="0" oninput="autoCalcCircularity(this)"></td>
+    <td><input type="number" class="mat-reuse-pct" name="mat_${n}_reuse_pct" value="${data.reuse_pct||''}"
+      step="1" min="0" max="100" placeholder="0" oninput="autoCalcCircularity(this)"></td>
+    <td><input type="number" class="mat-cs-pct" name="mat_${n}_cs_pct_display" value="" step="0.1" placeholder="auto" readonly style="background:var(--surface-2);color:var(--muted);cursor:default;"></td>
+    <td><input type="number" class="mat-cs" name="mat_${n}_cs_display" value="" step="0.001" placeholder="auto" readonly style="background:var(--surface-2);color:var(--muted);cursor:default;"></td>
+    <td><input type="number" class="mat-landfill-pct" name="mat_${n}_landfill_pct_display" value="" step="0.1" placeholder="auto" readonly style="background:var(--surface-2);color:var(--muted);cursor:default;"></td>
     <td><button type="button" class="btn-delete-row" onclick="removeKwpRow(this)">✕</button></td>
   `;
   tbody.appendChild(tr);
@@ -1490,14 +1510,15 @@ function removeKwpRow(btn) {
 function reNumberKwpRows() {
   document.querySelectorAll('#kwpBody tr').forEach((tr, i) => {
     const n = i + 1;
-    tr.querySelector('.mat-name').name   = `mat_${n}_name`;
-    tr.querySelector('.mat-ewc').name    = `mat_${n}_ewc`;
-    tr.querySelector('.mat-vol').name    = `mat_${n}_vol`;
-    tr.querySelector('.mat-weigh').name  = `mat_${n}_weigh`;
-    tr.querySelector('.mat-weighp').name = `mat_${n}_weighp`;
-    tr.querySelector('.mat-ecf').name    = `mat_${n}_ecf`;
-    tr.querySelector('.mat-carb').name   = `mat_${n}_carb`;
-    tr.querySelector('.mat-reuse').name  = `mat_${n}_reuse`;
+    tr.querySelector('.mat-name').name          = `mat_${n}_name`;
+    tr.querySelector('.mat-ewc').name           = `mat_${n}_ewc`;
+    tr.querySelector('.mat-vol').name           = `mat_${n}_vol`;
+    tr.querySelector('.mat-weigh').name         = `mat_${n}_weigh`;
+    tr.querySelector('.mat-weighp').name        = `mat_${n}_weighp`;
+    tr.querySelector('.mat-ecf').name           = `mat_${n}_ecf`;
+    tr.querySelector('.mat-carb').name          = `mat_${n}_carb`;
+    tr.querySelector('.mat-recycling-pct').name = `mat_${n}_recycling_pct`;
+    tr.querySelector('.mat-reuse-pct').name     = `mat_${n}_reuse_pct`;
   });
 }
 
@@ -1524,6 +1545,7 @@ function autoCalcCarbon(ecfInput) {
   const wt  = parseFloat(wEl?.value) || 0;
   if (cEl) cEl.value = (ecf && wt) ? (ecf * wt).toFixed(3) : '';
   updateCarbonTotal();
+  autoCalcCircularity(ecfInput);
 }
 
 function autoCalcCarbonOnWeight(weightInput) {
@@ -1534,6 +1556,7 @@ function autoCalcCarbonOnWeight(weightInput) {
   const wt    = parseFloat(weightInput.value) || 0;
   if (cEl) cEl.value = (ecf && wt) ? (ecf * wt).toFixed(3) : '';
   updateCarbonTotal();
+  autoCalcCircularity(weightInput);
 }
 
 function updateCarbonTotal() {
@@ -1543,6 +1566,49 @@ function updateCarbonTotal() {
   });
   const el = document.getElementById('carbonTotalDisplay');
   if (el) el.textContent = total > 0 ? total.toFixed(3) + ' tCO₂e' : '—';
+}
+
+function autoCalcCircularity(changedInput) {
+  const tr  = changedInput.closest('tr');
+  const rPct = parseFloat(tr.querySelector('.mat-recycling-pct')?.value) || 0;
+  const uPct = parseFloat(tr.querySelector('.mat-reuse-pct')?.value)     || 0;
+  const ecf  = parseFloat(tr.querySelector('.mat-ecf')?.value)           || 0;
+  const wt   = parseFloat(tr.querySelector('.mat-weigh')?.value)         || 0;
+
+  const csPct = Math.min(rPct + uPct, 100);
+  const cs    = (wt && ecf) ? wt * ecf * (csPct / 100) : 0;
+
+  const csPctEl    = tr.querySelector('.mat-cs-pct');
+  const csEl       = tr.querySelector('.mat-cs');
+  const landfillEl = tr.querySelector('.mat-landfill-pct');
+
+  if (csPctEl)    csPctEl.value    = csPct > 0 ? csPct.toFixed(1)  : '';
+  if (csEl)       csEl.value       = cs > 0    ? cs.toFixed(4)      : '';
+  if (landfillEl) landfillEl.value = csPct > 0 ? csPct.toFixed(1)  : '';
+
+  updateOverallCircularityScore();
+}
+
+function updateOverallCircularityScore() {
+  let totalWeightedECF = 0;
+  let totalCS          = 0;
+  document.querySelectorAll('#kwpBody tr').forEach(tr => {
+    const wt  = parseFloat(tr.querySelector('.mat-weigh')?.value) || 0;
+    const ecf = parseFloat(tr.querySelector('.mat-ecf')?.value)   || 0;
+    const cs  = parseFloat(tr.querySelector('.mat-cs')?.value)    || 0;
+    totalWeightedECF += wt * ecf;
+    totalCS          += cs;
+  });
+  const ocs    = totalWeightedECF > 0 ? (totalCS / totalWeightedECF * 100) : 0;
+  const ocsEl  = document.getElementById('overallCircularityDisplay');
+  if (ocsEl) ocsEl.textContent = ocs > 0 ? ocs.toFixed(1) + '%' : '—';
+}
+
+// Re-run circularity when carbon is recalculated
+const _origUpdateCarbonTotal = updateCarbonTotal;
+function updateCarbonTotal() {
+  _origUpdateCarbonTotal();
+  updateOverallCircularityScore();
 }
 
 // ── EWC Auto-fill ────────────────────────────────────────────
@@ -1710,11 +1776,12 @@ async function aiGenMatField(n, field, btn) {
     if (i + 1 === n) name = tr.querySelector('.mat-name')?.value.trim() || '';
   });
   if (!name) { showToast('Material name not found', 'error'); return; }
+  const jobAddr = document.querySelector('[name="job_address"]')?.value.trim() || 'the project site';
   if (btn) { btn.disabled = true; btn.textContent = '⏳...'; }
   try {
     const resp   = await fetch('/generate-material-text', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ material_name: name, field })
+      body: JSON.stringify({ material_name: name, field, job_address: jobAddr })
     });
     const result = await resp.json();
     if (result.text) {
@@ -1729,7 +1796,6 @@ async function aiGenMatField(n, field, btn) {
 // ── AI text generation — report sections ────────────────────
 async function generateAIText(section, targetId) {
   const btnMap = {
-    information_provided:    'aiInfoProvided',
     circular_economy:        'aiCircEcon',
     aims_resource_efficiency:'aiAimsRes',
   };
