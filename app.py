@@ -789,7 +789,30 @@ def _replace_image_placeholders(prs, image_data):
             norm = _normalise_image(img_bytes)
             if norm:  # skip silently if Pillow couldn't decode the file
                 try:
-                    slide.shapes.add_picture(io.BytesIO(norm), left, top, w, h)
+                    # ── Fit image into placeholder while preserving aspect ratio ──
+                    # Read the actual pixel dimensions from the normalised bytes
+                    fit_left, fit_top, fit_w, fit_h = left, top, w, h
+                    if _PIL_AVAILABLE:
+                        try:
+                            with _PILImage.open(io.BytesIO(norm)) as _img:
+                                img_px_w, img_px_h = _img.size
+                            if img_px_w > 0 and img_px_h > 0:
+                                img_ratio = img_px_w / img_px_h
+                                box_ratio = w / h if h else 1
+                                if img_ratio > box_ratio:
+                                    # wider than box — fill width, shrink height
+                                    fit_w = w
+                                    fit_h = int(w / img_ratio)
+                                else:
+                                    # taller than box — fill height, shrink width
+                                    fit_h = h
+                                    fit_w = int(h * img_ratio)
+                                # centre within the placeholder box
+                                fit_left = left + (w - fit_w) // 2
+                                fit_top  = top  + (h - fit_h) // 2
+                        except Exception:
+                            pass  # fall back to original box dimensions
+                    slide.shapes.add_picture(io.BytesIO(norm), fit_left, fit_top, fit_w, fit_h)
                 except Exception:
                     traceback.print_exc()  # log but never block generation
 
