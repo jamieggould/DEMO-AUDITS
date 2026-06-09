@@ -5,5 +5,6 @@ gunicorn>=21.0.0
 python-pptx>=0.6.21
 openai>=1.66.0
 Pillow>=10.0.0
+pillow-heif>=0.13.0
 python-dotenv>=1.0.0
 PyMuPDF>=1.23.0
