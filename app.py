@@ -29,7 +29,7 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
-PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-3-7e4f43e1.pptx")
+PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-3.pptx")
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
@@ -1419,7 +1419,7 @@ def generate_canva_report():
         if PPTX_TEMPLATE_PATH and not os.path.exists(PPTX_TEMPLATE_PATH):
             return jsonify({"error": (
                 f"Template '{PPTX_TEMPLATE_PATH}' not found. "
-                "Ensure Savills-3-7e4f43e1.pptx is committed to your repository root."
+                "Ensure Savills-3.pptx is committed to your repository root."
             )}), 500
 
         output = fill_pptx_template(replacements, image_data, kwp_mats, provided_spec_indices)
