@@ -692,46 +692,63 @@ def _replace_in_shape(shape, replacements):
 
 def _normalise_image(img_bytes):
     """
-    Convert any uploaded file to PNG bytes for python-pptx.
-    Handles: PDF (first page rendered via PyMuPDF), HEIC, WEBP, TIFF, BMP,
-    and any other format Pillow can read. Falls back to the original bytes
-    if all conversions fail.
+    Convert any uploaded file to JPEG bytes for python-pptx.
+    Accepts: JPEG, PNG, WEBP, TIFF, BMP, GIF, HEIC/HEIF (iPhone),
+             PDF (first page rendered via PyMuPDF), and any other format
+             that PyMuPDF or Pillow can decode.
+    Returns None if every decoder fails (caller skips the image).
     """
-    # ── PDF: render first page to PNG via PyMuPDF ─────────────
+    # ── Register HEIC/HEIF support if pillow-heif is installed ───
+    try:
+        from pillow_heif import register_heif_opener
+        register_heif_opener()
+    except ImportError:
+        pass  # pillow-heif not installed — HEIC falls through to PyMuPDF
+
+    # ── PDF: render first page to raster via PyMuPDF ─────────────
     if img_bytes[:4] == b'%PDF':
         try:
-            import fitz  # PyMuPDF
-            doc  = fitz.open(stream=img_bytes, filetype='pdf')
-            page = doc[0]
-            # 2× zoom gives ~150 dpi — good quality without huge file size
-            pix  = page.get_pixmap(matrix=fitz.Matrix(2, 2))
-            return pix.tobytes('png')
+            import fitz
+            doc = fitz.open(stream=img_bytes, filetype='pdf')
+            pix = doc[0].get_pixmap(matrix=fitz.Matrix(2, 2))
+            img_bytes = pix.tobytes('png')
+            # fall through into Pillow normalisation below
         except Exception:
-            pass  # fall through to Pillow attempt
+            traceback.print_exc()
+            return None
 
-    # ── All other formats: normalise to PNG via Pillow ─────────
-    if not _PIL_AVAILABLE:
-        return img_bytes
+    # ── Try Pillow (covers JPEG, PNG, WEBP, TIFF, BMP, HEIC …) ───
+    if _PIL_AVAILABLE:
+        try:
+            from PIL import ImageOps
+            buf = io.BytesIO(img_bytes)
+            buf.seek(0)
+            with _PILImage.open(buf) as img:
+                img = ImageOps.exif_transpose(img)
+                _MAX = 1600
+                if img.width > _MAX or img.height > _MAX:
+                    _rs = getattr(_PILImage, 'Resampling', _PILImage).LANCZOS
+                    img.thumbnail((_MAX, _MAX), _rs)
+                if img.mode not in ('RGB', 'L'):
+                    img = img.convert('RGB')
+                out = io.BytesIO()
+                img.save(out, format='JPEG', quality=88, optimize=True)
+                out.seek(0)
+                return out.read()
+        except Exception:
+            pass  # fall through to PyMuPDF image fallback
+
+    # ── PyMuPDF fallback — handles many image formats Pillow can't ─
     try:
-        from PIL import ImageOps
-        with _PILImage.open(io.BytesIO(img_bytes)) as img:
-            # Fix EXIF rotation (phones embed orientation tag)
-            img = ImageOps.exif_transpose(img)
-            # Cap to 1600 px on the longest side — phone photos can be 4 K+
-            # which multiplies memory 10× unnecessarily for a PPTX slide.
-            # thumbnail() is in-place and preserves aspect ratio.
-            _MAX = 1600
-            if img.width > _MAX or img.height > _MAX:
-                _rs = getattr(_PILImage, 'Resampling', _PILImage).LANCZOS
-                img.thumbnail((_MAX, _MAX), _rs)
-            if img.mode not in ('RGB', 'RGBA', 'L'):
-                img = img.convert('RGB')
-            out = io.BytesIO()
-            img.save(out, format='JPEG', quality=88, optimize=True)
-            out.seek(0)
-            return out.read()
-    except Exception:
+        import fitz
+        doc = fitz.open(stream=img_bytes)   # auto-detect format
+        pix = doc[0].get_pixmap(matrix=fitz.Matrix(1, 1))
+        img_bytes = pix.tobytes('jpeg')
         return img_bytes
+    except Exception:
+        traceback.print_exc()
+
+    return None  # every decoder failed — caller will skip this image
 
 # ─────────────────────────────────────────────────────────────
 # PPTX — IMAGE REPLACEMENT
@@ -769,7 +786,12 @@ def _replace_image_placeholders(prs, image_data):
         for shape in to_remove:
             shape._element.getparent().remove(shape._element)
         for left, top, w, h, img_bytes in to_add:
-            slide.shapes.add_picture(io.BytesIO(_normalise_image(img_bytes)), left, top, w, h)
+            norm = _normalise_image(img_bytes)
+            if norm:  # skip silently if Pillow couldn't decode the file
+                try:
+                    slide.shapes.add_picture(io.BytesIO(norm), left, top, w, h)
+                except Exception:
+                    traceback.print_exc()  # log but never block generation
 
 # ─────────────────────────────────────────────────────────────
 # PPTX — KWP DONUT CHART  (rendered as PNG via matplotlib)
