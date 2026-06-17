@@ -705,39 +705,52 @@ body {
     <div class="panel-head">
       <span class="ph-step">STEP 2 OF 8</span>
       <h2>Report Team</h2>
-      <p>Prepared by Andrew Wedlake (fixed). Enter the authoriser's details below.</p>
+      <p>Enter who prepared the report. Authorised by Andrew Wedlake (fixed) — just set the date.</p>
     </div>
     <div class="panel-body">
-      <!-- Prepared By is fixed to Andrew Wedlake and auto-filled — removed from the UI. -->
-      <input type="hidden" name="prepared_by" value="Andrew Wedlake">
-      <input type="hidden" name="prepared_by_role" value="Sustainability Director">
-      <input type="hidden" name="prepared_by_memberships" value="Licensed BREEAM Assessor">
-      <input type="hidden" name="prepared_by_years_experience" value="12 years">
-      <div class="form-grid full">
+      <div class="form-grid">
         <div class="staff-card">
-          <h3>✅ Authorised By</h3>
+          <h3>✍ Prepared By</h3>
           <div class="form-grid full">
             <div class="form-group">
               <label>Full Name</label>
-              <input type="text" name="authorised_by" placeholder="e.g. Sarah Johnson">
+              <input type="text" name="prepared_by" placeholder="e.g. James Smith">
             </div>
             <div class="form-group">
               <label>Position / Title</label>
-              <input type="text" name="authorised_by_role" placeholder="e.g. Director">
+              <input type="text" name="prepared_by_role" placeholder="e.g. Sustainability Consultant">
             </div>
             <div class="form-group">
               <label>Date</label>
-              <input type="text" name="authorised_date" placeholder="e.g. 18 January 2025">
+              <input type="text" name="prepared_date" placeholder="e.g. 15 January 2025">
             </div>
             <div class="form-group">
               <label>Profile Photo</label>
-              <div class="upload-zone" id="authPhotoZone">
-                <input type="file" name="authorised_by_photo" onchange="handlePhotoPreview(this,'authPhotoZone','authThumb')">
+              <div class="upload-zone" id="prepPhotoZone">
+                <input type="file" name="prepared_by_photo" onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
                 <span class="uz-icon">📷</span>
                 <span class="uz-label">Upload photo</span>
                 <div class="uz-hint">Any image format accepted</div>
-                <img id="authThumb" class="preview-thumb" style="display:none;">
+                <img id="prepThumb" class="preview-thumb" style="display:none;">
               </div>
+            </div>
+          </div>
+        </div>
+        <div class="staff-card">
+          <h3>✅ Authorised By</h3>
+          <!-- Authoriser is always Andrew Wedlake (fixed in the template); only the date is editable. -->
+          <input type="hidden" name="authorised_by" value="Andrew Wedlake">
+          <input type="hidden" name="authorised_by_role" value="Sustainability Director">
+          <div class="form-grid full">
+            <div class="form-group">
+              <label>Authorised By</label>
+              <input type="text" value="Andrew Wedlake — Sustainability Director" disabled
+                style="background:var(--surface-2);color:var(--muted);cursor:default;">
+              <span class="field-hint">Fixed authoriser (BREEAM Competent Person)</span>
+            </div>
+            <div class="form-group">
+              <label>Date *</label>
+              <input type="text" name="authorised_date" placeholder="e.g. 18 January 2025">
             </div>
           </div>
         </div>
