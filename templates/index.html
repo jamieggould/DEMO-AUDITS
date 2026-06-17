@@ -424,6 +424,18 @@ body {
 }
 .ai-btn-inline:hover { opacity: 0.9; transform: translateY(-1px); }
 .ai-btn-inline:disabled { opacity: 0.45; cursor: default; transform: none; }
+/* Guarantee AI-generated text stays fully editable & selectable, and give
+   the fields room so the AI button never sits on top of the text. */
+.ai-text-wrap textarea {
+  user-select: text; -webkit-user-select: text;
+  resize: vertical; min-height: 110px;
+}
+.ai-text-wrap textarea[readonly], .ai-text-wrap textarea:disabled { /* never lock AI fields */
+  background: var(--surface-2); color: var(--text);
+}
+.reuse-item .ai-text-wrap textarea { min-height: 128px; }
+/* push the first line below the inline AI button so the top row is selectable */
+.ai-text-wrap textarea { padding-top: 34px; }
 /* ───────────────────────────────────────────── TOAST ───────────────────────────────────────────── */
 #toast {
   position: fixed; bottom: 28px; right: 28px;
@@ -699,26 +711,22 @@ body {
       <div class="form-grid">
         <div class="staff-card">
           <h3>✍ Prepared By</h3>
+          <!-- Prepared-by identity is fixed to Andrew Wedlake (the competent person on slide 3),
+               so these are hidden defaults rather than editable inputs. -->
+          <input type="hidden" name="prepared_by" value="Andrew Wedlake">
+          <input type="hidden" name="prepared_by_role" value="Sustainability Director">
+          <input type="hidden" name="prepared_by_memberships" value="Licensed BREEAM Assessor">
+          <input type="hidden" name="prepared_by_years_experience" value="12 years">
           <div class="form-grid full">
             <div class="form-group">
-              <label>Full Name</label>
-              <input type="text" name="prepared_by" placeholder="e.g. James Smith">
-            </div>
-            <div class="form-group">
-              <label>Position / Title</label>
-              <input type="text" name="prepared_by_role" placeholder="e.g. Sustainability Consultant">
+              <label>Prepared By</label>
+              <input type="text" value="Andrew Wedlake — Sustainability Director" disabled
+                style="background:var(--surface-2);color:var(--muted);cursor:default;">
+              <span class="field-hint">Fixed competent person (Licensed BREEAM Assessor, 12 years' experience)</span>
             </div>
             <div class="form-group">
               <label>Date</label>
               <input type="text" name="prepared_date" placeholder="e.g. 15 January 2025">
-            </div>
-            <div class="form-group">
-              <label>Professional Memberships <span class="field-hint">(e.g. MCIWM, MRICS)</span></label>
-              <input type="text" name="prepared_by_memberships" placeholder="e.g. MCIWM, MRICS">
-            </div>
-            <div class="form-group">
-              <label>Years of Experience</label>
-              <input type="text" name="prepared_by_years_experience" placeholder="e.g. 12 years">
             </div>
             <div class="form-group">
               <label>Profile Photo</label>
@@ -1163,6 +1171,15 @@ let currentStep = 0;
 const totalSteps = 8;
 const ewcCache = {};
 
+// Embodied Carbon Factors (ICE v3.0 defaults) — mirrors MATERIAL_DEFAULTS in app.py.
+// Used to populate the carbon factor synchronously so CO₂ is always auto-calculated.
+const MATERIAL_ECF = {
+  'Carpet':3.40,'Timber':0.46,'Plasterboard':0.39,'Glass':0.91,'Metal':1.37,
+  'Hardcore':0.13,'Insulation':1.28,'Fibre Ceiling Tiles':0.94,'Plastic':2.00,
+  'Vinyl':2.20,'Rubber':2.10,'Fabric':5.50,'Fluorescent Tubes':1.50,
+  'Oil / Hydraulic Fluid':0.45,
+};
+
 // ── Step navigation ──────────────────────────────────────────
 function goToStep(n) {
   document.querySelectorAll('.step-panel').forEach((el, i) => el.classList.toggle('active', i === n));
@@ -1443,10 +1460,13 @@ function calcToKWP() {
     const d    = matTotals[mat];
     const wt_t = d.weight_kg / 1000;
     const pct  = totalWt > 0 ? (d.weight_kg / totalWt * 100) : 0;
-    addMaterialRow({ name:mat, ewc:EWC[mat]||'', vol:d.volume_m3.toFixed(2), wt:wt_t.toFixed(3), pct:pct.toFixed(1) });
+    const cf   = MATERIAL_ECF[mat];
+    addMaterialRow({ name:mat, ewc:EWC[mat]||'', vol:d.volume_m3.toFixed(2), wt:wt_t.toFixed(3), pct:pct.toFixed(1),
+                     cf: (cf !== undefined ? String(cf) : '') });
   });
   document.getElementById('projectWeightField').value = (totalWt / 1000).toFixed(3);
   autoCalcPct();
+  updateCarbonTotal();
 }
 
 async function importCalculatorExcel(input) {
@@ -1461,9 +1481,12 @@ async function importCalculatorExcel(input) {
     document.getElementById('kwpBody').innerHTML = '';
     result.materials.forEach(m => {
       if (!m.weight_kg && !m.volume_m3) return;
-      addMaterialRow({ name:m.name, ewc:m.ewc||'', vol:m.volume_m3.toFixed(2), wt:m.weight_t.toFixed(3), pct:m.weight_pct.toFixed(1) });
+      const cf = MATERIAL_ECF[m.name];
+      addMaterialRow({ name:m.name, ewc:m.ewc||'', vol:m.volume_m3.toFixed(2), wt:m.weight_t.toFixed(3), pct:m.weight_pct.toFixed(1),
+                       cf: (cf !== undefined ? String(cf) : '') });
     });
     document.getElementById('projectWeightField').value = result.total_weight_t.toFixed(3);
+    updateCarbonTotal();
     showToast('Calculator imported — KWP table updated!', 'success');
   } catch (err) {
     showToast('Import failed: ' + err.message, 'error');
@@ -1496,6 +1519,13 @@ function addMaterialRow(data = {}) {
     <td><button type="button" class="btn-delete-row" onclick="removeKwpRow(this)">✕</button></td>
   `;
   tbody.appendChild(tr);
+  // If we already know the carbon factor, fill it and compute CO₂ immediately
+  // (synchronous — no dependency on the async EWC lookup).
+  const ecfEl = tr.querySelector('.mat-ecf');
+  if (ecfEl && data.cf) {
+    ecfEl.value = data.cf;
+    autoCalcCarbon(ecfEl);
+  }
   // Auto-fill ECF (and carbon) for known material names added programmatically
   if (data.name) ewcAutoFill(tr.querySelector('.mat-name'));
 }
@@ -1566,6 +1596,7 @@ function updateCarbonTotal() {
   });
   const el = document.getElementById('carbonTotalDisplay');
   if (el) el.textContent = total > 0 ? total.toFixed(3) + ' tCO₂e' : '—';
+  updateOverallCircularityScore();
 }
 
 function autoCalcCircularity(changedInput) {
@@ -1604,12 +1635,8 @@ function updateOverallCircularityScore() {
   if (ocsEl) ocsEl.textContent = ocs > 0 ? ocs.toFixed(1) + '%' : '—';
 }
 
-// Re-run circularity when carbon is recalculated
-const _origUpdateCarbonTotal = updateCarbonTotal;
-function updateCarbonTotal() {
-  _origUpdateCarbonTotal();
-  updateOverallCircularityScore();
-}
+// (Circularity is now recalculated directly inside updateCarbonTotal above —
+//  the previous wrapper caused infinite recursion and broke the carbon total.)
 
 // ── EWC Auto-fill ────────────────────────────────────────────
 async function ewcAutoFill(input) {
@@ -1693,7 +1720,7 @@ function syncMaterialDetails() {
         <div class="form-group span-2">
           <label>Description</label>
           <div class="ai-text-wrap">
-            <textarea name="mat_${n}_desc" rows="2"
+            <textarea name="mat_${n}_desc" rows="5"
               placeholder="Describe the material condition and reuse opportunity...">${prev.desc||''}</textarea>
             <button type="button" class="ai-btn-inline"
               onclick="aiGenMatField(${n},'description',this)">✨ AI</button>
@@ -1702,7 +1729,7 @@ function syncMaterialDetails() {
         <div class="form-group span-2">
           <label>Waste Management Recommendations</label>
           <div class="ai-text-wrap">
-            <textarea name="mat_${n}_waste_rec" rows="2"
+            <textarea name="mat_${n}_waste_rec" rows="5"
               placeholder="Recommended disposal, recycling, or reuse route...">${prev.waste_rec||''}</textarea>
             <button type="button" class="ai-btn-inline"
               onclick="aiGenMatField(${n},'waste_rec',this)">✨ AI</button>
@@ -1711,7 +1738,7 @@ function syncMaterialDetails() {
         <div class="form-group span-2">
           <label>Risk Factors</label>
           <div class="ai-text-wrap">
-            <textarea name="mat_${n}_risks" rows="2"
+            <textarea name="mat_${n}_risks" rows="5"
               placeholder="e.g. Contamination; access constraints; market availability...">${prev.risks||''}</textarea>
             <button type="button" class="ai-btn-inline"
               onclick="aiGenMatField(${n},'risks',this)">✨ AI</button>
