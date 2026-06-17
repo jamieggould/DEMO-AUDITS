@@ -751,6 +751,35 @@ def _normalise_image(img_bytes):
     return None  # every decoder failed — caller will skip this image
 
 # ─────────────────────────────────────────────────────────────
+# PPTX — ROUNDED CORNERS
+# ─────────────────────────────────────────────────────────────
+
+def _round_picture_corners(pic, radius_frac=0.055):
+    """
+    Give an inserted picture slightly rounded corners by swapping its
+    preset geometry to a 'roundRect'. radius_frac is the corner radius as a
+    fraction of the shorter side (0.055 ≈ a subtle, professional rounding).
+    """
+    try:
+        from pptx.oxml.ns import qn
+        spPr = pic._element.spPr
+        # Remove any existing geometry so we don't end up with two
+        for tag in ('a:prstGeom', 'a:custGeom'):
+            existing = spPr.find(qn(tag))
+            if existing is not None:
+                spPr.remove(existing)
+        # roundRect adjustment value is expressed in 1/100000 units
+        adj_val = max(0, min(50000, int(radius_frac * 100000)))
+        prstGeom = spPr.makeelement(qn('a:prstGeom'), {'prst': 'roundRect'})
+        avLst = prstGeom.makeelement(qn('a:avLst'), {})
+        gd = avLst.makeelement(qn('a:gd'), {'name': 'adj', 'fmla': f'val {adj_val}'})
+        avLst.append(gd)
+        prstGeom.append(avLst)
+        spPr.append(prstGeom)
+    except Exception:
+        traceback.print_exc()  # never block generation over cosmetics
+
+# ─────────────────────────────────────────────────────────────
 # PPTX — IMAGE REPLACEMENT
 # ─────────────────────────────────────────────────────────────
 
@@ -812,7 +841,8 @@ def _replace_image_placeholders(prs, image_data):
                                 fit_top  = top  + (h - fit_h) // 2
                         except Exception:
                             pass  # fall back to original box dimensions
-                    slide.shapes.add_picture(io.BytesIO(norm), fit_left, fit_top, fit_w, fit_h)
+                    pic = slide.shapes.add_picture(io.BytesIO(norm), fit_left, fit_top, fit_w, fit_h)
+                    _round_picture_corners(pic)  # slightly rounded corners look better
                 except Exception:
                     traceback.print_exc()  # log but never block generation
 
@@ -830,7 +860,8 @@ _CHART_COLORS_RGB = [
 ]
 
 
-_LIBERATION_SANS = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+_LIBERATION_SANS      = '/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf'
+_LIBERATION_SANS_BOLD = '/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf'
 
 
 def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
@@ -868,59 +899,91 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
         img  = Image.new('RGB', (W, H), (255, 255, 255))
         draw = ImageDraw.Draw(img)
 
-        # ── layout: left 52% = donut, right 48% = legend ──────────
-        PAD       = max(16, H // 28) * S // S   # small margin
-        pie_area  = int(W * 0.52)               # width allocated to donut
-        pie_size  = H - PAD * 2                 # diameter = full height minus padding
-        # Force square so pieslice draws a true circle
-        pie_size  = min(pie_size, pie_area - PAD)
+        # ── fonts ─────────────────────────────────────────────────
+        name_px = max(20, int(min(W, H) * 0.030))   # bold material name
+        pct_px  = max(18, int(name_px * 0.92))       # value beneath it
+        try:
+            f_name = ImageFont.truetype(_LIBERATION_SANS_BOLD, name_px)
+            f_pct  = ImageFont.truetype(_LIBERATION_SANS, pct_px)
+        except Exception:
+            try:
+                f_name = ImageFont.load_default(size=name_px)
+                f_pct  = ImageFont.load_default(size=pct_px)
+            except TypeError:
+                f_name = f_pct = ImageFont.load_default()
 
-        cx = PAD + pie_size // 2
-        cy = H // 2
-        R_out = pie_size // 2 - 2
-        R_in  = int(R_out * 0.50)
+        cx, cy = W // 2, H // 2
+        R_out  = int(min(W, H) * 0.30)
+        R_in   = int(R_out * 0.60)
 
         bbox  = [cx - R_out, cy - R_out, cx + R_out, cy + R_out]
+        angle = -90.0
+        mids  = []
+        for val in values:
+            sweep = val / total * 360.0
+            mids.append(angle + sweep / 2.0)
+            angle += sweep
         angle = -90.0
         for val, col in zip(values, colors):
             sweep = val / total * 360.0
             draw.pieslice(bbox, start=angle, end=angle + sweep + 0.3,
-                          fill=col, outline=(255, 255, 255))
+                          fill=col, outline=(255, 255, 255), width=max(2, S))
             angle += sweep
 
         # donut hole
         draw.ellipse([cx - R_in, cy - R_in, cx + R_in, cy + R_in],
                      fill=(255, 255, 255))
 
-        # ── legend — compact, ~12 px text in the final (downscaled) image
-        # Drawing at 2× so multiply target px by S=2
-        font_px = 24            # → 12 px after LANCZOS downscale
-        row_h   = font_px + 10  # → 17 px row gap — neat but readable
-        sw      = font_px - 6   # → 9 px colour swatch
+        # ── labels beside each slice (no legend) ──────────────────
+        # Split into left/right columns and push apart vertically so
+        # adjacent small slices never overlap.
+        import math
+        line_gap = 4 * S
+        block_h  = name_px + pct_px + line_gap
+        min_gap  = block_h + 10 * S
+        R_label  = R_out * 1.06
 
-        try:
-            font = ImageFont.truetype(_LIBERATION_SANS, font_px)
-        except Exception:
-            try:
-                font = ImageFont.load_default(size=font_px)
-            except TypeError:
-                font = ImageFont.load_default()
+        entries = []
+        for i in range(n):
+            a    = math.radians(mids[i])
+            y    = cy + math.sin(a) * R_label
+            side = 'right' if math.cos(a) >= 0 else 'left'
+            entries.append({'name': names[i], 'pct': pcts[i],
+                            'val': values[i], 'y': y, 'side': side})
 
-        lx  = pie_area + PAD
-        ly0 = cy - (n * row_h) // 2   # vertically centred
+        for side in ('left', 'right'):
+            grp = sorted([e for e in entries if e['side'] == side],
+                         key=lambda e: e['y'])
+            for i in range(1, len(grp)):
+                if grp[i]['y'] - grp[i - 1]['y'] < min_gap:
+                    grp[i]['y'] = grp[i - 1]['y'] + min_gap
+            for i in range(len(grp) - 2, -1, -1):
+                if grp[i + 1]['y'] - grp[i]['y'] < min_gap:
+                    grp[i]['y'] = grp[i + 1]['y'] - min_gap
 
-        for i, (name, val, pct, col) in enumerate(zip(names, values, pcts, colors)):
-            mid = ly0 + i * row_h + row_h // 2
-            draw.rectangle([lx, mid - sw // 2, lx + sw, mid + sw // 2],
-                            fill=col)
+        name_col = (30, 41, 59)
+        pct_col  = (100, 116, 139)
+        gap_x    = 18 * S
+        for e in entries:
             if unit == '%':
-                lbl = f"{name}   {pct:.1f}%"
+                sub = f"{e['pct']:.1f}%"
             elif unit == 'm\u00b3':
-                lbl = f"{name}   {val:.2f} m\u00b3"
+                sub = f"{e['val']:.2f} m\u00b3"
             else:                             # tonnes
-                lbl = f"{name}   {val:.3f} {unit}"
-            draw.text((lx + sw + 8, mid - font_px // 2),
-                      lbl, fill=(30, 41, 59), font=font)
+                sub = f"{e['val']:.3f} {unit}"
+            name   = e['name']
+            nw     = draw.textlength(name, font=f_name)
+            sw     = draw.textlength(sub,  font=f_pct)
+            y_name = e['y'] - block_h / 2
+            y_pct  = y_name + name_px + line_gap
+            if e['side'] == 'right':
+                tx = cx + R_out + gap_x
+                draw.text((tx, y_name), name, fill=name_col, font=f_name)
+                draw.text((tx, y_pct),  sub,  fill=pct_col,  font=f_pct)
+            else:
+                tx = cx - R_out - gap_x
+                draw.text((tx - nw, y_name), name, fill=name_col, font=f_name)
+                draw.text((tx - sw, y_pct),  sub,  fill=pct_col,  font=f_pct)
 
         # ── downscale to exact output size ────────────────────────
         _resample = getattr(Image, 'Resampling', Image).LANCZOS
