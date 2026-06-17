@@ -33,36 +33,74 @@ OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
 PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-5.pptx")
 
 
+def _template_search_dirs():
+    """Folders to look in for the .pptx template, in priority order."""
+    dirs = [
+        _BASE_DIR,
+        os.getcwd(),
+        os.path.join(_BASE_DIR, 'templates'),
+        os.path.join(_BASE_DIR, 'static'),
+        os.path.dirname(_BASE_DIR),
+        os.path.join(os.getcwd(), 'templates'),
+    ]
+    seen, out = set(), []
+    for d in dirs:
+        if d and d not in seen:
+            seen.add(d); out.append(d)
+    return out
+
+
+def _list_pptx_candidates():
+    """All .pptx files found across the search dirs (Savills* first)."""
+    cands = []
+    for d in _template_search_dirs():
+        cands += glob.glob(os.path.join(d, '[Ss]avills*.pptx'))
+    for d in _template_search_dirs():
+        cands += glob.glob(os.path.join(d, '*.pptx'))
+    # de-dup, keep existing files only
+    seen, out = set(), []
+    for c in cands:
+        rp = os.path.abspath(c)
+        if rp not in seen and os.path.exists(rp):
+            seen.add(rp); out.append(rp)
+    return out
+
+
+def _is_valid_pptx(path):
+    """A real .pptx is a zip archive. LFS pointers / corrupt files are not."""
+    try:
+        import zipfile
+        return zipfile.is_zipfile(path)
+    except Exception:
+        return False
+
+
 def _resolve_template_path():
     """
     Find the PowerPoint template robustly so a renamed file never breaks
-    generation. Order of preference:
-      1. The configured PPTX_TEMPLATE_PATH if that file exists.
-      2. Any 'Savills*.pptx' in the app folder / current dir — the highest
-         version number wins (Savills-5 beats Savills-3), then newest file.
-      3. Any '*.pptx' in those folders as a last resort.
-    Returns a path that may not exist (the caller reports a clear error).
+    generation. Prefers the configured path, then any valid 'Savills*.pptx'
+    (highest version number wins), then any valid '*.pptx'. Files that exist
+    but are NOT valid pptx packages (e.g. Git-LFS pointers) are skipped so a
+    good copy elsewhere can still be used.
+    Returns a path string (may be invalid/non-existent — caller reports why).
     """
-    if PPTX_TEMPLATE_PATH and os.path.exists(PPTX_TEMPLATE_PATH):
+    if PPTX_TEMPLATE_PATH and os.path.exists(PPTX_TEMPLATE_PATH) and _is_valid_pptx(PPTX_TEMPLATE_PATH):
         return PPTX_TEMPLATE_PATH
 
-    search_dirs = [_BASE_DIR, os.getcwd()]
-    candidates = []
-    for d in search_dirs:
-        candidates += glob.glob(os.path.join(d, '[Ss]avills*.pptx'))
-    if not candidates:
-        for d in search_dirs:
-            candidates += glob.glob(os.path.join(d, '*.pptx'))
+    def _ver(p):
+        m = re.search(r'(\d+)', os.path.basename(p))
+        return int(m.group(1)) if m else -1
 
-    candidates = [c for c in candidates if os.path.exists(c)]
-    if candidates:
-        def _ver(p):
-            m = re.search(r'(\d+)', os.path.basename(p))
-            return int(m.group(1)) if m else -1
-        candidates.sort(key=lambda p: (_ver(p), os.path.getmtime(p)), reverse=True)
-        return candidates[0]
+    cands = _list_pptx_candidates()
+    valid = [c for c in cands if _is_valid_pptx(c)]
+    if valid:
+        valid.sort(key=lambda p: (_ver(p), os.path.getmtime(p)), reverse=True)
+        return valid[0]
 
-    return PPTX_TEMPLATE_PATH  # nothing found — caller surfaces the error
+    # nothing valid — return whatever exists (so the caller can explain), else config
+    if cands:
+        return cands[0]
+    return PPTX_TEMPLATE_PATH
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
@@ -1213,12 +1251,20 @@ def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provid
     mat_count = len(kwp_materials) if kwp_materials else 0
     # Trim unused rows/slides BEFORE replacement (placeholders must be intact)
     if mat_count < 30:
+        # 1) Remove whole slides that ONLY reference materials we don't have
+        #    (e.g. the 21–30 KWP table) FIRST — while the {{MATERIAL_N}}
+        #    placeholders are still present to identify them. Doing this before
+        #    row-trimming is essential: otherwise the rows get blanked and the
+        #    slide's leftover totals row (Overall Circularity Score) keeps an
+        #    otherwise-empty table on its own slide.
+        _trim_empty_material_slides(prs, mat_count)
+        # 2) Trim leftover unused rows on partially-used table slides (e.g. rows
+        #    13–20 on the 11–20 table when there are 12 materials).
         _trim_material_table_rows(prs, mat_count)
         try:
-            _trim_empty_table_slides(prs)      # remove slides left with only a header row
+            _trim_empty_table_slides(prs)      # safety: remove any header-only table slides
         except Exception:
             traceback.print_exc()              # log but never block generation
-        _trim_empty_material_slides(prs, mat_count)
     if provided_spec_indices is not None and len(provided_spec_indices) < 12:
         _trim_unused_spec_slides(prs, provided_spec_indices)
     for slide in prs.slides:
@@ -1546,6 +1592,15 @@ def generate_canva_report():
                 "'Savills*.pptx' file, e.g. " + PPTX_TEMPLATE_PATH + ") to the "
                 "app's root folder, or set the PPTX_TEMPLATE_PATH environment "
                 "variable to its filename."
+            )}), 500
+        if not _is_valid_pptx(tpl):
+            return jsonify({"error": (
+                "Found '" + os.path.basename(tpl) + "' but it is not a valid "
+                ".pptx file. This almost always means the template is stored "
+                "with Git LFS (so only a small pointer file is deployed) or the "
+                "committed file is empty/corrupted. Commit the real .pptx as a "
+                "normal binary file (it should be hundreds of KB), not an LFS "
+                "pointer, then redeploy."
             )}), 500
 
         output = fill_pptx_template(replacements, image_data, kwp_mats, provided_spec_indices, template_path=tpl)
