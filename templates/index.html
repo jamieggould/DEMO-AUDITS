@@ -705,41 +705,15 @@ body {
     <div class="panel-head">
       <span class="ph-step">STEP 2 OF 8</span>
       <h2>Report Team</h2>
-      <p>Details of the people who prepared and authorised this report</p>
+      <p>Prepared by Andrew Wedlake (fixed). Enter the authoriser's details below.</p>
     </div>
     <div class="panel-body">
-      <div class="form-grid">
-        <div class="staff-card">
-          <h3>✍ Prepared By</h3>
-          <!-- Prepared-by identity is fixed to Andrew Wedlake (the competent person on slide 3),
-               so these are hidden defaults rather than editable inputs. -->
-          <input type="hidden" name="prepared_by" value="Andrew Wedlake">
-          <input type="hidden" name="prepared_by_role" value="Sustainability Director">
-          <input type="hidden" name="prepared_by_memberships" value="Licensed BREEAM Assessor">
-          <input type="hidden" name="prepared_by_years_experience" value="12 years">
-          <div class="form-grid full">
-            <div class="form-group">
-              <label>Prepared By</label>
-              <input type="text" value="Andrew Wedlake — Sustainability Director" disabled
-                style="background:var(--surface-2);color:var(--muted);cursor:default;">
-              <span class="field-hint">Fixed competent person (Licensed BREEAM Assessor, 12 years' experience)</span>
-            </div>
-            <div class="form-group">
-              <label>Date</label>
-              <input type="text" name="prepared_date" placeholder="e.g. 15 January 2025">
-            </div>
-            <div class="form-group">
-              <label>Profile Photo</label>
-              <div class="upload-zone" id="prepPhotoZone">
-                <input type="file" name="prepared_by_photo" onchange="handlePhotoPreview(this,'prepPhotoZone','prepThumb')">
-                <span class="uz-icon">📷</span>
-                <span class="uz-label">Upload photo</span>
-                <div class="uz-hint">Any image format accepted</div>
-                <img id="prepThumb" class="preview-thumb" style="display:none;">
-              </div>
-            </div>
-          </div>
-        </div>
+      <!-- Prepared By is fixed to Andrew Wedlake and auto-filled — removed from the UI. -->
+      <input type="hidden" name="prepared_by" value="Andrew Wedlake">
+      <input type="hidden" name="prepared_by_role" value="Sustainability Director">
+      <input type="hidden" name="prepared_by_memberships" value="Licensed BREEAM Assessor">
+      <input type="hidden" name="prepared_by_years_experience" value="12 years">
+      <div class="form-grid full">
         <div class="staff-card">
           <h3>✅ Authorised By</h3>
           <div class="form-grid full">
