@@ -1240,11 +1240,17 @@ def build_replacements(data, mat_list, overall_circularity_score=''):
     r['REPORT_NUMBER']   = g('report_number')
 
     # ── Team ──────────────────────────────────────────────────
-    r['PREPARED_BY']                  = g('prepared_by')
-    r['PREPARED_BY_ROLE']             = g('prepared_by_role')
-    r['PREPARED_DATE']                = g('prepared_date')
-    r['PREPARED_BY_MEMBERSHIPS']      = g('prepared_by_memberships')
-    r['PREPARED_BY_YEARS_EXPERIENCE'] = g('prepared_by_years_experience')
+    # Prepared-by identity is fixed to Andrew Wedlake (sent as hidden form fields).
+    r['PREPARED_BY']                  = g('prepared_by',      'Andrew Wedlake')
+    r['PREPARED_BY_ROLE']             = g('prepared_by_role', 'Sustainability Director')
+    # No prepared-by date field in the UI any more — fall back to the report date.
+    r['PREPARED_DATE']                = g('prepared_date') or r['DATE_OF_REPORT']
+    r['PREPARED_BY_MEMBERSHIPS']      = g('prepared_by_memberships',      'Licensed BREEAM Assessor')
+    r['PREPARED_BY_YEARS_EXPERIENCE'] = g('prepared_by_years_experience', '12 years')
+    # No prepared-by photo upload in the UI — blank the placeholder so the
+    # literal {{PREP_PHOTO}} text never shows (a fixed headshot can instead be
+    # embedded directly in the template).
+    r['PREP_PHOTO']                   = ''
     r['AUTHORISED_BY']                = g('authorised_by')
     r['AUTHORISED_BY_ROLE']           = g('authorised_by_role')
     r['AUTHORISED_DATE']              = g('authorised_date')
