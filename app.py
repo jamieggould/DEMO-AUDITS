@@ -5,6 +5,7 @@ Template: Savills-8.pptx
 import os
 import io
 import re
+import glob
 import traceback
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, send_file
@@ -30,6 +31,38 @@ app = Flask(__name__)
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
 PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-5.pptx")
+
+
+def _resolve_template_path():
+    """
+    Find the PowerPoint template robustly so a renamed file never breaks
+    generation. Order of preference:
+      1. The configured PPTX_TEMPLATE_PATH if that file exists.
+      2. Any 'Savills*.pptx' in the app folder / current dir — the highest
+         version number wins (Savills-5 beats Savills-3), then newest file.
+      3. Any '*.pptx' in those folders as a last resort.
+    Returns a path that may not exist (the caller reports a clear error).
+    """
+    if PPTX_TEMPLATE_PATH and os.path.exists(PPTX_TEMPLATE_PATH):
+        return PPTX_TEMPLATE_PATH
+
+    search_dirs = [_BASE_DIR, os.getcwd()]
+    candidates = []
+    for d in search_dirs:
+        candidates += glob.glob(os.path.join(d, '[Ss]avills*.pptx'))
+    if not candidates:
+        for d in search_dirs:
+            candidates += glob.glob(os.path.join(d, '*.pptx'))
+
+    candidates = [c for c in candidates if os.path.exists(c)]
+    if candidates:
+        def _ver(p):
+            m = re.search(r'(\d+)', os.path.basename(p))
+            return int(m.group(1)) if m else -1
+        candidates.sort(key=lambda p: (_ver(p), os.path.getmtime(p)), reverse=True)
+        return candidates[0]
+
+    return PPTX_TEMPLATE_PATH  # nothing found — caller surfaces the error
 
 # ─────────────────────────────────────────────────────────────
 # DEFAULT TEXT & EWC CODES FOR EACH MATERIAL TYPE
@@ -1175,8 +1208,8 @@ def _trim_unused_spec_slides(prs, provided_spec_indices):
 # FILL TEMPLATE
 # ─────────────────────────────────────────────────────────────
 
-def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provided_spec_indices=None):
-    prs       = Presentation(PPTX_TEMPLATE_PATH)
+def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provided_spec_indices=None, template_path=None):
+    prs       = Presentation(template_path or _resolve_template_path())
     mat_count = len(kwp_materials) if kwp_materials else 0
     # Trim unused rows/slides BEFORE replacement (placeholders must be intact)
     if mat_count < 30:
@@ -1506,13 +1539,16 @@ def generate_canva_report():
             'volume_m3':  float(m['vol']    or 0),
         } for m in mat_list]
 
-        if PPTX_TEMPLATE_PATH and not os.path.exists(PPTX_TEMPLATE_PATH):
+        tpl = _resolve_template_path()
+        if not os.path.exists(tpl):
             return jsonify({"error": (
-                f"Template '{PPTX_TEMPLATE_PATH}' not found. "
-                "Ensure Savills-3.pptx is committed to your repository root."
+                "PowerPoint template not found. Commit your template (a "
+                "'Savills*.pptx' file, e.g. " + PPTX_TEMPLATE_PATH + ") to the "
+                "app's root folder, or set the PPTX_TEMPLATE_PATH environment "
+                "variable to its filename."
             )}), 500
 
-        output = fill_pptx_template(replacements, image_data, kwp_mats, provided_spec_indices)
+        output = fill_pptx_template(replacements, image_data, kwp_mats, provided_spec_indices, template_path=tpl)
 
         addr     = _first(data, 'job_address').replace(' ', '_')[:40]
         filename = f"Audit_{addr}.pptx"
