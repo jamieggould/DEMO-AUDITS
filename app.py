@@ -1,6 +1,6 @@
 """
 Lawmens Pre-Demolition Audit Generator — Flask backend
-Template: Savills-8.pptx
+Template: Savills-6.pptx
 """
 import os
 import io
@@ -30,7 +30,11 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
-PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-5.pptx")
+PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-6.pptx")
+
+# Password required to EDIT generated PPTX files (viewing stays open).
+# Override with the PPTX_MODIFY_PASSWORD env var; set it empty to disable.
+PPTX_MODIFY_PASSWORD = os.environ.get("PPTX_MODIFY_PASSWORD", "Lawmens123098")
 
 
 def _template_search_dirs():
@@ -735,7 +739,11 @@ def _replace_in_paragraph(para, replacements):
     full = ''.join(r.text for r in para.runs)
     new  = full
     for key, val in replacements.items():
-        new = new.replace(f'{{{{{key}}}}}', _sanitise(val))
+        sval = _sanitise(val)
+        new = new.replace(f'{{{{{key}}}}}', sval)
+        # Tolerate template typo where the opener is '{[' instead of '{{'
+        # (e.g. '{[MATERIAL_16}}' in Savills-6.pptx)
+        new = new.replace('{[' + key + '}}', sval)
     if new != full:
         para.runs[0].text = new
         for r in para.runs[1:]:
@@ -1020,7 +1028,9 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
             y    = cy + math.sin(a) * R_label
             side = 'right' if math.cos(a) >= 0 else 'left'
             entries.append({'name': names[i], 'pct': pcts[i],
-                            'val': values[i], 'y': y, 'side': side})
+                            'val': values[i],
+                            'wt': float(visible[i].get('weight_t') or 0),
+                            'y': y, 'side': side})
 
         for side in ('left', 'right'):
             grp = sorted([e for e in entries if e['side'] == side],
@@ -1036,7 +1046,9 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
         pct_col  = (100, 116, 139)
         gap_x    = 18 * S
         for e in entries:
-            if unit == '%':
+            if unit == '%+t':
+                sub = f"{e['pct']:.1f}% ({e['wt']:.2f} t)"
+            elif unit == '%':
                 sub = f"{e['pct']:.1f}%"
             elif unit == 'm\u00b3':
                 sub = f"{e['val']:.2f} m\u00b3"
@@ -1079,6 +1091,7 @@ def _replace_kwp_chart_placeholders(prs, kwp_materials):
 
     # value_key, legend unit
     CHART_MAP = {
+        'KWP_OF_TOTAL_WEIGHT_TONNES': ('weight_pct', '%+t'),
         'KWP_OF_TOTAL_WEIGHT': ('weight_pct', '%'),
         'KWP_BY_VOL':          ('volume_m3',  'm\u00b3'),
         'KWP_BY_TON':          ('weight_t',   't'),
@@ -1274,10 +1287,88 @@ def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provid
         _replace_image_placeholders(prs, image_data)
     if kwp_materials:
         _replace_kwp_chart_placeholders(prs, kwp_materials)
+    _blank_leftover_photo_placeholders(prs)
     out = io.BytesIO()
     prs.save(out)
     out.seek(0)
+    try:
+        out = _set_pptx_modify_password(out, PPTX_MODIFY_PASSWORD)
+    except Exception:
+        traceback.print_exc()          # log but never block generation
+        out.seek(0)
     return out
+
+
+_LEFTOVER_PHOTO_RE = re.compile(
+    r'\{\{(?:MAT_\d+_PHOTOS|SPEC_\d+|PHOTO_[A-Z_]+|BUILDING_PHOTO|PREP_PHOTO|AUTH_PHOTO)\}\}'
+)
+
+def _blank_leftover_photo_placeholders(prs):
+    """
+    Blank any image placeholders still present after image replacement
+    (e.g. a material in use whose photos weren't uploaded), so raw
+    {{...}} tokens never appear in the finished report.
+    """
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if not shape.has_text_frame:
+                continue
+            if _LEFTOVER_PHOTO_RE.search(shape.text_frame.text):
+                for para in shape.text_frame.paragraphs:
+                    full = ''.join(r.text for r in para.runs)
+                    new  = _LEFTOVER_PHOTO_RE.sub('', full)
+                    if new != full and para.runs:
+                        para.runs[0].text = new
+                        for r in para.runs[1:]:
+                            r.text = ''
+
+
+def _set_pptx_modify_password(pptx_io, password):
+    """
+    Add an ECMA-376 'password to modify' to a finished PPTX.
+    The file opens read-only unless the password is entered
+    (PowerPoint: File open → 'Password to modify'). Viewing is unaffected.
+    Implemented by inserting a <p:modifyVerifier> element into
+    ppt/presentation.xml — the whole archive is re-zipped because zipfile
+    cannot modify entries in place.
+    """
+    import zipfile, base64, hashlib, secrets
+
+    if not password:
+        pptx_io.seek(0)
+        return pptx_io
+
+    # SHA-512 spin hash per MS-OFFCRYPTO §2.4.2.4
+    salt = secrets.token_bytes(16)
+    h = hashlib.sha512(salt + password.encode('utf-16-le')).digest()
+    spin = 100000
+    for i in range(spin):
+        h = hashlib.sha512(h + i.to_bytes(4, 'little')).digest()
+
+    verifier = (
+        '<p:modifyVerifier cryptProviderType="rsaAES" cryptAlgorithmClass="hash" '
+        'cryptAlgorithmType="typeAny" cryptAlgorithmSid="14" '
+        f'spinValue="{spin}" saltData="{base64.b64encode(salt).decode()}" '
+        f'hashData="{base64.b64encode(h).decode()}"/>'
+    )
+
+    pptx_io.seek(0)
+    new_io = io.BytesIO()
+    with zipfile.ZipFile(pptx_io, 'r') as zin, \
+         zipfile.ZipFile(new_io, 'w', zipfile.ZIP_DEFLATED) as zout:
+        for item in zin.infolist():
+            data = zin.read(item.filename)
+            if item.filename == 'ppt/presentation.xml':
+                xml = data.decode('utf-8')
+                if '<p:extLst' in xml:
+                    xml = xml.replace('<p:extLst', verifier + '<p:extLst', 1)
+                else:
+                    xml = xml.replace('</p:presentation>',
+                                      verifier + '</p:presentation>', 1)
+                data = xml.encode('utf-8')
+            zout.writestr(item, data)
+    new_io.seek(0)
+    return new_io
 
 # ─────────────────────────────────────────────────────────────
 # HELPERS
@@ -1317,10 +1408,13 @@ def build_replacements(data, mat_list, overall_circularity_score=''):
     r['CLIENT_NAME']     = g('client_name')
     r['DATE_OF_REPORT']  = g('date_of_report', datetime.now().strftime('%d %B %Y'))
     r['REPORT_NUMBER']   = g('report_number')
+    # COMPANY_NAME on the cover = the client (no separate UI field needed)
+    r['COMPANY_NAME']    = g('company_name') or g('client_name')
 
     # ── Team ──────────────────────────────────────────────────
     # Prepared By is entered by the user in the UI.
     r['PREPARED_BY']                  = g('prepared_by')
+    r['PREPARED_BY_NAME']             = g('prepared_by')
     r['PREPARED_BY_ROLE']             = g('prepared_by_role')
     r['PREPARED_DATE']                = g('prepared_date')
     r['PREPARED_BY_MEMBERSHIPS']      = g('prepared_by_memberships')
@@ -1409,7 +1503,7 @@ def build_replacements(data, mat_list, overall_circularity_score=''):
         'MAT_{n}_VOL', 'MAT_{n}_WEIGH', 'MAT_{n}_WEIGHP', 'MAT_{n}_ECF', 'MAT_{n}_CARB',
         'MAT_{n}_CS%', 'MAT_{n}_CS', 'MAT_{n}_LANDFILL%',
         'MAT_{n}_RECYCLE', 'MAT_{n}_REUSE',
-        'MAT_{n}_WASTE_RECOMMENDATIONS',
+        'MAT_{n}_WASTE_RECOMMENDATIONS', 'MAT_{n}_PHOTOS',
         'MATERIAL_{n}_DESCRIPTION', 'MATERIAL_{n}_POTENTIAL', 'MATERIAL_{n}_RISKS',
     ]
     for i in range(len(mat_list) + 1, 31):
@@ -1442,6 +1536,11 @@ def _collect_image_data(files, mat_count):
         b = _read_upload(files.get(field))
         if b:
             images[key] = b
+
+    # Savills-6 uses {{PHOTO_OF_BUILDING_FRONT}} for the building photo;
+    # keep BUILDING_PHOTO too for older templates (same bytes, no re-read).
+    if 'BUILDING_PHOTO' in images:
+        images['PHOTO_OF_BUILDING_FRONT'] = images['BUILDING_PHOTO']
 
     for i in range(1, 13):
         b = _read_upload(files.get(f'spec_photo_{i}'))
