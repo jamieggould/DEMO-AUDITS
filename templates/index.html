@@ -1583,6 +1583,7 @@ async function importCalculatorExcel(input) {
 function addMaterialRow(data = {}) {
   const tbody = document.getElementById('kwpBody');
   const n  = tbody.querySelectorAll('tr').length + 1;
+  if (n > 30) { showToast('The report template supports a maximum of 30 materials', 'error'); return; }
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td><input type="text" class="mat-name" name="mat_${n}_name" value="${data.name||''}"
