@@ -897,30 +897,40 @@ def _replace_image_placeholders(prs, image_data):
             norm = _normalise_image(img_bytes)
             if norm:  # skip silently if Pillow couldn't decode the file
                 try:
-                    # ── Fit image into placeholder while preserving aspect ratio ──
-                    # Read the actual pixel dimensions from the normalised bytes
-                    fit_left, fit_top, fit_w, fit_h = left, top, w, h
-                    if _PIL_AVAILABLE:
+                    # ── Fill the placeholder frame exactly ('cover' fit) ──
+                    # The template's photo frames are precisely positioned
+                    # (many bleed off the slide edges by design), so the photo
+                    # must occupy the WHOLE frame. Aspect-ratio mismatch is
+                    # handled by centre-cropping the photo via the picture's
+                    # crop properties — never by shrinking it inside the box,
+                    # which leaves gaps and breaks full-bleed layouts.
+                    crop_l = crop_r = crop_t = crop_b = 0.0
+                    if _PIL_AVAILABLE and w and h:
                         try:
                             with _PILImage.open(io.BytesIO(norm)) as _img:
                                 img_px_w, img_px_h = _img.size
                             if img_px_w > 0 and img_px_h > 0:
                                 img_ratio = img_px_w / img_px_h
-                                box_ratio = w / h if h else 1
+                                box_ratio = w / h
                                 if img_ratio > box_ratio:
-                                    # wider than box — fill width, shrink height
-                                    fit_w = w
-                                    fit_h = int(w / img_ratio)
-                                else:
-                                    # taller than box — fill height, shrink width
-                                    fit_h = h
-                                    fit_w = int(h * img_ratio)
-                                # centre within the placeholder box
-                                fit_left = left + (w - fit_w) // 2
-                                fit_top  = top  + (h - fit_h) // 2
+                                    # wider than frame — crop left/right evenly
+                                    frac   = 1.0 - (box_ratio / img_ratio)
+                                    crop_l = crop_r = frac / 2.0
+                                elif img_ratio < box_ratio:
+                                    # taller than frame — crop top/bottom evenly
+                                    frac   = 1.0 - (img_ratio / box_ratio)
+                                    crop_t = crop_b = frac / 2.0
                         except Exception:
-                            pass  # fall back to original box dimensions
-                    pic = slide.shapes.add_picture(io.BytesIO(norm), fit_left, fit_top, fit_w, fit_h)
+                            pass  # insert uncropped at frame bounds
+                    pic = slide.shapes.add_picture(io.BytesIO(norm), left, top, w, h)
+                    try:
+                        if crop_l or crop_t:
+                            pic.crop_left   = crop_l
+                            pic.crop_right  = crop_r
+                            pic.crop_top    = crop_t
+                            pic.crop_bottom = crop_b
+                    except Exception:
+                        traceback.print_exc()
                     _round_picture_corners(pic)  # slightly rounded corners look better
                 except Exception:
                     traceback.print_exc()  # log but never block generation
@@ -975,7 +985,9 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
         W  = out_w_px * S
         H  = out_h_px * S
 
-        img  = Image.new('RGB', (W, H), (255, 255, 255))
+        # Transparent canvas — the chart must blend into the slide's dark
+        # background instead of sitting in a white box.
+        img  = Image.new('RGBA', (W, H), (0, 0, 0, 0))
         draw = ImageDraw.Draw(img)
 
         # ── fonts ─────────────────────────────────────────────────
@@ -1009,9 +1021,9 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
                           fill=col, outline=(255, 255, 255), width=max(2, S))
             angle += sweep
 
-        # donut hole
+        # donut hole — punched fully transparent so the slide shows through
         draw.ellipse([cx - R_in, cy - R_in, cx + R_in, cy + R_in],
-                     fill=(255, 255, 255))
+                     fill=(0, 0, 0, 0))
 
         # ── labels beside each slice (no legend) ──────────────────
         # Split into left/right columns and push apart vertically so
@@ -1042,8 +1054,9 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
                 if grp[i + 1]['y'] - grp[i]['y'] < min_gap:
                     grp[i]['y'] = grp[i + 1]['y'] - min_gap
 
-        name_col = (30, 41, 59)
-        pct_col  = (100, 116, 139)
+        # White label text — the charts sit on dark navy slides
+        name_col = (255, 255, 255)
+        pct_col  = (203, 213, 225)
         gap_x    = 18 * S
         for e in entries:
             if unit == '%+t':
@@ -1059,14 +1072,15 @@ def _make_donut_png(mats, value_key, out_w_px=800, out_h_px=600, unit='%'):
             sw     = draw.textlength(sub,  font=f_pct)
             y_name = e['y'] - block_h / 2
             y_pct  = y_name + name_px + line_gap
+            margin = 4 * S    # keep labels inside the canvas — never clipped
             if e['side'] == 'right':
                 tx = cx + R_out + gap_x
-                draw.text((tx, y_name), name, fill=name_col, font=f_name)
-                draw.text((tx, y_pct),  sub,  fill=pct_col,  font=f_pct)
+                draw.text((min(tx, W - margin - nw), y_name), name, fill=name_col, font=f_name)
+                draw.text((min(tx, W - margin - sw), y_pct),  sub,  fill=pct_col,  font=f_pct)
             else:
                 tx = cx - R_out - gap_x
-                draw.text((tx - nw, y_name), name, fill=name_col, font=f_name)
-                draw.text((tx - sw, y_pct),  sub,  fill=pct_col,  font=f_pct)
+                draw.text((max(margin, tx - nw), y_name), name, fill=name_col, font=f_name)
+                draw.text((max(margin, tx - sw), y_pct),  sub,  fill=pct_col,  font=f_pct)
 
         # ── downscale to exact output size ────────────────────────
         _resample = getattr(Image, 'Resampling', Image).LANCZOS
@@ -1227,6 +1241,58 @@ def _trim_empty_material_slides(prs, mat_count):
         prs.part.drop_rel(rId)
         del xml_slides[slide_idx]
 
+def _shrink_overflow_text(prs, replacements):
+    """
+    User-entered narrative text (commitments, aims, descriptions …) can be
+    longer than the fixed text box the template gives it, overflowing the
+    slide. For every shape that received one of the long replacement values,
+    estimate the rendered text height; if it exceeds the box, scale the run
+    font sizes down proportionally. Sizes are written directly onto the runs
+    (portable — works in PowerPoint, Keynote and LibreOffice alike, unlike
+    autofit which requires the viewer to recompute).
+    """
+    probes = []
+    for v in replacements.values():
+        if isinstance(v, str):
+            s = _sanitise(v).strip()
+            if len(s) >= 150:
+                p = s.split('\n')[0][:60].strip()
+                if len(p) >= 20:
+                    probes.append(p)
+    if not probes:
+        return
+    EMU_IN = 914400
+    for slide in prs.slides:
+        for shape in slide.shapes:
+            if not shape.has_text_frame or not shape.width or not shape.height:
+                continue
+            tf  = shape.text_frame
+            txt = tf.text
+            if not any(p in txt for p in probes):
+                continue
+            box_w_in    = shape.width  / EMU_IN
+            box_h_in    = shape.height / EMU_IN
+            usable_w_pt = max(36.0, (box_w_in - 0.2)  * 72)   # minus l/r insets
+            usable_h_pt = max(36.0, (box_h_in - 0.1)  * 72)   # minus t/b insets
+            est_h = 0.0
+            for para in tf.paragraphs:
+                ptext = ''.join(r.text for r in para.runs)
+                sz = next((r.font.size.pt for r in para.runs
+                           if r.font.size is not None), 12.0)
+                cpl   = max(8, int(usable_w_pt / (sz * 0.50)))  # chars per line
+                lines = max(1, -(-len(ptext) // cpl)) + ptext.count('\n')
+                est_h += lines * sz * 1.22 + sz * 0.30          # line + para gap
+            if est_h <= usable_h_pt:
+                continue
+            scale = max(0.55, usable_h_pt / est_h)
+            if scale >= 0.97:
+                continue
+            for para in tf.paragraphs:
+                for r in para.runs:
+                    cur = r.font.size.pt if r.font.size is not None else 12.0
+                    r.font.size = Pt(max(7.0, round(cur * scale * 2) / 2))
+
+
 def _shape_full_text(shape):
     """All run text inside a shape, recursing into group shapes."""
     parts = []
@@ -1371,6 +1437,11 @@ def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provid
     for slide in prs.slides:
         for shape in slide.shapes:
             _replace_in_shape(shape, replacements)
+    try:
+        # Long user-entered text → scale font down to stay inside its box.
+        _shrink_overflow_text(prs, replacements)
+    except Exception:
+        traceback.print_exc()                  # log but never block generation
     if image_data:
         _replace_image_placeholders(prs, image_data)
     if kwp_materials:
