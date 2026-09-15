@@ -1273,7 +1273,18 @@ def _shrink_overflow_text(prs, replacements):
             box_w_in    = shape.width  / EMU_IN
             box_h_in    = shape.height / EMU_IN
             usable_w_pt = max(36.0, (box_w_in - 0.2)  * 72)   # minus l/r insets
-            usable_h_pt = max(36.0, (box_h_in - 0.1)  * 72)   # minus t/b insets
+            # Text boxes in this template auto-grow downwards (Keynote
+            # behaviour), so the real limit is the space between the shape's
+            # top and the bottom of the slide — NOT the box's stored height.
+            # Using the stored height alone shrinks text that actually has
+            # plenty of room to flow into (e.g. the Material Reuse pages).
+            try:
+                slide_h_in = prs.slide_height / EMU_IN
+                top_in     = (shape.top or 0) / EMU_IN
+                room_in    = max(box_h_in, slide_h_in - top_in - 0.35)
+            except Exception:
+                room_in = box_h_in
+            usable_h_pt = max(36.0, (room_in - 0.1) * 72)     # minus t/b insets
             est_h = 0.0
             for para in tf.paragraphs:
                 ptext = ''.join(r.text for r in para.runs)
