@@ -1,6 +1,6 @@
 """
 Lawmens Pre-Demolition Audit Generator — Flask backend
-Template: Savills-6.pptx
+Template: Savills-7.pptx
 """
 import os
 import io
@@ -30,7 +30,7 @@ _BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 app = Flask(__name__)
 
 OPENAI_API_KEY     = os.environ.get("OPENAI_API_KEY")
-PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-6.pptx")
+PPTX_TEMPLATE_PATH = os.environ.get("PPTX_TEMPLATE_PATH", "Savills-7.pptx")
 
 # Password required to EDIT generated PPTX files (viewing stays open).
 # Override with the PPTX_MODIFY_PASSWORD env var; set it empty to disable.
@@ -1227,6 +1227,83 @@ def _trim_empty_material_slides(prs, mat_count):
         prs.part.drop_rel(rId)
         del xml_slides[slide_idx]
 
+def _shape_full_text(shape):
+    """All run text inside a shape, recursing into group shapes."""
+    parts = []
+    if shape.has_text_frame:
+        for para in shape.text_frame.paragraphs:
+            parts.append(''.join(run.text for run in para.runs))
+    if shape.shape_type == 6:          # group shape
+        for s in shape.shapes:
+            parts.append(_shape_full_text(s))
+    return ''.join(parts)
+
+def _remove_unused_material_half_shapes(prs, mat_count):
+    """
+    A material-reuse detail slide holds two materials side by side. With an
+    odd material count the last kept slide has an unused half; blanking its
+    placeholders would leave the static labels ('Risk Factors:', 'Reuse
+    Potential:') and empty photo frames behind. Instead, delete every shape
+    whose material references are ALL for indices > mat_count — the text
+    block and both photo frames of the unused half — so the slide shows only
+    the used material. (Slides where BOTH halves are unused were already
+    removed by _trim_empty_material_slides; tables are trimmed row-wise.)
+    """
+    for slide in prs.slides:
+        doomed = []
+        for shape in slide.shapes:
+            if shape.has_table:
+                continue
+            indices = _mat_indices_in_text(_shape_full_text(shape))
+            if indices and all(idx > mat_count for idx in indices):
+                doomed.append(shape)
+        for shape in doomed:
+            shape._element.getparent().remove(shape._element)
+
+# ── Contents page renumbering ────────────────────────────────
+# The contents slide shows fixed page numbers beside image-based section
+# titles. Culling unused spec/table/material-reuse slides shifts every page
+# after slide 20, so the last three entries are recomputed from the final
+# deck. Convention (established by the first four entries, e.g. Introduction
+# on slide 7 is printed '06'): printed number = slide position − 1.
+# Each entry is located by the heading text of its target slide.
+_CONTENTS_ANCHORS = [
+    # (number printed in the template, predicate on lower-cased slide text)
+    ('28', lambda t: 'pre-deconstruction audit findings' in t),      # findings
+    ('32', lambda t: 'conclusion and recommendations' in t),         # conclusion
+    ('33', lambda t: '{{material_1_description}}' in t),             # material reuse
+]
+
+def _renumber_contents_page(prs):
+    """Rewrite stale contents-page numbers after slide culling. Must run
+    AFTER all slide trimming and BEFORE placeholder replacement (the
+    material-reuse anchor relies on its {{...}} token still being present)."""
+    slides = list(prs.slides)
+    new_numbers = {}
+    for printed, pred in _CONTENTS_ANCHORS:
+        for pos, slide in enumerate(slides, start=1):
+            if pred(_slide_full_text(slide).lower()):
+                new_numbers[printed] = f'{pos - 1:02d}'
+                break
+    if not new_numbers:
+        return
+    # The contents slide is the one whose shape texts include '06', '07', '10'
+    for slide in slides[:10]:
+        texts = {s.text_frame.text.strip() for s in slide.shapes if s.has_text_frame}
+        if not {'06', '07', '10'} <= texts:
+            continue
+        for shape in slide.shapes:
+            if not shape.has_text_frame:
+                continue
+            current = shape.text_frame.text.strip()
+            if current in new_numbers and shape.text_frame.paragraphs:
+                para = shape.text_frame.paragraphs[0]
+                if para.runs:
+                    para.runs[0].text = new_numbers[current]
+                    for r_ in para.runs[1:]:
+                        r_.text = ''
+        break
+
 # Matches {{SPEC_1}} … {{SPEC_7}}
 _SPEC_PLACEHOLDER_RE = re.compile(r'\{\{SPEC_(\d+)\}\}')
 
@@ -1278,8 +1355,19 @@ def fill_pptx_template(replacements, image_data=None, kwp_materials=None, provid
             _trim_empty_table_slides(prs)      # safety: remove any header-only table slides
         except Exception:
             traceback.print_exc()              # log but never block generation
+        try:
+            # Odd material count → delete the unused half of the last kept
+            # material-reuse slide (text block + photo frames + labels).
+            _remove_unused_material_half_shapes(prs, mat_count)
+        except Exception:
+            traceback.print_exc()              # log but never block generation
     if provided_spec_indices is not None and len(provided_spec_indices) < 12:
         _trim_unused_spec_slides(prs, provided_spec_indices)
+    try:
+        # After ALL culling, before replacement: fix contents-page numbers.
+        _renumber_contents_page(prs)
+    except Exception:
+        traceback.print_exc()                  # log but never block generation
     for slide in prs.slides:
         for shape in slide.shapes:
             _replace_in_shape(shape, replacements)
